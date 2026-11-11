@@ -1,0 +1,30 @@
+{
+  "name": "agrocloud-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": ">=22 <25",
+    "npm": ">=10"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --filter=@agrocloud/portal",
+    "dev:portal": "turbo run dev --filter=@agrocloud/portal",
+    "dev:web": "turbo run dev --filter=@agrocloud/web",
+    "dev:all": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "turbo": "2.11.10",
+    "prettier": "3.9.9"
+  }
+}

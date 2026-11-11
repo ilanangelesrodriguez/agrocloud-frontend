@@ -1,42 +1,16 @@
-# Next.js & HeroUI Template
+# AgroCloud Portal
 
-This is a template for creating applications using Next.js 16 (app directory) and HeroUI (v3).
+Aplicación Next.js con HeroUI v3 dentro del monorepo AgroCloud.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
-
-## Technologies Used
-
-- [Next.js 16](https://nextjs.org/docs/getting-started)
-- [HeroUI v3](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
-
-## How to Use
-
-### Use the template with create-next-app
-
-To create a new project based on this template using `create-next-app`, run the following command:
+- Carpeta: `apps/portal`.
+- Workspace: `@agrocloud/portal`.
+- Puerto local: `3000`.
+- Dependencias: instaladas **desde la raíz** con `npm install`.
 
 ```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
+npm run dev -w @agrocloud/portal
 ```
 
-### Install dependencies
+Documentación principal: [`../../README.md`](../../README.md).
 
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
-
-```bash
-npm install
-```
-
-### Run the development server
-
-```bash
-npm run dev
-```
-
-## License
-
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
+> Las pantallas de la plantilla original aún deben adaptarse al producto AgroCloud.
