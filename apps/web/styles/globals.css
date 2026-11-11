@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 @import "../../../packages/ui/src/styles/tokens.css";
+@import "../../../packages/ui/src/styles/scroll.css";
 
 @source "../../../packages/ui/src";
 

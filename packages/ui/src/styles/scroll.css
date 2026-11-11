@@ -1,0 +1,28 @@
+/* Keep scrolling available while hiding the native scrollbar visuals. */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* older Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chromium and Safari */
+}
+
+.agro-scroll-area,
+.agro-hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* older Edge */
+}
+
+.agro-scroll-area::-webkit-scrollbar,
+.agro-hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chromium and Safari */
+}
+
+@media (forced-colors: active) {
+  .agro-scroll-area:focus-visible,
+  .agro-hide-scrollbar:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

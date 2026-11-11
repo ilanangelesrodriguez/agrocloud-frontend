@@ -5,3 +5,7 @@ export type { StatusTone } from "./components/status-badge";
 export { LoadingState } from "./components/loading-state";
 export { MetricCard } from "./components/metric-card";
 export { InlineNotice } from "./components/inline-notice";
+
+export { AgroScrollArea } from "./components/scroll-area";
+export { AgroPagination } from "./components/agro-pagination";
+export { QuotaMeter } from "./components/quota-meter";
