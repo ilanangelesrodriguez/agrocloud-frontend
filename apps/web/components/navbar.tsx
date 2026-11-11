@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button, Kbd, Link, TextField, InputGroup } from "@heroui/react";
+import Image from "next/image";
 import NextLink from "next/link";
 import clsx from "clsx";
 
@@ -13,7 +14,6 @@ import {
   DiscordIcon,
   HeartFilledIcon,
   SearchIcon,
-  Logo,
 } from "@/components/icons";
 
 export const Navbar = () => {
@@ -40,9 +40,28 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-40 w-full border-b border-separator bg-background/70 backdrop-blur-lg">
       <header className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-4 px-6">
         <div className="flex items-center gap-4">
-          <NextLink className="flex items-center gap-1" href="/">
-            <Logo />
-            <p className="font-bold text-inherit">ACME</p>
+          <NextLink aria-label="AgroCloud AI" className="flex shrink-0 items-center" href="/">
+            <Image
+              alt=""
+              className="size-8 md:hidden"
+              height={256}
+              src="/agrocloud/logo-mark.svg"
+              width={256}
+            />
+            <Image
+              alt=""
+              className="hidden h-8 w-auto md:block dark:md:hidden"
+              height={320}
+              src="/agrocloud/logo.svg"
+              width={1200}
+            />
+            <Image
+              alt=""
+              className="hidden h-8 w-auto dark:md:block"
+              height={320}
+              src="/agrocloud/logo-dark.svg"
+              width={1200}
+            />
           </NextLink>
           <ul className="hidden lg:flex gap-4 ml-2">
             {siteConfig.navItems.map((item) => (

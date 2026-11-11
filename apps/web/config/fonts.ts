@@ -1,11 +1,13 @@
-import { Fira_Code as FontMono, Inter as FontSans } from "next/font/google";
+import { Geist_Mono, Instrument_Sans } from "next/font/google";
 
-export const fontSans = FontSans({
+export const fontSans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-instrument",
+  display: "swap",
 });
 
-export const fontMono = FontMono({
+export const fontMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-geist-mono",
+  display: "swap",
 });

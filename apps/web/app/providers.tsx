@@ -2,8 +2,7 @@
 
 import type { ThemeProviderProps } from "next-themes";
 
-import * as React from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider } from "next-themes";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -11,5 +10,15 @@ export interface ProvidersProps {
 }
 
 export function Providers({ children, themeProps }: ProvidersProps) {
-  return <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>;
+  return (
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      disableTransitionOnChange
+      enableSystem
+      {...themeProps}
+    >
+      {children}
+    </ThemeProvider>
+  );
 }

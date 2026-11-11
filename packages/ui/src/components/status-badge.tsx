@@ -9,7 +9,7 @@ const toneClasses: Record<StatusTone, string> = {
   success: "bg-success-soft text-success-soft-foreground",
   warning: "bg-warning-soft text-warning-soft-foreground",
   danger: "bg-danger-soft text-danger-soft-foreground",
-  info: "bg-accent-soft text-accent-soft-foreground",
+  info: "bg-info-soft text-info-soft-foreground",
 };
 
 export function StatusBadge({ children, tone = "neutral" }: StatusBadgeProps) {

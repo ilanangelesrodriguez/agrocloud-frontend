@@ -1,42 +1,33 @@
-import { FC, useEffect, useState } from "react";
+"use client";
+
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import clsx from "clsx";
 
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+import { MoonFilledIcon, SunFilledIcon } from "@/components/icons";
 
-export interface ThemeSwitchProps {
-  className?: string;
-}
+const subscribe = () => () => {};
 
-export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
-  const [isMounted, setIsMounted] = useState(false);
-  const { setTheme, resolvedTheme } = useTheme();
-
+export function ThemeSwitch({ className }: { className?: string }) {
+  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
+  const { resolvedTheme, setTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
-  const handleToggle = () => {
-    setTheme(isLight ? "dark" : "light");
-  };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-
-  if (!isMounted) return <div aria-hidden className="w-6 h-6" />;
+  if (!mounted) return <span aria-hidden className="inline-block h-6 w-6" />;
 
   return (
     <button
-      aria-label={`Switch to ${isLight ? "dark" : "light"} mode`}
+      aria-label={isLight ? "Cambiar a tema oscuro" : "Cambiar a tema claro"}
       className={clsx(
-        "px-px transition-opacity hover:opacity-80 cursor-pointer",
-        "inline-flex items-center justify-center",
-        "w-auto h-auto bg-transparent rounded-lg text-muted",
+        "inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg",
+        "bg-transparent text-muted transition-opacity hover:opacity-80",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
         className,
       )}
-      onClick={handleToggle}
+      type="button"
+      onClick={() => setTheme(isLight ? "dark" : "light")}
     >
       {isLight ? <SunFilledIcon size={22} /> : <MoonFilledIcon size={22} />}
     </button>
   );
-};
+}
