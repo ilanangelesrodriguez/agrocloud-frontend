@@ -4,5 +4,30 @@
 @import "../../../packages/ui/src/styles/scroll.css";
 
 @source "../../../packages/ui/src";
-
 @custom-variant dark (&:where(.dark, .dark *));
+
+@layer components {
+  .site-container { width: min(100% - 2.5rem, 1200px); margin-inline: auto; }
+  .site-section { padding-block: clamp(4rem, 7vw, 6rem); }
+  .site-card { border: 1px solid var(--border); border-radius: 1.5rem; background: var(--surface); box-shadow: 0 8px 24px rgb(0 0 0 / .025); }
+  .site-button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: .75rem; padding: .75rem 1.35rem; border-radius: .9rem; text-align: center; font-size: .875rem; font-weight: 650; text-decoration: none; transition: background-color .2s ease, transform .2s ease, border-color .2s ease; }
+  .site-button:hover { transform: translateY(-1px); }
+  .site-button:focus-visible, .site-nav-link:focus-visible, .site-text-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .site-button-primary { color: var(--accent-foreground); background: var(--accent); border: 1px solid transparent; }
+  .site-button-primary:hover { filter: brightness(.94); }
+  .site-button-outline { color: var(--foreground); background: var(--surface); border: 1px solid var(--border); }
+  .site-button-outline:hover { background: var(--surface-secondary); }
+  .site-nav-link { display: inline-flex; align-items: center; padding: .6rem .85rem; border-radius: .7rem; text-decoration: none; color: var(--muted); font-size: .875rem; font-weight: 550; transition: background .15s ease, color .15s ease; }
+  .site-nav-link:hover, .site-nav-active { background: var(--surface-secondary); color: var(--foreground); }
+  .site-text-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); font-weight: 650; text-decoration: underline; text-underline-offset: 4px; }
+  .site-hero-grid { background-image: radial-gradient(ellipse at 90% 18%, rgb(69 201 135 / .13), transparent 48%), radial-gradient(ellipse at 8% 95%, rgb(69 201 135 / .07), transparent 44%); }
+  .site-native-field { width: 100%; min-height: 44px; border: 1px solid var(--border); background: var(--surface); color: var(--foreground); border-radius: .75rem; padding: .75rem 1rem; outline: none; font-size: .875rem; }
+  .site-native-field:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .site-native-field[aria-invalid="true"] { border-color: var(--danger); }
+  .site-skip { position: fixed; left: .5rem; top: -200px; z-index: 100; background: var(--surface); padding: .7rem 1.2rem; border: 2px solid var(--focus); border-radius: .6rem; }
+  .site-skip:focus { top: .5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-button, .site-nav-link { transition: none; }
+  .site-button:hover { transform: none; }
+}

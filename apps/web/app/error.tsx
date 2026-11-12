@@ -1,31 +1,20 @@
 "use client";
-
-import { useEffect } from "react";
-
 export default function Error({
-  error,
   reset,
 }: {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    /* eslint-disable no-console */
-    console.error(error);
-  }, [error]);
-
   return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button
-        onClick={
-          // Attempt to recover by trying to re-render the segment
-          () => reset()
-        }
-      >
-        Try again
+    <section className="site-container flex min-h-[65vh] flex-col items-center justify-center py-20 text-center">
+      <span className="text-5xl text-danger">!</span>
+      <h1 className="mt-5 text-3xl font-semibold">No se pudo cargar esta página</h1>
+      <p className="mt-3 max-w-md text-sm leading-7 text-muted">
+        Ocurrió un problema temporal. Intenta nuevamente sin perder el contexto de tu navegación.
+      </p>
+      <button type="button" onClick={reset} className="site-button site-button-primary mt-7">
+        Reintentar
       </button>
-    </div>
+    </section>
   );
 }

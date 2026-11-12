@@ -1,59 +1,54 @@
 import "@/styles/globals.css";
-import { Metadata, Viewport } from "next";
-import clsx from "clsx";
-
+import type { Metadata, Viewport } from "next";
+import { fontMono, fontSans } from "@/config/fonts";
+import { siteConfig } from "@/config/site";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { Providers } from "./providers";
 
-import { siteConfig } from "@/config/site";
-import { fontMono, fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
+const metadataBase = new URL(siteConfig.publicUrl || "http://localhost:3001");
 
 export const metadata: Metadata = {
+  metadataBase,
   title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
+    default: "AgroCloud AI | Calidad y trazabilidad agrícola",
+    template: "%s | AgroCloud AI",
   },
   description: siteConfig.description,
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+  applicationName: "AgroCloud AI",
+  openGraph: {
+    type: "website",
+    locale: "es_PE",
+    siteName: "AgroCloud AI",
+    title: "AgroCloud AI | Calidad y trazabilidad agrícola",
+    description: siteConfig.description,
   },
+  robots: { index: Boolean(siteConfig.publicUrl), follow: Boolean(siteConfig.publicUrl) },
+  icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
 };
-
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f7faf8" },
     { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
   ],
 };
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html className={clsx(fontSans.variable, fontMono.variable)} lang="en" suppressHydrationWarning>
-      <head />
-      <body className="min-h-screen text-foreground bg-background font-sans antialiased">
+    <html
+      className={`${fontSans.variable} ${fontMono.variable}`}
+      lang="es-PE"
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <Providers>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              {children}
-            </main>
-            <footer className="w-full flex items-center justify-center py-3">
-              <a
-                className="flex items-center gap-1 text-current no-underline"
-                href="https://heroui.com?utm_source=next-app-template"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <span className="text-muted">Powered by</span>
-                <p className="text-accent">HeroUI</p>
-              </a>
-            </footer>
-          </div>
+          <a href="#contenido" className="site-skip">
+            Saltar al contenido
+          </a>
+          <SiteHeader />
+          <main id="contenido" className="min-h-[60vh]">
+            {children}
+          </main>
+          <SiteFooter />
         </Providers>
       </body>
     </html>
