@@ -1,19 +1,24 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import { useState } from "react";
-import { siteConfig, portalLoginUrl } from "@/config/site";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Button } from "@heroui/react";
+import { FiMenu, FiX } from "react-icons/fi";
+
 import { SiteBrand } from "@/components/site-brand";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { portalLoginUrl, siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/75 bg-background/90 backdrop-blur-xl">
       <div className="site-container flex h-[72px] items-center justify-between gap-5">
         <SiteBrand />
+
         <nav aria-label="Navegación principal" className="hidden items-center gap-1 lg:flex">
           {siteConfig.nav.map(({ href, label }) => (
             <Link
@@ -26,6 +31,7 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
+
         <div className="hidden shrink-0 items-center gap-3 lg:flex">
           <ThemeSwitch className="!size-10 border border-border" />
           {portalLoginUrl && (
@@ -40,29 +46,29 @@ export function SiteHeader() {
             Solicitar acceso
           </Link>
         </div>
+
         <div className="flex items-center gap-2 lg:hidden">
           <ThemeSwitch className="!size-10 border border-border" />
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="md"
+            isIconOnly
+            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             aria-controls="mobile-navigation"
-            aria-expanded={open}
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            className="grid size-10 place-items-center rounded-xl border border-border text-foreground focus-visible:outline-2 focus-visible:outline-focus"
-            onClick={() => setOpen(!open)}
+            aria-expanded={isMenuOpen}
+            onPress={() => setIsMenuOpen((previous) => !previous)}
+            className="size-10 rounded-xl"
           >
-            {open ? (
-              <span aria-hidden="true" className="text-xl">
-                ×
-              </span>
+            {isMenuOpen ? (
+              <FiX aria-hidden="true" className="size-5" />
             ) : (
-              <span aria-hidden="true" className="text-xl">
-                ☰
-              </span>
+              <FiMenu aria-hidden="true" className="size-5" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
-      {open && (
+
+      {isMenuOpen && (
         <nav
           id="mobile-navigation"
           aria-label="Navegación móvil"
@@ -73,7 +79,7 @@ export function SiteHeader() {
               <Link
                 key={href}
                 href={href}
-                onClick={() => setOpen(false)}
+                onClick={() => setIsMenuOpen(false)}
                 aria-current={pathname === href ? "page" : undefined}
                 className={`site-nav-link px-4 py-3 ${pathname === href ? "site-nav-active" : ""}`}
               >
@@ -87,7 +93,7 @@ export function SiteHeader() {
             )}
             <Link
               href="/solicitar-acceso"
-              onClick={() => setOpen(false)}
+              onClick={() => setIsMenuOpen(false)}
               className="site-button site-button-primary mt-3 text-center"
             >
               Solicitar acceso

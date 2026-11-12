@@ -1,6 +1,6 @@
 "use client";
 
-import { Accordion } from "@heroui/react";
+import { Accordion } from "@heroui/react/accordion";
 
 const faqs = [
   {

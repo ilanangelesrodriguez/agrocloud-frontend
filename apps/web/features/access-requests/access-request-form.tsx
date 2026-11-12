@@ -1,103 +1,419 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import NextLink from "next/link";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Description,
+  FieldError,
+  Fieldset,
+  Form,
+  Input,
+  InputGroup,
+  Label,
+  ListBox,
+  Select,
+  TextArea,
+  TextField,
+  toast,
+} from "@heroui/react";
+import { Controller, useForm } from "react-hook-form";
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
-import { Button, Input, Label, TextField, toast } from "@heroui/react";
-import { clientAccessFormSchema, companyTypes } from "./schema";
-import type { AccessFormValues, AccessRequestPayload } from "./schema";
+import { FiAtSign, FiHash, FiPhone, FiSend } from "react-icons/fi";
 
-type Name = Exclude<keyof AccessFormValues, "consentimiento" | "tipo_empresa" | "uso">;
+import { clientAccessFormSchema, companyTypes } from "@/features/access-requests/schema";
+import type { AccessFormValues, AccessRequestPayload } from "@/features/access-requests/schema";
 
-function CompanyInput({ name, label, placeholder, register, errors, type = "text", autoComplete, maxLength, inputMode }: {
-  name: Name; label: string; placeholder: string;
+type TextFieldName = Exclude<keyof AccessFormValues, "consentimiento" | "tipo_empresa" | "uso">;
+
+type CompanyInputProps = {
+  name: TextFieldName;
+  label: string;
+  placeholder: string;
   register: UseFormRegister<AccessFormValues>;
   errors: FieldErrors<AccessFormValues>;
-  type?: string; autoComplete?: string; maxLength?: number; inputMode?: "numeric" | "tel";
-}) {
-  const error = errors[name]?.message;
-  return <TextField className="flex min-w-0 flex-col gap-1.5" isInvalid={Boolean(error)}>
-    <Label htmlFor={name} className="text-sm font-semibold text-foreground">{label} <span className="text-danger">*</span></Label>
-    <Input id={name} type={type} inputMode={inputMode} autoComplete={autoComplete} maxLength={maxLength} placeholder={placeholder} className="min-h-11 w-full rounded-xl" aria-invalid={Boolean(error)} aria-describedby={error ? `${name}-error` : undefined} {...register(name)} />
-    {error && <p id={`${name}-error`} role="alert" className="text-xs text-danger">{String(error)}</p>}
-  </TextField>;
+  type?: "text" | "email" | "tel";
+  autoComplete?: string;
+  maxLength?: number;
+  inputMode?: "numeric" | "tel";
+  prefix?: "ruc" | "email" | "phone";
+};
+
+function CompanyInput({
+  name,
+  label,
+  placeholder,
+  register,
+  errors,
+  type = "text",
+  autoComplete,
+  maxLength,
+  inputMode,
+  prefix,
+}: CompanyInputProps) {
+  const message = errors[name]?.message;
+  const isInvalid = Boolean(message);
+  const registration = register(name);
+
+  const inputProps = {
+    id: name,
+    placeholder,
+    type,
+    autoComplete,
+    maxLength,
+    inputMode,
+    ...registration,
+  };
+
+  return (
+    <TextField className="flex min-w-0 flex-col gap-1.5" isInvalid={isInvalid} name={name}>
+      <Label className="text-sm font-semibold text-foreground">
+        {label} <span className="text-danger">*</span>
+      </Label>
+
+      {prefix ? (
+        <InputGroup className="min-h-11 w-full">
+          <InputGroup.Prefix aria-hidden="true" className="text-muted">
+            {prefix === "ruc" && <FiHash className="size-4" />}
+            {prefix === "email" && <FiAtSign className="size-4" />}
+            {prefix === "phone" && <FiPhone className="size-4" />}
+          </InputGroup.Prefix>
+          <InputGroup.Input {...inputProps} />
+        </InputGroup>
+      ) : (
+        <Input {...inputProps} className="min-h-11 w-full rounded-xl" />
+      )}
+
+      <FieldError>{message ? String(message) : undefined}</FieldError>
+    </TextField>
+  );
 }
+
+const initialValues: AccessFormValues = {
+  ruc: "",
+  razon_social: "",
+  nombre_comercial: "",
+  tipo_empresa: "",
+  nombre: "",
+  apellido: "",
+  correo: "",
+  telefono: "",
+  uso: "",
+  consentimiento: false,
+};
 
 export function AccessRequestForm() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
-  const [website, setWebsite] = useState(""); // Campo señuelo contra envío automatizado.
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AccessFormValues>({
+  const [website, setWebsite] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<AccessFormValues>({
     resolver: zodResolver(clientAccessFormSchema),
+    defaultValues: initialValues,
     mode: "onBlur",
-    defaultValues: { ruc: "", razon_social: "", nombre_comercial: "", tipo_empresa: "", nombre: "", apellido: "", correo: "", telefono: "", uso: "", consentimiento: false },
   });
-  const onSubmit = handleSubmit(async (values) => {
+
+  const submitRequest = handleSubmit(async (values) => {
     setServerError(null);
-    const { consentimiento: _consentimiento, ...payload }: AccessFormValues = values;
-    const requestPayload: AccessRequestPayload = payload;
-    void _consentimiento; // El backend actual no declara este campo. Ver guía para trazabilidad legal.
+
+    // Identity todavía no dispone de un campo de consentimiento en su contrato.
+    // Revisar su persistencia antes de publicar el formulario con datos reales.
+    const { consentimiento, ...requestPayload }: AccessFormValues = values;
+    if (!consentimiento) return;
+
+    const payload: AccessRequestPayload = requestPayload;
+
     try {
       const response = await fetch("/api/access-requests", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...requestPayload, website }),
-        signal: AbortSignal.timeout(20000),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, website }),
+        signal: AbortSignal.timeout(20_000),
       });
+
       const result: { message?: string } = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        const message = result.message || "No pudimos registrar la solicitud. Intenta nuevamente.";
+        const message = result.message ?? "No pudimos registrar la solicitud. Intenta nuevamente.";
+
         setServerError(message);
         toast.danger("No se pudo enviar", { description: message });
         return;
       }
-      toast.success("Solicitud registrada", { description: "Recibimos los datos de tu empresa." });
+
+      toast.success("Solicitud registrada", {
+        description: "Recibimos los datos de tu empresa.",
+      });
       router.push("/solicitud-recibida");
     } catch {
-      setServerError("No se pudo conectar con el servicio. Intenta nuevamente más tarde.");
-      toast.danger("Sin conexión", { description: "No se pudo completar el envío." });
+      const message = "No se pudo conectar con el servicio. Intenta nuevamente más tarde.";
+      setServerError(message);
+      toast.danger("Sin conexión", { description: message });
     }
   });
-  return <form noValidate onSubmit={onSubmit} className="space-y-6">
-    <div className="site-card p-6 sm:p-8">
-      <div className="mb-6 border-b border-border pb-5"><span className="font-mono text-sm font-semibold text-accent">01 / Empresa</span><h2 className="mt-2 text-xl font-semibold">Información de la organización</h2><p className="mt-2 text-sm text-muted">Ingresa los datos legales. La consulta automática de RUC está pendiente de una API pública confirmada.</p></div>
-      <div className="grid gap-5 sm:grid-cols-2">
-        <CompanyInput name="ruc" label="RUC" placeholder="11 dígitos" inputMode="numeric" maxLength={11} register={register} errors={errors}/>
-        <CompanyInput name="nombre_comercial" label="Nombre comercial" placeholder="Nombre de la empresa" autoComplete="organization" maxLength={150} register={register} errors={errors}/>
-        <div className="sm:col-span-2"><CompanyInput name="razon_social" label="Razón social" placeholder="Razón social registrada" maxLength={200} register={register} errors={errors}/></div>
-        <div className="sm:col-span-2"><label htmlFor="tipo_empresa" className="mb-2 block text-sm font-semibold">Tipo de empresa <span className="text-danger">*</span></label>
-          <select id="tipo_empresa" className="site-native-field" aria-invalid={Boolean(errors.tipo_empresa)} aria-describedby={errors.tipo_empresa ? "tipo_empresa-error" : undefined} {...register("tipo_empresa")}>
-            <option value="">Selecciona la actividad</option>{companyTypes.map(item=><option value={item} key={item}>{item}</option>)}
-          </select>{errors.tipo_empresa && <p role="alert" id="tipo_empresa-error" className="mt-1 text-xs text-danger">{errors.tipo_empresa.message}</p>}
+
+  return (
+    <Form
+      aria-label="Solicitud de acceso empresarial"
+      className="space-y-6"
+      validationBehavior="aria"
+      onSubmit={submitRequest}
+    >
+      <Card className="site-card">
+        <Card.Content className="p-6 sm:p-8">
+          <Fieldset className="site-form-fieldset">
+            <Fieldset.Legend className="grid gap-2">
+              <span className="font-mono text-sm font-semibold text-accent">01 / Empresa</span>
+              <span>Información de la organización</span>
+            </Fieldset.Legend>
+            <p className="text-sm leading-7 text-muted">
+              Ingresa los datos legales. La consulta automática del RUC requiere que el backend
+              publique un endpoint compatible.
+            </p>
+
+            <Fieldset.Group className="grid gap-5 pt-4 sm:grid-cols-2">
+              <CompanyInput
+                name="ruc"
+                label="RUC"
+                placeholder="11 dígitos"
+                prefix="ruc"
+                inputMode="numeric"
+                maxLength={11}
+                register={register}
+                errors={errors}
+              />
+              <CompanyInput
+                name="nombre_comercial"
+                label="Nombre comercial"
+                placeholder="Nombre de la empresa"
+                autoComplete="organization"
+                maxLength={150}
+                register={register}
+                errors={errors}
+              />
+              <div className="sm:col-span-2">
+                <CompanyInput
+                  name="razon_social"
+                  label="Razón social"
+                  placeholder="Razón social registrada"
+                  maxLength={200}
+                  register={register}
+                  errors={errors}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Controller
+                  name="tipo_empresa"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      name={field.name}
+                      value={field.value || null}
+                      onChange={(selected) =>
+                        field.onChange(selected == null ? "" : String(selected))
+                      }
+                      onBlur={field.onBlur}
+                      isInvalid={Boolean(errors.tipo_empresa)}
+                      placeholder="Selecciona la actividad"
+                    >
+                      <Label>Tipo de empresa *</Label>
+                      <Select.Trigger className="min-h-11 w-full">
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <FieldError>{errors.tipo_empresa?.message}</FieldError>
+                      <Select.Popover>
+                        <ListBox aria-label="Tipos de empresa">
+                          {companyTypes.map((companyType) => (
+                            <ListBox.Item
+                              key={companyType}
+                              id={companyType}
+                              textValue={companyType}
+                            >
+                              <Label>{companyType}</Label>
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  )}
+                />
+              </div>
+            </Fieldset.Group>
+          </Fieldset>
+        </Card.Content>
+      </Card>
+
+      <Card className="site-card">
+        <Card.Content className="p-6 sm:p-8">
+          <Fieldset className="site-form-fieldset">
+            <Fieldset.Legend className="grid gap-2">
+              <span className="font-mono text-sm font-semibold text-accent">
+                02 / Representante
+              </span>
+              <span>Persona de contacto</span>
+            </Fieldset.Legend>
+            <p className="text-sm leading-7 text-muted">
+              Utilizaremos esta información para atender la solicitud empresarial.
+            </p>
+
+            <Fieldset.Group className="grid gap-5 pt-4 sm:grid-cols-2">
+              <CompanyInput
+                name="nombre"
+                label="Nombres"
+                placeholder="Nombres"
+                autoComplete="given-name"
+                maxLength={100}
+                register={register}
+                errors={errors}
+              />
+              <CompanyInput
+                name="apellido"
+                label="Apellidos"
+                placeholder="Apellidos"
+                autoComplete="family-name"
+                maxLength={100}
+                register={register}
+                errors={errors}
+              />
+              <CompanyInput
+                name="correo"
+                label="Correo electrónico"
+                placeholder="nombre@empresa.com"
+                type="email"
+                prefix="email"
+                autoComplete="email"
+                maxLength={255}
+                register={register}
+                errors={errors}
+              />
+              <CompanyInput
+                name="telefono"
+                label="Teléfono"
+                placeholder="+51 987 654 321"
+                type="tel"
+                prefix="phone"
+                inputMode="tel"
+                autoComplete="tel"
+                maxLength={30}
+                register={register}
+                errors={errors}
+              />
+            </Fieldset.Group>
+          </Fieldset>
+        </Card.Content>
+      </Card>
+
+      <Card className="site-card">
+        <Card.Content className="p-6 sm:p-8">
+          <Fieldset className="site-form-fieldset">
+            <Fieldset.Legend className="grid gap-2">
+              <span className="font-mono text-sm font-semibold text-accent">03 / Necesidades</span>
+              <span>Tu operación agrícola</span>
+            </Fieldset.Legend>
+            <p className="text-sm leading-7 text-muted">
+              Describe para qué necesitaría AgroCloud tu empresa.
+            </p>
+
+            <Fieldset.Group className="grid gap-5 pt-4">
+              <TextField isInvalid={Boolean(errors.uso)}>
+                <Label>¿Cómo planeas utilizar AgroCloud? *</Label>
+                <TextArea
+                  {...register("uso")}
+                  rows={5}
+                  maxLength={4000}
+                  className="min-h-32 w-full resize-y"
+                  placeholder="Por ejemplo: necesitamos registrar recepciones de palta, realizar muestreos e inspecciones y consultar los dictámenes de calidad."
+                />
+                <Description>Entre 20 y 4 000 caracteres.</Description>
+                <FieldError>{errors.uso?.message}</FieldError>
+              </TextField>
+
+              <Controller
+                name="consentimiento"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    name={field.name}
+                    isSelected={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    isInvalid={Boolean(errors.consentimiento)}
+                    className="rounded-xl border border-border bg-background p-4"
+                  >
+                    <Checkbox.Content className="flex items-start gap-3">
+                      <Checkbox.Control className="mt-1 shrink-0">
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <span className="text-sm leading-6 text-muted">
+                        He leído la{" "}
+                        <NextLink
+                          href="/privacidad"
+                          className="font-semibold text-accent underline underline-offset-2"
+                        >
+                          información de privacidad
+                        </NextLink>{" "}
+                        y autorizo utilizar mis datos para evaluar esta solicitud.
+                      </span>
+                    </Checkbox.Content>
+                    <FieldError>{errors.consentimiento?.message}</FieldError>
+                  </Checkbox>
+                )}
+              />
+            </Fieldset.Group>
+          </Fieldset>
+
+          {/* Honeypot anti-bot: intencionalmente nativo, invisible y no interactivo. */}
+          <div className="sr-only" aria-hidden="true">
+            <label htmlFor="website">Sitio web (dejar vacío)</label>
+            <input
+              id="website"
+              name="website"
+              value={website}
+              onChange={(event) => setWebsite(event.target.value)}
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+        </Card.Content>
+      </Card>
+
+      {serverError && (
+        <div
+          role="alert"
+          className="rounded-xl border border-danger/30 bg-danger-soft/25 p-4 text-sm text-foreground"
+        >
+          {serverError}
         </div>
+      )}
+
+      <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+        <p className="max-w-lg text-xs leading-6 text-muted">
+          Enviar la solicitud no garantiza su aprobación. No necesitas crear una contraseña en este
+          paso.
+        </p>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          isPending={isSubmitting}
+          isDisabled={isSubmitting}
+          className="w-full justify-center sm:w-auto"
+        >
+          <FiSend className="size-4" aria-hidden="true" />
+          {isSubmitting ? "Enviando…" : "Enviar solicitud"}
+        </Button>
       </div>
-    </div>
-    <div className="site-card p-6 sm:p-8">
-      <div className="mb-6 border-b border-border pb-5"><span className="font-mono text-sm font-semibold text-accent">02 / Representante</span><h2 className="mt-2 text-xl font-semibold">Persona de contacto</h2><p className="mt-2 text-sm text-muted">Utilizaremos estos datos para atender la solicitud empresarial.</p></div>
-      <div className="grid gap-5 sm:grid-cols-2">
-        <CompanyInput name="nombre" label="Nombres" placeholder="Nombres" autoComplete="given-name" maxLength={100} register={register} errors={errors}/>
-        <CompanyInput name="apellido" label="Apellidos" placeholder="Apellidos" autoComplete="family-name" maxLength={100} register={register} errors={errors}/>
-        <CompanyInput name="correo" label="Correo electrónico" placeholder="nombre@empresa.com" type="email" autoComplete="email" maxLength={255} register={register} errors={errors}/>
-        <CompanyInput name="telefono" label="Teléfono" placeholder="+51 987 654 321" type="tel" inputMode="tel" autoComplete="tel" maxLength={30} register={register} errors={errors}/>
-      </div>
-    </div>
-    <div className="site-card p-6 sm:p-8">
-      <div className="mb-6 border-b border-border pb-5"><span className="font-mono text-sm font-semibold text-accent">03 / Necesidades</span><h2 className="mt-2 text-xl font-semibold">Tu operación agrícola</h2><p className="mt-2 text-sm text-muted">Describe para qué necesitaría AgroCloud tu empresa.</p></div>
-      <label htmlFor="uso" className="mb-2 block text-sm font-semibold">¿Cómo planeas utilizar AgroCloud? <span className="text-danger">*</span></label>
-      <textarea id="uso" rows={5} maxLength={4000} placeholder="Por ejemplo: necesitamos registrar recepciones de palta, realizar muestreos, gestionar inspecciones y consultar los dictámenes de calidad..." className="site-native-field min-h-32 resize-y" aria-invalid={Boolean(errors.uso)} aria-describedby={errors.uso ? "uso-error" : "uso-help"} {...register("uso")}/>
-      {errors.uso ? <p role="alert" id="uso-error" className="mt-1 text-xs text-danger">{errors.uso.message}</p>:<p id="uso-help" className="mt-2 text-xs text-muted">Entre 20 y 4 000 caracteres.</p>}
-      <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-background p-4 text-sm leading-6 text-muted">
-        <input type="checkbox" className="mt-1 size-4 shrink-0 accent-[#146F47]" aria-invalid={Boolean(errors.consentimiento)} {...register("consentimiento")}/>
-        <span>He leído la <Link href="/privacidad" className="font-semibold text-accent underline underline-offset-2">información de privacidad</Link> y autorizo usar mis datos para evaluar esta solicitud.</span>
-      </label>
-      {errors.consentimiento && <p role="alert" className="mt-2 text-xs text-danger">{errors.consentimiento.message}</p>}
-      <div className="sr-only" aria-hidden="true"><label htmlFor="website">Sitio web (dejar vacío)</label><input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)} /></div>
-    </div>
-    {serverError && <p className="rounded-xl border border-danger/30 bg-danger-soft/25 p-4 text-sm text-foreground" role="alert">{serverError}</p>}
-    <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center"><p className="max-w-lg text-xs leading-6 text-muted">Enviar la solicitud no garantiza la aprobación. No necesitas crear una contraseña en este paso.</p>
-      <Button type="submit" variant="primary" size="lg" isPending={isSubmitting} isDisabled={isSubmitting} className="w-full justify-center sm:w-auto">{isSubmitting ? "Enviando…" : "Enviar solicitud"}</Button>
-    </div>
-  </form>;
+    </Form>
+  );
 }

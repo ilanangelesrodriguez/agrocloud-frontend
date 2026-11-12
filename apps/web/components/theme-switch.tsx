@@ -1,33 +1,40 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { Button } from "@heroui/react";
 import { useTheme } from "next-themes";
 import clsx from "clsx";
-
-import { MoonFilledIcon, SunFilledIcon } from "@/components/icons";
+import { FiMoon, FiSun } from "react-icons/fi";
 
 const subscribe = () => () => {};
 
 export function ThemeSwitch({ className }: { className?: string }) {
-  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const { resolvedTheme, setTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
-  if (!mounted) return <span aria-hidden className="inline-block h-6 w-6" />;
+  if (!mounted) {
+    return <span aria-hidden="true" className="inline-block size-10" />;
+  }
 
   return (
-    <button
-      aria-label={isLight ? "Cambiar a tema oscuro" : "Cambiar a tema claro"}
-      className={clsx(
-        "inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg",
-        "bg-transparent text-muted transition-opacity hover:opacity-80",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-        className,
-      )}
+    <Button
       type="button"
-      onClick={() => setTheme(isLight ? "dark" : "light")}
+      variant="tertiary"
+      isIconOnly
+      aria-label={isLight ? "Cambiar a tema oscuro" : "Cambiar a tema claro"}
+      className={clsx("size-10 rounded-xl text-muted", className)}
+      onPress={() => setTheme(isLight ? "dark" : "light")}
     >
-      {isLight ? <SunFilledIcon size={22} /> : <MoonFilledIcon size={22} />}
-    </button>
+      {isLight ? (
+        <FiSun aria-hidden="true" className="size-5" />
+      ) : (
+        <FiMoon aria-hidden="true" className="size-5" />
+      )}
+    </Button>
   );
 }
