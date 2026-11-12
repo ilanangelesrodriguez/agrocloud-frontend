@@ -1,6 +1,6 @@
 import type { AccessRequestPayload } from "./schema";
 
-type ApiResponse = { message?: string };
+type ApiResponse = { message?: string; reference?: string };
 
 export class AccessRequestError extends Error {
   constructor(

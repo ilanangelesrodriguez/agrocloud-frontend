@@ -1,3 +1,5 @@
+"use client";
+
 import { Typography } from "@heroui/react";
 import Link from "next/link";
 import { SiteBrand } from "@/components/site-brand";

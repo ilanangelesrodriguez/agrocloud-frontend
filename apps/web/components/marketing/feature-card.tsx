@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, Chip, Typography } from "@heroui/react";
 
 type Props = { number: string; title: string; description: string; tag?: string };

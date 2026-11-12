@@ -1,11 +1,10 @@
 import { z } from "zod";
 
+import { rucSchema } from "@/features/ruc/schema";
+
 // Nombres y límites alineados con ms-identity/app/Http/Requests/AccessRequest.php.
-export const accessRequestSchema = z.object({
-  ruc: z
-    .string()
-    .trim()
-    .regex(/^\d{11}$/, "El RUC debe contener exactamente 11 dígitos."),
+const accessRequestFields = z.object({
+  ruc: rucSchema,
   razon_social: z.string().trim().min(3, "Ingresa la razón social.").max(200),
   nombre_comercial: z.string().trim().min(2, "Ingresa el nombre comercial.").max(150),
   tipo_empresa: z.string().trim().min(2, "Selecciona el tipo de empresa.").max(80),
@@ -16,7 +15,14 @@ export const accessRequestSchema = z.object({
   uso: z.string().trim().min(20, "Describe tu operación en al menos 20 caracteres.").max(4000),
 });
 
-export const clientAccessFormSchema = accessRequestSchema.extend({
+export const accessRequestReferenceSchema = z.uuid();
+
+export const accessRequestSchema = accessRequestFields.extend({
+  privacy_accepted: z.literal(true),
+  privacy_version: z.string().trim().min(1).max(80),
+});
+
+export const clientAccessFormSchema = accessRequestFields.extend({
   consentimiento: z
     .boolean()
     .refine((v) => v, "Debes aceptar el tratamiento de datos para enviar la solicitud."),

@@ -1,13 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { accessRequestSchema } from "@/features/access-requests/schema";
+import type { NextRequest } from "next/server";
+
+import { accessRequestReferenceSchema, accessRequestSchema } from "@/features/access-requests/schema";
+import { publicReply, requestIdentity } from "@/lib/api/public-gateway";
+import { getPrivacyVersion } from "@/lib/privacy-version";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const MAX_BYTES = 12_000;
-const PATH = "/api/v1/identity/access-requests";
 
 function reply(message: string, status: number) {
-  return NextResponse.json({ message }, { status, headers: { "Cache-Control": "no-store" } });
+  return publicReply({ message }, status);
 }
 
 export async function POST(request: NextRequest) {
@@ -34,36 +36,33 @@ export async function POST(request: NextRequest) {
   const values = body as Record<string, unknown>;
   // Se rechaza silenciosamente el campo señuelo para no informar al robot.
   if (typeof values.website === "string" && values.website.trim()) {
-    return NextResponse.json(
-      { message: "Solicitud recibida." },
-      { status: 201, headers: { "Cache-Control": "no-store" } },
-    );
+    return publicReply({ message: "Solicitud recibida." }, 201);
   }
   const parsed = accessRequestSchema.safeParse(values);
   if (!parsed.success) return reply("Revisa los datos del formulario y vuelve a intentarlo.", 422);
 
-  const base = process.env.AGROCLOUD_GATEWAY_URL;
-  if (!base)
-    return reply("El servicio de solicitudes no está configurado. Inténtalo más tarde.", 503);
-  let endpoint: URL;
-  try {
-    const url = new URL(base);
-    if (!["https:", "http:"].includes(url.protocol)) throw new Error("Invalid protocol");
-    endpoint = new URL(url.origin + PATH);
-  } catch {
-    return reply("La configuración del servicio no está disponible.", 503);
+  const privacyVersion = getPrivacyVersion();
+  if (!privacyVersion) {
+    return reply("El aviso de privacidad no está disponible en este momento.", 503);
+  }
+  if (parsed.data.privacy_version !== privacyVersion) {
+    return reply("El aviso de privacidad cambió. Recarga el formulario y revísalo nuevamente.", 422);
   }
 
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-      cache: "no-store",
-      signal: AbortSignal.timeout(15000),
-    });
-    if (response.status === 201 || response.status === 200)
-      return reply("Solicitud registrada para revisión.", 201);
+    const response = await requestIdentity("/access-requests", parsed.data);
+    if (!response) return reply("El servicio de solicitudes no está configurado.", 503);
+    if (response.status === 201 || response.status === 200) {
+      const payload = await response.json().catch(() => null);
+      const reference = accessRequestReferenceSchema.safeParse(payload?.reference);
+
+      return publicReply(
+        reference.success
+          ? { message: "Solicitud registrada para revisión.", reference: reference.data }
+          : { message: "Solicitud registrada. No se recibió una referencia." },
+        201,
+      );
+    }
     if (response.status === 422 || response.status === 409)
       return reply(
         "Verifica el RUC y el correo. Es posible que la empresa ya tenga una solicitud o cuenta.",

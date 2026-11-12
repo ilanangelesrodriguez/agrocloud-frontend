@@ -13,9 +13,10 @@ type Props = {
   register: UseFormRegister<AccessFormValues>;
   control: Control<AccessFormValues>;
   errors: FieldErrors<AccessFormValues>;
+  privacyVersion: string;
 };
 
-export function OperationFields({ register, control, errors }: Props) {
+export function OperationFields({ register, control, errors, privacyVersion }: Props) {
   return (
     <FormSection
       description="Describe cómo planeas utilizar AgroCloud."
@@ -61,7 +62,7 @@ export function OperationFields({ register, control, errors }: Props) {
               <NextLink className="text-accent underline underline-offset-2" href="/privacidad">
                 política de privacidad
               </NextLink>{" "}
-              antes de enviar la información.
+              (versión {privacyVersion}) antes de enviar la información.
             </Description>
             <FieldError>{errors.consentimiento?.message}</FieldError>
           </Checkbox>

@@ -29,7 +29,7 @@ const defaultValues: AccessFormValues = {
   consentimiento: false,
 };
 
-export function AccessRequestForm() {
+export function AccessRequestForm({ privacyVersion }: { privacyVersion: string }) {
   const router = useRouter();
   const [website, setWebsite] = useState("");
   const mutation = useSubmitAccessRequest();
@@ -37,6 +37,8 @@ export function AccessRequestForm() {
     register,
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<AccessFormValues>({
     resolver: zodResolver(clientAccessFormSchema),
@@ -48,11 +50,19 @@ export function AccessRequestForm() {
     if (!consentimiento || mutation.isPending) return;
 
     try {
-      const payload: AccessRequestPayload = data;
+      const payload: AccessRequestPayload = {
+        ...data,
+        privacy_accepted: true,
+        privacy_version: privacyVersion,
+      };
 
-      await mutation.mutateAsync({ ...payload, website });
-      toast.success("Solicitud registrada", { description: "Recibimos los datos de tu empresa." });
-      router.push("/solicitud-recibida");
+      const result = await mutation.mutateAsync({ ...payload, website });
+      toast.success("Solicitud enviada", { description: result.message });
+      router.push(
+        result.reference
+          ? "/solicitud-recibida?" + new URLSearchParams({ reference: result.reference })
+          : "/solicitud-recibida",
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo registrar la solicitud.";
 
@@ -67,9 +77,20 @@ export function AccessRequestForm() {
       validationBehavior="aria"
       onSubmit={onSubmit}
     >
-      <CompanyFields control={control} errors={errors} register={register} />
+      <CompanyFields
+        control={control}
+        errors={errors}
+        getValues={getValues}
+        register={register}
+        setValue={setValue}
+      />
       <RepresentativeFields errors={errors} register={register} />
-      <OperationFields control={control} errors={errors} register={register} />
+      <OperationFields
+        control={control}
+        errors={errors}
+        privacyVersion={privacyVersion}
+        register={register}
+      />
       <HoneypotField value={website} onChange={setWebsite} />
       <SubmitActions
         error={mutation.error instanceof Error ? mutation.error.message : null}

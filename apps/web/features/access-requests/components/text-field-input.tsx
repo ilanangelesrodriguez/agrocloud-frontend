@@ -19,6 +19,7 @@ type Props = {
   maxLength?: number;
   inputMode?: "numeric" | "tel";
   prefix?: "ruc" | "email" | "phone";
+  onValueChange?: () => void;
 };
 
 const prefixIcons = {
@@ -38,6 +39,7 @@ export function AccessTextField({
   maxLength,
   inputMode,
   prefix,
+  onValueChange,
 }: Props) {
   const error = errors[name]?.message;
   const inputProps = {
@@ -47,7 +49,7 @@ export function AccessTextField({
     autoComplete,
     maxLength,
     inputMode,
-    ...register(name),
+    ...register(name, { onChange: onValueChange }),
   };
   const PrefixIcon = prefix ? prefixIcons[prefix] : null;
 
