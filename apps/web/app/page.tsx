@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+
+import { Typography } from "@heroui/react";
 import Link from "next/link";
-import { Alert } from "@heroui/react/alert";
-import { Card } from "@heroui/react/card";
-import { Chip } from "@heroui/react/chip";
+import { Alert, Card, Chip } from "@heroui/react";
 import { FiArrowRight, FiArrowUpRight, FiCheck, FiSearch, FiStar } from "react-icons/fi";
 
 import { Faq } from "@/components/faq";
@@ -30,21 +30,24 @@ export default function Home() {
         <div className="site-container relative grid items-center gap-12 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:gap-14 lg:py-28">
           <Reveal className="relative z-10 space-y-6">
             <Eyebrow>Calidad agrícola · Trazabilidad · IA asistida</Eyebrow>
-            <h1 className="max-w-2xl text-4xl font-semibold leading-[1.12] tracking-tight text-foreground sm:text-5xl lg:text-[3.65rem]">
+            <Typography.Heading
+              className="max-w-2xl text-4xl font-semibold leading-[1.12] tracking-tight text-foreground sm:text-5xl lg:text-[3.65rem]"
+              level={1}
+            >
               Del ingreso de la palta al <span className="text-accent">dictamen de calidad.</span>{" "}
               Todo conectado.
-            </h1>
-            <p className="max-w-xl text-base leading-8 text-muted sm:text-lg">
+            </Typography.Heading>
+            <Typography.Paragraph className="max-w-xl text-base leading-8 text-muted sm:text-lg">
               Organiza lotes, muestras, inspecciones y evidencias en un mismo flujo. Tu equipo
               mantiene el control de cada revisión y decisión.
-            </p>
+            </Typography.Paragraph>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/solicitar-acceso" className="site-button site-button-primary">
+              <Link className="site-button site-button-primary" href="/solicitar-acceso">
                 Solicitar acceso empresarial
                 <FiArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
-              <Link href="/funcionalidades" className="site-button site-button-outline">
+              <Link className="site-button site-button-outline" href="/funcionalidades">
                 Conocer funcionalidades
                 <FiArrowRight aria-hidden="true" className="size-4" />
               </Link>
@@ -60,14 +63,14 @@ export default function Home() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.12} className="relative z-10">
+          <Reveal className="relative z-10" delay={0.12}>
             <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-2xl shadow-brand-700/10">
               <Card.Content className="p-4 sm:p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <span className="text-xs font-semibold uppercase tracking-[0.17em] text-accent">
                     Expediente agrícola
                   </span>
-                  <Chip color="accent" variant="soft" size="sm">
+                  <Chip color="accent" size="sm" variant="soft">
                     Flujo ilustrativo
                   </Chip>
                 </div>
@@ -79,12 +82,12 @@ export default function Home() {
                     </span>
                     <FiStar aria-hidden="true" className="size-6 text-[#B7F5A2]" />
                   </div>
-                  <p className="mt-3 text-2xl font-semibold leading-tight">
+                  <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight">
                     Cada etapa con su contexto.
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-white/75">
+                  </Typography.Paragraph>
+                  <Typography.Paragraph className="mt-2 text-sm leading-6 text-white/75">
                     Origen, evidencias y decisiones relacionados en un solo recorrido.
-                  </p>
+                  </Typography.Paragraph>
                   <div aria-hidden="true" className="mt-6 flex items-center gap-1.5">
                     {stages.map((stage, index) => (
                       <div
@@ -113,17 +116,21 @@ export default function Home() {
                         {stage.n}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold">{stage.title}</p>
-                        <p className="text-xs text-muted">{stage.text}</p>
+                        <Typography.Paragraph className="text-sm font-semibold">
+                          {stage.title}
+                        </Typography.Paragraph>
+                        <Typography.Paragraph className="text-xs text-muted">
+                          {stage.text}
+                        </Typography.Paragraph>
                       </div>
                       <FiCheck aria-hidden="true" className="size-4 text-accent" />
                     </div>
                   ))}
                 </div>
 
-                <p className="mt-4 text-center text-[11px] text-muted">
+                <Typography.Paragraph className="mt-4 text-center text-[11px] text-muted">
                   Ejemplo visual del proceso; no representa datos operativos reales.
-                </p>
+                </Typography.Paragraph>
               </Card.Content>
             </Card>
           </Reveal>
@@ -134,27 +141,27 @@ export default function Home() {
         <div className="site-container space-y-10">
           <SectionIntro
             eyebrow="Una plataforma, más claridad"
-            title="El contexto correcto para cada decisión"
             text="La operación agrícola involucra información dispersa. AgroCloud conecta cada registro con la siguiente etapa para facilitar el seguimiento."
+            title="El contexto correcto para cada decisión"
           />
           <div className="grid gap-4 md:grid-cols-3">
             <FeatureCard
-              number="01"
-              title="Lotes con origen identificado"
               description="Relaciona productores, lotes y recepciones para consultar la procedencia y el avance operativo."
+              number="01"
               tag="Operación"
+              title="Lotes con origen identificado"
             />
             <FeatureCard
-              number="02"
-              title="Evidencias vinculadas"
               description="Mantén fotografías e incidencias relacionadas con la inspección, el fruto y su expediente."
+              number="02"
               tag="Inspección"
+              title="Evidencias vinculadas"
             />
             <FeatureCard
-              number="03"
-              title="Decisiones documentadas"
               description="Apoya la revisión humana y conserva el historial necesario para evaluar la calidad del lote."
+              number="03"
               tag="Control de calidad"
+              title="Decisiones documentadas"
             />
           </div>
         </div>
@@ -165,10 +172,10 @@ export default function Home() {
           <div className="space-y-6">
             <SectionIntro
               eyebrow="Cómo funciona"
-              title="Cuatro etapas. Un mismo expediente."
               text="Sigue el recorrido de un lote desde la recepción hasta el dictamen. Cada etapa conserva su relación con las anteriores."
+              title="Cuatro etapas. Un mismo expediente."
             />
-            <Link href="/como-funciona" className="site-text-link">
+            <Link className="site-text-link" href="/como-funciona">
               Explorar el proceso
               <FiArrowRight aria-hidden="true" className="size-4" />
             </Link>
@@ -179,8 +186,12 @@ export default function Home() {
               <Card key={stage.n} className="border border-border bg-background">
                 <Card.Content className="p-5">
                   <span className="font-mono text-sm font-semibold text-accent">{stage.n}</span>
-                  <h3 className="mt-4 font-semibold">{stage.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted">{stage.text}</p>
+                  <Typography.Heading className="mt-4 font-semibold" level={3}>
+                    {stage.title}
+                  </Typography.Heading>
+                  <Typography.Paragraph className="mt-2 text-sm leading-6 text-muted">
+                    {stage.text}
+                  </Typography.Paragraph>
                 </Card.Content>
               </Card>
             ))}
@@ -202,20 +213,20 @@ export default function Home() {
               <span className="flex size-16 items-center justify-center rounded-2xl bg-white/10">
                 <FiSearch aria-hidden="true" className="size-8" />
               </span>
-              <p className="text-2xl font-semibold leading-snug">
+              <Typography.Paragraph className="text-2xl font-semibold leading-snug">
                 La tecnología aporta información. Tu equipo conserva el criterio.
-              </p>
-              <p className="text-sm leading-6 text-[#D3EDE2]">
+              </Typography.Paragraph>
+              <Typography.Paragraph className="text-sm leading-6 text-[#D3EDE2]">
                 Las detecciones son indicios para revisar, no un dictamen automático.
-              </p>
+              </Typography.Paragraph>
             </div>
           </div>
 
           <div className="space-y-5">
             <SectionIntro
               eyebrow="Inteligencia artificial responsable"
-              title="La IA acompaña. La validación humana decide."
               text="Las fotografías pueden analizarse mediante un servicio de detección. Los resultados deben revisarse por personal autorizado antes de incorporarse a una decisión de calidad."
+              title="La IA acompaña. La validación humana decide."
             />
             <Alert status="warning">
               <Alert.Indicator />
@@ -236,8 +247,8 @@ export default function Home() {
         <div className="site-container grid gap-10 lg:grid-cols-[.75fr_1.25fr]">
           <SectionIntro
             eyebrow="Preguntas frecuentes"
-            title="Respuestas antes de comenzar"
             text="Conoce el alcance de la plataforma y cómo solicitar acceso empresarial."
+            title="Respuestas antes de comenzar"
           />
           <Faq />
         </div>

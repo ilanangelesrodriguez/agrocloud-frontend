@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+
+import { Typography } from "@heroui/react";
 import Link from "next/link";
-import { Alert } from "@heroui/react/alert";
-import { Card } from "@heroui/react/card";
-import { Chip } from "@heroui/react/chip";
+import { Alert, Card, Chip } from "@heroui/react";
 import { FiCheck } from "react-icons/fi";
 
 import { CallToAction, PageHero } from "@/components/marketing";
@@ -50,26 +50,33 @@ function PlanCard({
   return (
     <Card className="site-card h-full">
       <Card.Content className="flex h-full flex-col p-7 sm:p-9">
-        <Chip color={highlighted ? "accent" : "default"} variant="soft" size="sm">
+        <Chip color={highlighted ? "accent" : "default"} size="sm" variant="soft">
           {tag}
         </Chip>
-        <h2 className="mt-5 text-2xl font-semibold">{title}</h2>
-        <p className="mt-3 text-sm leading-7 text-muted">{description}</p>
+        <Typography.Heading className="mt-5 text-2xl font-semibold" level={2}>
+          {title}
+        </Typography.Heading>
+        <Typography.Paragraph className="mt-3 text-sm leading-7 text-muted">
+          {description}
+        </Typography.Paragraph>
 
         <div className="mt-7 flex-1 space-y-3">
           {features.map((feature) => (
-            <p key={feature} className="flex items-start gap-2.5 text-sm text-foreground">
+            <Typography.Paragraph
+              key={feature}
+              className="flex items-start gap-2.5 text-sm text-foreground"
+            >
               <FiCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
               {feature}
-            </p>
+            </Typography.Paragraph>
           ))}
         </div>
 
         <Link
-          href={href}
           className={`site-button mt-8 w-full justify-center ${
             highlighted ? "site-button-primary" : "site-button-outline"
           }`}
+          href={href}
         >
           {actionLabel}
         </Link>
@@ -82,34 +89,34 @@ export default function PlansPage() {
   return (
     <>
       <PageHero
+        description="Explora las modalidades de incorporación a AgroCloud. Las condiciones, capacidades, complementos y precios deben confirmarse en una oferta vigente."
         eyebrow="Planes y acceso"
         title="Una plataforma que acompaña tu operación"
-        description="Explora las modalidades de incorporación a AgroCloud. Las condiciones, capacidades, complementos y precios deben confirmarse en una oferta vigente."
       />
 
       <section className="site-section">
         <div className="site-container grid max-w-5xl gap-6 md:grid-cols-2">
           <PlanCard
-            title="Acceso gratuito"
+            highlighted
+            actionLabel="Solicitar acceso"
             description="Modalidad de solicitud empresarial con revisión y aprobación antes de la incorporación."
-            tag="Sujeto a evaluación"
             features={freeFeatures}
             href="/solicitar-acceso"
-            actionLabel="Solicitar acceso"
-            highlighted
+            tag="Sujeto a evaluación"
+            title="Acceso gratuito"
           />
           <PlanCard
-            title="Plan empresarial"
+            actionLabel="Consultar condiciones"
             description="Para organizaciones que requieren evaluar capacidades, usuarios, lotes y servicios adicionales según su operación."
-            tag="Condiciones a confirmar"
             features={businessFeatures}
             href="/contacto"
-            actionLabel="Consultar condiciones"
+            tag="Condiciones a confirmar"
+            title="Plan empresarial"
           />
         </div>
 
         <div className="site-container mt-8 max-w-5xl">
-          <Alert status="warning" className="border border-warning/25">
+          <Alert className="border border-warning/25" status="warning">
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Información sobre precios</Alert.Title>
@@ -124,9 +131,9 @@ export default function PlansPage() {
       </section>
 
       <CallToAction
-        title="Conversemos sobre tu operación"
-        text="Puedes comenzar enviando una solicitud empresarial y compartiendo las necesidades de tu equipo."
         button="Enviar solicitud"
+        text="Puedes comenzar enviando una solicitud empresarial y compartiendo las necesidades de tu equipo."
+        title="Conversemos sobre tu operación"
       />
     </>
   );

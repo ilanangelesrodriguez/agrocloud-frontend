@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+
+import { Typography } from "@heroui/react";
+
 import { PageHero, CallToAction } from "@/components/marketing";
 
 export const metadata: Metadata = {
@@ -44,13 +47,14 @@ const steps = [
     d: "Accede al historial y los registros vinculados a cada etapa.",
   },
 ];
+
 export default function WorkflowPage() {
   return (
     <>
       <PageHero
+        description="Cada etapa se relaciona con el expediente del lote. No necesitas perder el contexto entre registros, evidencias y revisiones."
         eyebrow="El proceso AgroCloud"
         title="Un recorrido claro desde el origen hasta la decisión"
-        description="Cada etapa se relaciona con el expediente del lote. No necesitas perder el contexto entre registros, evidencias y revisiones."
       />
       <section className="site-section">
         <div className="site-container max-w-4xl">
@@ -61,8 +65,12 @@ export default function WorkflowPage() {
                   {step.n}
                 </div>
                 <div className="site-card mb-3 flex-1 p-5 sm:p-7">
-                  <h2 className="text-xl font-semibold">{step.t}</h2>
-                  <p className="mt-2 text-sm leading-7 text-muted">{step.d}</p>
+                  <Typography.Heading className="text-xl font-semibold" level={2}>
+                    {step.t}
+                  </Typography.Heading>
+                  <Typography.Paragraph className="mt-2 text-sm leading-7 text-muted">
+                    {step.d}
+                  </Typography.Paragraph>
                 </div>
               </li>
             ))}
@@ -71,12 +79,14 @@ export default function WorkflowPage() {
       </section>
       <section className="border-y border-border bg-surface py-12">
         <div className="site-container max-w-4xl rounded-2xl border border-border bg-background p-6 sm:p-8">
-          <h2 className="text-xl font-semibold">Roles y responsabilidades</h2>
-          <p className="mt-3 text-sm leading-8 text-muted">
+          <Typography.Heading className="text-xl font-semibold" level={2}>
+            Roles y responsabilidades
+          </Typography.Heading>
+          <Typography.Paragraph className="mt-3 text-sm leading-8 text-muted">
             Recepción, inspección, supervisión, producción y administración participan en diferentes
             etapas. La plataforma determina las operaciones disponibles según los permisos del
             usuario y su empresa.
-          </p>
+          </Typography.Paragraph>
         </div>
       </section>
       <CallToAction />

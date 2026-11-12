@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import type { ThemeProviderProps } from "next-themes";
 
+import { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toast } from "@heroui/react";
 import { MotionConfig } from "motion/react";
 import { ThemeProvider } from "next-themes";
@@ -12,23 +14,35 @@ export interface ProvidersProps {
   themeProps?: ThemeProviderProps;
 }
 
-/**
- * Un único proveedor de apariencia, movimiento accesible y notificaciones
- * por aplicación. No importar ni montar otro Toast.Provider en cada pantalla.
- */
 export function Providers({ children, themeProps }: ProvidersProps) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60_000,
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+          mutations: { retry: 0 },
+        },
+      }),
+  );
+
   return (
     <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
       disableTransitionOnChange
       enableSystem
+      attribute="class"
+      defaultTheme="system"
       {...themeProps}
     >
-      <MotionConfig reducedMotion="user">
-        {children}
-        <Toast.Provider placement="bottom end" maxVisibleToasts={3} />
-      </MotionConfig>
+      <QueryClientProvider client={queryClient}>
+        <MotionConfig reducedMotion="user">
+          {children}
+          <Toast.Provider maxVisibleToasts={3} placement="bottom end" />
+        </MotionConfig>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

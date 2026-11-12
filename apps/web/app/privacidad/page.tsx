@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+
+import { Typography } from "@heroui/react";
 import Link from "next/link";
+
 import { PageHero } from "@/components/marketing";
 export const metadata: Metadata = {
   title: "Privacidad",
@@ -11,9 +14,9 @@ export default function PrivacyPage() {
   return (
     <>
       <PageHero
+        description="Información orientativa sobre los datos que solicita AgroCloud para evaluar nuevas incorporaciones."
         eyebrow="Información legal"
         title="Privacidad y solicitudes empresariales"
-        description="Información orientativa sobre los datos que solicita AgroCloud para evaluar nuevas incorporaciones."
       />
       <section className="site-section">
         <div className="site-container max-w-4xl space-y-7">
@@ -42,17 +45,21 @@ export default function PrivacyPage() {
             ],
           ].map(([title, body]) => (
             <section key={title} className="site-card p-6 sm:p-8">
-              <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="mt-3 text-sm leading-8 text-muted">{body}</p>
+              <Typography.Heading className="text-xl font-semibold" level={2}>
+                {title}
+              </Typography.Heading>
+              <Typography.Paragraph className="mt-3 text-sm leading-8 text-muted">
+                {body}
+              </Typography.Paragraph>
             </section>
           ))}
-          <p className="text-sm leading-7 text-muted">
+          <Typography.Paragraph className="text-sm leading-7 text-muted">
             Para comenzar una solicitud, vuelve al{" "}
-            <Link href="/solicitar-acceso" className="site-text-link">
+            <Link className="site-text-link" href="/solicitar-acceso">
               formulario empresarial
             </Link>
             . No introduzcas datos sensibles no solicitados en la descripción de uso.
-          </p>
+          </Typography.Paragraph>
         </div>
       </section>
     </>

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+
+import { Typography } from "@heroui/react";
 import Link from "next/link";
-import { Card } from "@heroui/react/card";
-import { Chip } from "@heroui/react/chip";
+import { Card, Chip } from "@heroui/react";
 import { FiArrowLeft, FiCheck } from "react-icons/fi";
 
 import { PageHero } from "@/components/marketing";
@@ -20,9 +21,9 @@ export default function AccessRequestPage() {
   return (
     <>
       <PageHero
+        description="Compártenos la información de tu empresa. El equipo responsable revisará la solicitud y continuará el proceso de incorporación cuando corresponda."
         eyebrow="Acceso empresarial"
         title="Conecta la próxima etapa de tu operación"
-        description="Compártenos la información de tu empresa. El equipo responsable revisará la solicitud y continuará el proceso de incorporación cuando corresponda."
       />
 
       <section className="site-section">
@@ -31,7 +32,7 @@ export default function AccessRequestPage() {
             <Card.Content className="grid gap-4 p-5 sm:grid-cols-3">
               {steps.map((step, index) => (
                 <div key={step} className="flex items-center gap-3 text-sm text-muted">
-                  <Chip variant="soft" color="accent" size="sm">
+                  <Chip color="accent" size="sm" variant="soft">
                     {index + 1}
                   </Chip>
                   <FiCheck aria-hidden="true" className="size-4 shrink-0 text-accent" />
@@ -43,12 +44,12 @@ export default function AccessRequestPage() {
 
           <AccessRequestForm />
 
-          <p className="mt-8 text-sm text-muted">
+          <Typography.Paragraph className="mt-8 text-sm text-muted">
             <Link className="site-text-link" href="/">
               <FiArrowLeft aria-hidden="true" className="size-4" />
               Volver al inicio
             </Link>
-          </p>
+          </Typography.Paragraph>
         </div>
       </section>
     </>

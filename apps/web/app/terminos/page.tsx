@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+
+import { Typography } from "@heroui/react";
+
 import { PageHero } from "@/components/marketing";
 export const metadata: Metadata = {
   title: "Términos del servicio",
@@ -9,9 +12,9 @@ export default function TermsPage() {
   return (
     <>
       <PageHero
+        description="Aspectos fundamentales del acceso y uso empresarial de AgroCloud AI."
         eyebrow="Información legal"
         title="Condiciones generales del servicio"
-        description="Aspectos fundamentales del acceso y uso empresarial de AgroCloud AI."
       />
       <section className="site-section">
         <div className="site-container max-w-4xl space-y-7">
@@ -41,8 +44,12 @@ export default function TermsPage() {
             ],
           ].map(([title, body]) => (
             <section key={title} className="site-card p-6 sm:p-8">
-              <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="mt-3 text-sm leading-8 text-muted">{body}</p>
+              <Typography.Heading className="text-xl font-semibold" level={2}>
+                {title}
+              </Typography.Heading>
+              <Typography.Paragraph className="mt-3 text-sm leading-8 text-muted">
+                {body}
+              </Typography.Paragraph>
             </section>
           ))}
         </div>

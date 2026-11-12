@@ -1,10 +1,12 @@
 import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
+
+import { Providers } from "./providers";
+
 import { fontMono, fontSans } from "@/config/fonts";
 import { siteConfig } from "@/config/site";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { Providers } from "./providers";
 
 const metadataBase = new URL(siteConfig.publicUrl || "http://localhost:3001");
 
@@ -35,17 +37,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
+      suppressHydrationWarning
       className={`${fontSans.variable} ${fontMono.variable}`}
       lang="es-PE"
-      suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <Providers>
-          <a href="#contenido" className="site-skip">
+          <a className="site-skip" href="#contenido">
             Saltar al contenido
           </a>
           <SiteHeader />
-          <main id="contenido" className="min-h-[60vh]">
+          <main className="min-h-[60vh]" id="contenido">
             {children}
           </main>
           <SiteFooter />

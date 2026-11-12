@@ -1,3 +1,4 @@
+import { Typography } from "@heroui/react";
 import Link from "next/link";
 import { SiteBrand } from "@/components/site-brand";
 import { portalLoginUrl } from "@/config/site";
@@ -8,13 +9,15 @@ export function SiteFooter() {
       <div className="site-container grid gap-10 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="max-w-sm space-y-4">
           <SiteBrand />
-          <p className="text-sm leading-7 text-muted">
+          <Typography.Paragraph className="text-sm leading-7 text-muted">
             Calidad agrícola y trazabilidad, conectadas desde el origen hasta el dictamen. La IA
             acompaña; el equipo responsable decide.
-          </p>
+          </Typography.Paragraph>
         </div>
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">Explorar</h2>
+          <Typography.Heading level={2} className="text-sm font-semibold text-foreground">
+            Explorar
+          </Typography.Heading>
           <nav aria-label="Enlaces del sitio" className="flex flex-col gap-2 text-sm text-muted">
             <Link className="hover:text-accent" href="/funcionalidades">
               Funcionalidades
@@ -31,7 +34,9 @@ export function SiteFooter() {
           </nav>
         </div>
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-foreground">Información</h2>
+          <Typography.Heading level={2} className="text-sm font-semibold text-foreground">
+            Información
+          </Typography.Heading>
           <nav aria-label="Información y acceso" className="flex flex-col gap-2 text-sm text-muted">
             <Link className="hover:text-accent" href="/contacto">
               Contacto
@@ -54,8 +59,12 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="site-container flex flex-col justify-between gap-2 border-t border-border py-5 text-xs text-muted sm:flex-row">
-        <p>© {new Date().getFullYear()} AgroCloud AI. Plataforma de gestión agrícola.</p>
-        <p>Diseñada para procesos trazables y decisiones documentadas.</p>
+        <Typography.Paragraph>
+          © {new Date().getFullYear()} AgroCloud AI. Plataforma de gestión agrícola.
+        </Typography.Paragraph>
+        <Typography.Paragraph>
+          Diseñada para procesos trazables y decisiones documentadas.
+        </Typography.Paragraph>
       </div>
     </footer>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import { CallToAction, FeatureCard, PageHero, SectionIntro } from "@/components/marketing";
 
 export const metadata: Metadata = {
@@ -63,29 +64,30 @@ const items = [
     "Administración",
   ],
 ];
+
 export default function FunctionalitiesPage() {
   return (
     <>
       <PageHero
+        description="AgroCloud reúne los registros necesarios para seguir un lote desde su origen hasta la decisión final de calidad."
         eyebrow="Funcionalidades"
         title="Toda la operación, con información conectada"
-        description="AgroCloud reúne los registros necesarios para seguir un lote desde su origen hasta la decisión final de calidad."
       />
       <section className="site-section">
         <div className="site-container space-y-10">
           <SectionIntro
             eyebrow="Qué puedes gestionar"
-            title="Módulos orientados al proceso agrícola"
             text="Las funciones visibles dependen del perfil y los permisos de cada usuario."
+            title="Módulos orientados al proceso agrícola"
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {items.map(([number, title, description, tag]) => (
               <FeatureCard
                 key={number}
-                number={number}
-                title={title}
                 description={description}
+                number={number}
                 tag={tag}
+                title={title}
               />
             ))}
           </div>
