@@ -508,6 +508,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/identity/public/ruc/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Consultar información tributaria de un RUC */
+        post: operations["identity_lookupPublicRuc"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity/public/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar planes publicados */
+        get: operations["identity_listPublicOffers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/agricultural/health": {
         parameters: {
             query?: never;
@@ -2061,19 +2095,42 @@ export interface operations {
                     correo: string;
                     telefono: string;
                     uso: string;
+                    /** @enum {boolean} */
+                    privacy_accepted: true;
+                    privacy_version: string;
                 };
             };
         };
         responses: {
-            /** @description Success */
+            /** @description Solicitud registrada */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        message: string;
+                        /** Format: uuid */
+                        reference: string;
+                    };
+                };
+            };
+            /** @description Invalid input or business rule */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Invalid input or business rule */
-            422: {
+            /** @description Límite de solicitudes alcanzado */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description La versión del aviso de privacidad no está configurada */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2150,6 +2207,10 @@ export interface operations {
                     /** @enum {string} */
                     decision: "APROBADA" | "RECHAZADA" | "EN_REVISION";
                     motivo: string;
+                    /** @description Confirmación de un superadministrador cuando el proveedor no verifica un RUC activo y habido. En este caso el motivo debe tener al menos 20 caracteres. */
+                    revision_manual?: boolean;
+                    /** @description Referencia administrativa opcional que se registra al aprobar mediante revisión manual. */
+                    referencia_verificacion?: string | null;
                 };
             };
         };
@@ -2163,6 +2224,13 @@ export interface operations {
             };
             /** @description Invalid input or business rule */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description El plan gratuito no está configurado correctamente */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2194,6 +2262,116 @@ export interface operations {
             };
             /** @description Invalid input or business rule */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_lookupPublicRuc: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    ruc: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Resultado de consulta, incluida indisponibilidad temporal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            ruc: string;
+                            /** @enum {string} */
+                            resultado: "verificado" | "pendiente" | "no_encontrado";
+                            mensaje: string;
+                            razon_social?: string;
+                            estado?: string | null;
+                            condicion?: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description RUC con formato inválido */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Límite de consultas alcanzado */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_listPublicOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ofertas publicadas y vigentes en configuración */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            key: string;
+                            name: string;
+                            /** @enum {string} */
+                            currency: "PEN";
+                            amount_cents: number;
+                            description?: string;
+                            /**
+                             * Format: date
+                             * @description Primer día de vigencia, inclusive, en UTC.
+                             */
+                            valid_from?: string;
+                            /**
+                             * Format: date
+                             * @description Primer día fuera de vigencia, en UTC.
+                             */
+                            valid_until?: string;
+                            duration_days: number;
+                            limits: {
+                                usuarios: number;
+                                lotes: number;
+                                analisis_ia: number;
+                            };
+                            available: boolean;
+                        }[];
+                    };
+                };
+            };
+            /** @description Límite de consultas alcanzado */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Oferta publicada mal configurada */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
