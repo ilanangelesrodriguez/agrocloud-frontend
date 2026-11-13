@@ -1,7 +1,7 @@
 /** All calls go through the gateway; credentials are never exposed to the browser. */
 export async function identityRequest(
   path: string,
-  options: { method?: "GET" | "POST"; body?: unknown; accessToken?: string } = {},
+  options: { method?: "GET" | "POST"; body?: unknown; accessToken?: string; page?: number } = {},
 ): Promise<Response> {
   const configured = process.env.AGROCLOUD_GATEWAY_URL;
   if (!configured) throw new Error("AGROCLOUD_GATEWAY_URL no está configurada.");
@@ -13,6 +13,7 @@ export async function identityRequest(
     throw new Error("Ruta de Identity no autorizada.");
   }
   const url = new URL(`/api/v1/identity${path}`, base.origin);
+  if (options.page !== undefined) url.searchParams.set("page", String(options.page));
   return fetch(url, {
     method: options.method ?? "GET",
     headers: {
