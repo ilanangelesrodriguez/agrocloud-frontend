@@ -66,17 +66,19 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
     .filter(({ permission }) => canManageCompany(user, permission))
     .map(({ href, label, icon }) => ({ href, label, icon }));
 
-  const settings = settingsLinks
+  const settings: NavigationItem[] = settingsLinks
     .filter(({ permission }) => canManageCompany(user, permission))
     .map(({ href, label }) => ({ href, label, icon: settingsIcons[href] }));
 
-  return [
+  const sections: NavigationSection[] = [
     { title: "Operaciones", items: agricultural },
     {
       title: "Cuenta y empresa",
       items: [{ href: "/settings/profile", label: "Mi perfil", icon: "profile" }, ...settings],
     },
-  ].filter((section) => section.items.length > 0);
+  ];
+
+  return sections.filter((section) => section.items.length > 0);
 }
 
 /**
