@@ -525,6 +525,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/identity/billing-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar ofertas administradas */
+        get: operations["identity_listBillingOffers"];
+        put?: never;
+        /** Crear oferta */
+        post: operations["identity_createBillingOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity/billing-offers/{offer}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offer: string;
+            };
+            cookie?: never;
+        };
+        /** Consultar oferta */
+        get: operations["identity_getBillingOffer"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Crear una nueva versión */
+        patch: operations["identity_reviseBillingOffer"];
+        trace?: never;
+    };
+    "/api/v1/identity/subscription/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar ofertas aplicables y orden pendiente */
+        get: operations["identity_listCompanySubscriptionOffers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/identity/public/offers": {
         parameters: {
             query?: never;
@@ -2312,6 +2367,268 @@ export interface operations {
             };
             /** @description Límite de consultas alcanzado */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_listBillingOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operación completada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: Record<string, never>[];
+                    };
+                };
+            };
+            /** @description Acceso restringido */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflicto de versión */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_createBillingOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    key: string;
+                    version?: number;
+                    kind: string;
+                    status: string;
+                    name: string;
+                    amount_cents: number;
+                    public: boolean;
+                    plan?: string;
+                    duration_days?: number;
+                    limits?: Record<string, never>;
+                    quantity?: number;
+                    description?: string;
+                    /** Format: date */
+                    valid_from?: string;
+                    /** Format: date */
+                    valid_until?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Operación completada */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Acceso restringido */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflicto de versión */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_getBillingOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offer: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operación completada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Acceso restringido */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflicto de versión */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_reviseBillingOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offer: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    key?: string;
+                    version: number;
+                    kind: string;
+                    status: string;
+                    name: string;
+                    amount_cents: number;
+                    public: boolean;
+                    plan?: string;
+                    duration_days?: number;
+                    limits?: Record<string, never>;
+                    quantity?: number;
+                    description?: string;
+                    /** Format: date */
+                    valid_from?: string;
+                    /** Format: date */
+                    valid_until?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Operación completada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Acceso restringido */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflicto de versión */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_listCompanySubscriptionOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operación completada */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: Record<string, never>[];
+                        pending_order?: Record<string, never> | null;
+                    };
+                };
+            };
+            /** @description Acceso restringido */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflicto de versión */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Datos inválidos */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

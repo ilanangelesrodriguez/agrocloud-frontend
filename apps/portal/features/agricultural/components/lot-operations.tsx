@@ -13,6 +13,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 
 import { receptionDocuments, receptionInput, receptionResponse, traceabilityResponse } from "../schema";
+import { SamplingForm } from "./sampling-form";
 
 export function LotOperations({ lot }: { lot: Lot }) {
   const { data: actor } = useCurrentUser();
@@ -41,8 +42,12 @@ export function LotOperations({ lot }: { lot: Lot }) {
       <section className="space-y-2 rounded-card border border-border bg-surface p-5">
         <h2 className="text-xl font-semibold">Muestreos</h2>
         {lot.muestreos?.length ? (
-          <ul>{lot.muestreos.map(({ id_muestreo }) => <li key={id_muestreo}>Muestreo #{id_muestreo}</li>)}</ul>
-        ) : <p className="text-muted">Sin muestreos registrados.</p>}
+          <ul>{lot.muestreos.map(({ id_muestreo, metodo, tamano_muestra, estado }) => (
+            <li key={id_muestreo}>{["Muestreo #" + id_muestreo, metodo, tamano_muestra ? tamano_muestra + " frutos" : null, estado].filter(Boolean).join(" · ")}</li>
+          ))}</ul>
+        ) : lot.estado === "RECIBIDO" && reception && actor?.rol?.codigo === "INSPECTOR" && canManageCompany(actor, "muestreos.crear")
+          ? <SamplingForm lotId={lot.id_lote} product={lot.producto} />
+          : <p className="text-muted">Sin muestreos registrados.</p>}
       </section>
       {canManageCompany(actor, "trazabilidad.ver") ? <Traceability id={lot.id_lote} /> : null}
     </div>

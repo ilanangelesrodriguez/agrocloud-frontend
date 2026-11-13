@@ -45,7 +45,11 @@ export async function authorizedIdentity(
       });
       if (upstream.status === 404) return finish(reply({ message: "Registro no encontrado." }, 404));
       if (upstream.status === 409) {
-        return finish(reply({ message: "El registro cambió. Actualiza la página antes de continuar." }, 409));
+        return finish(reply({ message: path.startsWith("/billing-offers")
+          ? "Esta oferta fue modificada por otro administrador. Actualiza la información antes de guardar."
+          : path === "/subscription/orders"
+            ? "Ya existe una orden pendiente o la oferta dejó de aplicar a tu suscripción."
+            : "El registro cambió. Actualiza la página antes de continuar." }, 409));
       }
       if (upstream.status === 422) {
         const payload = await upstream.json().catch(() => null);

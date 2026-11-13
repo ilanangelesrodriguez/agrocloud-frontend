@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 
 import { canManageCompany } from "@/features/company/navigation";
+import { companyOffers, offerKey, orderResponse } from "@/features/plans/schema";
+import { z } from "zod";
 import {
   companyResponseSchema, editCompanySchema, editUserSchema, invitationSchema, inviteUserSchema,
   permissionsSchema, rolesSchema, subscriptionSchema, userSchema, usersSchema,
@@ -12,6 +14,10 @@ type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
   const resource = (await params).resource.join("/");
+  if (resource === "subscription/offers") {
+    return authorizedIdentity(request, (user) => canManageCompany(user, "suscripciones.ver")
+      ? "/subscription/offers" : null, companyOffers);
+  }
   const company = resource === "profile";
   const userId = resource.startsWith("users/") ? resource.slice(6) : "";
   const routes = {
@@ -38,6 +44,14 @@ export async function GET(request: NextRequest, { params }: Context) {
 
 export async function POST(request: NextRequest, { params }: Context) {
   const resource = (await params).resource.join("/");
+  if (resource === "subscription/orders") {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const input = z.object({ offer_key: offerKey }).safeParse(json.body);
+    if (!input.success) return reply({ message: "Selecciona una oferta válida." }, 422);
+    return authorizedIdentity(request, (user) => canManageCompany(user, "suscripciones.gestionar")
+      ? "/subscription/orders" : null, orderResponse, { body: input.data });
+  }
   const invitation = /^users\/([1-9]\d*)\/invitation$/.exec(resource);
   if (resource !== "users" && !(invitation && positiveInteger(invitation[1]))) {
     return reply({ message: "Recurso no encontrado." }, 404);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { samplingRecord } from "./sampling";
 
 const id = z.number().int().positive();
 const text = (max: number) => z.string().trim().max(max).nullable();
@@ -48,7 +49,7 @@ const lot = z.object({
   fecha_llegada_prevista: z.string(),
   productor: producer.nullish(),
   recepcion: reception.nullish(),
-  muestreos: z.array(z.object({ id_muestreo: id })).optional(),
+  muestreos: z.array(samplingRecord).optional(),
 });
 const meta = z.object({ current_page: id, last_page: id });
 export const producerList = z.object({ data: z.array(producer), meta });

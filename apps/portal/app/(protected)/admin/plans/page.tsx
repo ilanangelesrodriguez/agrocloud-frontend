@@ -1,4 +1,4 @@
-import { PublishedPlans } from "@/features/admin/components/published-plans";
+import { OfferList } from "@/features/plans/components/offers";
 export default function Page() {
-  return <PublishedPlans />;
+  return <OfferList />;
 }

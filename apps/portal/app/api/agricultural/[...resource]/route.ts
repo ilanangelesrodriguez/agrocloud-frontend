@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { procedurePage, samplingInput, samplingResponse } from "@/features/agricultural/sampling";
 
 import {
   catalog, catalogType, lotDetail, lotInput, lotList,
@@ -26,6 +27,10 @@ export async function GET(request: NextRequest, { params }: Context) {
   }
   const page = request.nextUrl.searchParams.get("page") ?? "1";
   if (!positiveInteger(page)) return reply({ message: "Página inválida." }, 400);
+  if (resource === "sampling-procedures" && !id) {
+    return authorizedIdentity(request, (user) => canManageCompany(user, "muestreos.crear")
+      ? "/sampling-procedures" : null, procedurePage, { service: "agricultural", page: Number(page) });
+  }
 
   if (resource === "catalogs" && !id) {
     const type = catalogType.safeParse(request.nextUrl.searchParams.get("tipo"));
@@ -76,6 +81,14 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 
 export async function POST(request: NextRequest, context: Context) {
   const [resource, id, action, ...rest] = (await context.params).resource;
+  if (resource === "lots" && id && positiveInteger(id) && action === "samplings" && !rest.length) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const input = samplingInput.safeParse(json.body);
+    if (!input.success) return reply({ message: "Revisa los datos del muestreo." }, 422);
+    return authorizedIdentity(request, (user) => user.rol?.codigo === "INSPECTOR" && canManageCompany(user, "muestreos.crear")
+      ? "/lots/" + id + "/samplings" : null, samplingResponse, { service: "agricultural", body: input.data });
+  }
   if (resource === "lots" && id && positiveInteger(id) && action === "reception" && !rest.length) {
     const json = await parseJson(request);
     if (!json.ok) return json.response;
