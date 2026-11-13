@@ -35,7 +35,7 @@ export const identityUserSchema = z.object({
   id_usuario: z.number().int(),
   id_empresa: z.number().int().nullable(),
   nombre: z.string(),
-  apellido: z.string(),
+  apellido: z.string().nullable(),
   correo: z.string(),
   estado: z.boolean(),
   rol: z.object({ codigo: z.string(), nombre: z.string().optional() }).nullable(),
