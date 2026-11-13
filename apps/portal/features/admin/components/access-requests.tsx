@@ -17,11 +17,19 @@ import {
   toast,
 } from "@heroui/react";
 import Link from "next/link";
+import { EmptyState, FormNotice, LoadingState, StatusBadge } from "@agrocloud/ui";
 
 import { adminRequest } from "../api";
 import { decisionResponseSchema, decisionSchema, requestPageSchema } from "../schema";
 
 import { AdminError, AdminHeading, AdminPagination } from "./admin-ui";
+
+function requestTone(status: string): "success" | "danger" | "info" | "warning" {
+  if (status === "APROBADA") return "success";
+  if (status === "RECHAZADA") return "danger";
+  if (status === "EN_REVISION") return "info";
+  return "warning";
+}
 
 function DecisionForm({ id }: { id: number }) {
   const queryClient = useQueryClient();
@@ -122,7 +130,7 @@ function DecisionForm({ id }: { id: number }) {
           />
         </TextField>
       </fieldset>
-      {error || mutation.error ? <p role="alert">{error || mutation.error?.message}</p> : null}
+      {error || mutation.error ? <FormNotice message={error || mutation.error?.message} /> : null}
       <Button isDisabled={mutation.isPending} type="submit" variant="primary">
         {mutation.isPending ? "Guardando…" : "Guardar decisión"}
       </Button>
@@ -155,7 +163,10 @@ function RequestDetails({ request }: { request: AccessRequest }) {
       <summary className="cursor-pointer">
         <strong>{request.razon_social}</strong>
         <span className="ml-2 text-sm text-muted">
-          {request.ruc} · {request.estado.replaceAll("_", " ")}
+          {request.ruc} ·{" "}
+          <StatusBadge tone={requestTone(request.estado)}>
+            {request.estado.replaceAll("_", " ")}
+          </StatusBadge>
         </span>
       </summary>
       <dl className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -196,7 +207,7 @@ export function AccessRequests() {
     <section className="space-y-4">
       <AdminHeading title="Solicitudes empresariales" />
       {requests.isPending ? (
-        <p role="status">Cargando solicitudes…</p>
+        <LoadingState label="Cargando solicitudes" />
       ) : requests.isError ? (
         <AdminError
           error={requests.error}
@@ -211,7 +222,10 @@ export function AccessRequests() {
               <RequestDetails key={request.id} request={request} />
             ))
           ) : (
-            <p>No hay solicitudes en esta página.</p>
+            <EmptyState
+              title="No hay solicitudes en esta página"
+              description="Las nuevas solicitudes aparecerán aquí cuando se reciban."
+            />
           )}
           <AdminPagination last={requests.data.last_page} page={page} onChange={setPage} />
         </>

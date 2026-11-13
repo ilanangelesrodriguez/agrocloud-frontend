@@ -3,10 +3,12 @@
 import { PageHeader } from "@agrocloud/ui";
 import { Typography } from "@heroui/react";
 
+import { DatesDemo } from "./_components/dates-demo";
+import { FeedbackDemo } from "./_components/feedback-demo";
+import { FormPatternDemo } from "./_components/form-pattern-demo";
+import { FormsDemo } from "./_components/forms-demo";
 import { NavigationDemo } from "./_components/navigation-demo";
 import { OverlaysDemo } from "./_components/overlays-demo";
-import { FormsDemo } from "./_components/forms-demo";
-import { DatesDemo } from "./_components/dates-demo";
 
 export default function AdvancedDesignSystemPage() {
   return (
@@ -24,6 +26,8 @@ export default function AdvancedDesignSystemPage() {
         oscuro, teclado y tamaño móvil. Las zonas con sombra permiten desplazarse sin mostrar la
         barra de scroll nativa.
       </Typography.Paragraph>
+      <FeedbackDemo />
+      <FormPatternDemo />
       <NavigationDemo />
       <OverlaysDemo />
       <FormsDemo />

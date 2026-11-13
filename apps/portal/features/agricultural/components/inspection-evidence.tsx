@@ -5,6 +5,7 @@ import type { z } from "zod";
 
 import { useState } from "react";
 import { Button, Input, Label, ListBox, Select } from "@heroui/react";
+import { EmptyState, FormNotice, LoadingState } from "@agrocloud/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -138,7 +139,7 @@ export function InspectionEvidence({
               </ListBox>
             </Select.Popover>
           </Select>
-          {fruits.isPending ? <p role="status">Cargando frutos…</p> : null}
+          {fruits.isPending ? <LoadingState label="Cargando frutos" /> : null}
           {fruits.isError ? (
             <Button
               type="button"
@@ -173,7 +174,7 @@ export function InspectionEvidence({
           <Button isDisabled={!fruit || upload.isPending} type="submit" variant="primary">
             {upload.isPending ? "Subiendo…" : "Subir fotografía"}
           </Button>
-          {error || upload.error ? <p role="alert">{error || upload.error?.message}</p> : null}
+          {error || upload.error ? <FormNotice message={error || upload.error?.message} /> : null}
         </form>
       ) : canUpload ? (
         <p>Para seleccionar un fruto necesitas acceso al muestreo.</p>
@@ -208,9 +209,12 @@ export function InspectionEvidence({
           ))}
         </ul>
       ) : (
-        <p>Sin evidencias registradas.</p>
+        <EmptyState
+          title="Sin evidencias registradas"
+          description="Las evidencias capturadas aparecerán en esta sección."
+        />
       )}
-      {analyze.error ? <p role="alert">{analyze.error.message}</p> : null}
+      {analyze.error ? <FormNotice message={analyze.error.message} /> : null}
       {current ? (
         // The same-origin route authorizes each request using the session cookie.
         // eslint-disable-next-line @next/next/no-img-element

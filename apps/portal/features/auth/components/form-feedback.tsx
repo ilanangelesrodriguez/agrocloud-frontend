@@ -1,7 +1,6 @@
-"use client";
+import { FormNotice } from "@agrocloud/ui";
 
-import { Alert } from "@heroui/react";
-
+/** Adaptador para conservar los formularios de autenticación existentes. */
 export function FormFeedback({
   message,
   success = false,
@@ -9,14 +8,5 @@ export function FormFeedback({
   message?: string | null;
   success?: boolean;
 }) {
-  if (!message) return null;
-
-  return (
-    <Alert className="my-4" status={success ? "success" : "danger"}>
-      <Alert.Indicator />
-      <Alert.Content>
-        <Alert.Description>{message}</Alert.Description>
-      </Alert.Content>
-    </Alert>
-  );
+  return <FormNotice className="my-4" message={message} success={success} />;
 }

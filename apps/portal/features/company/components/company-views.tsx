@@ -5,6 +5,7 @@ import type { z } from "zod";
 
 import { useState } from "react";
 import { Button, Input, Label, TextField, toast } from "@heroui/react";
+import { ErrorState, FormNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { canManageCompany } from "../navigation";
@@ -91,7 +92,7 @@ function CompanyEditor({
           </TextField>
         ))}
       </fieldset>
-      {error || update.error ? <p role="alert">{error || update.error?.message}</p> : null}
+      {error || update.error ? <FormNotice message={error || update.error?.message} /> : null}
       <div className="flex gap-3">
         <Button isDisabled={update.isPending} type="submit" variant="primary">
           Guardar cambios
@@ -138,21 +139,16 @@ export function CompanyReadView({ view }: { view: "company" | "roles" | "subscri
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold">{title}</h1>
+      <PageHeader title={title} />
       {error ? (
-        <div className="space-y-3">
-          <p role="alert">{error.message}</p>
-          <Button
-            variant="secondary"
-            onPress={() => {
-              void Promise.all(queries.map((query) => query.refetch()));
-            }}
-          >
-            Reintentar
-          </Button>
-        </div>
+        <ErrorState
+          error={error}
+          retry={() => {
+            void Promise.all(queries.map((query) => query.refetch()));
+          }}
+        />
       ) : queries.some((query) => query.isPending) ? (
-        <p role="status">Cargando…</p>
+        <LoadingState label="Cargando información empresarial" />
       ) : null}
       {view === "company" && profile ? (
         <dl className="grid gap-4 rounded-card border border-border bg-surface p-5 sm:grid-cols-2">

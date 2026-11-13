@@ -11,6 +11,14 @@ import { useRouter } from "next/navigation";
 
 import { canManageCompany } from "../navigation";
 import {
+  EmptyState,
+  FormNotice,
+  InlineNotice,
+  LoadingState,
+  PageHeader,
+  StatusBadge,
+} from "@agrocloud/ui";
+import {
   editUserSchema,
   invitationSchema,
   inviteUserSchema,
@@ -30,6 +38,10 @@ function userStatus(user: CompanyUser) {
   return user.estado ? "Activo" : "Inactivo";
 }
 
+function userTone(user: CompanyUser): "success" | "danger" | "info" {
+  return user.pending_activation ? "info" : user.estado ? "success" : "danger";
+}
+
 export function Users({ admin = false }: { admin?: boolean }) {
   const [page, setPage] = useState(1);
   const { data: actor } = useCurrentUser();
@@ -45,16 +57,14 @@ export function Users({ admin = false }: { admin?: boolean }) {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold">
-        {admin ? "Usuarios de plataforma" : "Usuarios de la empresa"}
-      </h1>
+      <PageHeader title={admin ? "Usuarios de plataforma" : "Usuarios de la empresa"} />
       {isGlobal || canManageCompany(actor, "usuarios.crear") ? (
         <Link className="inline-block text-accent underline" href={base + "/new"}>
           Invitar usuario
         </Link>
       ) : null}
       {users.isPending ? (
-        <p role="status">Cargando usuarios…</p>
+        <LoadingState label="Cargando usuarios" />
       ) : users.isError ? (
         <AdminError
           error={users.error}
@@ -75,7 +85,8 @@ export function Users({ admin = false }: { admin?: boolean }) {
                     {user.nombre} {user.apellido}
                   </Link>
                   <p className="break-words text-sm text-muted">
-                    {user.correo} · {user.rol?.nombre ?? "Sin rol"} · {userStatus(user)}
+                    {user.correo} · {user.rol?.nombre ?? "Sin rol"} ·{" "}
+                    <StatusBadge tone={userTone(user)}>{userStatus(user)}</StatusBadge>
                   </p>
                   {admin && user.id_empresa ? (
                     <Link
@@ -89,7 +100,10 @@ export function Users({ admin = false }: { admin?: boolean }) {
               ))}
             </ul>
           ) : (
-            <p>No hay usuarios en esta página.</p>
+            <EmptyState
+              title="No hay usuarios en esta página"
+              description="Los usuarios registrados aparecerán aquí."
+            />
           )}
           <AdminPagination last={users.data.meta.last_page} page={page} onChange={setPage} />
         </>
@@ -113,12 +127,12 @@ export function UserDetails({ id, admin = false }: { id: string; admin?: boolean
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold">Detalle de usuario</h1>
+      <PageHeader title="Detalle de usuario" />
       <Link className="text-accent underline" href={base}>
         Volver a usuarios
       </Link>
       {user.isPending ? (
-        <p role="status">Cargando usuario…</p>
+        <LoadingState label="Cargando usuario" />
       ) : user.isError ? (
         <AdminError
           error={user.error}
@@ -328,7 +342,13 @@ export function UserForm({ user, admin = false }: { user?: CompanyUser; admin?: 
   }
 
   if (!canSubmit) {
-    return <p role="alert">No tienes permiso para gestionar este usuario.</p>;
+    return (
+      <InlineNotice
+        status="warning"
+        title="Acceso restringido"
+        description="No tienes permiso para gestionar este usuario."
+      />
+    );
   }
 
   return (
@@ -383,7 +403,7 @@ export function UserForm({ user, admin = false }: { user?: CompanyUser; admin?: 
             </Select>
             {companies.isError ? (
               <div className="space-y-2">
-                <p role="alert">{companies.error.message}</p>
+                <FormNotice message={companies.error.message} />
                 <Button
                   type="button"
                   variant="secondary"
@@ -406,13 +426,16 @@ export function UserForm({ user, admin = false }: { user?: CompanyUser; admin?: 
               />
             ) : null}
             {companies.data && !companies.data.data.some((item) => item.estado === true) ? (
-              <p>No hay empresas activas en esta página.</p>
+              <EmptyState
+                title="No hay empresas activas"
+                description="Comprueba los permisos y el estado de las empresas disponibles."
+              />
             ) : null}
           </div>
         ) : null}
         {roles.isError ? (
           <div className="space-y-2">
-            <p role="alert">{roles.error.message}</p>
+            <FormNotice message={roles.error.message} />
             <Button
               type="button"
               variant="secondary"
@@ -461,7 +484,7 @@ export function UserForm({ user, admin = false }: { user?: CompanyUser; admin?: 
           </Checkbox>
         ) : null}
       </fieldset>
-      {error || mutation.error ? <p role="alert">{error || mutation.error?.message}</p> : null}
+      {error || mutation.error ? <FormNotice message={error || mutation.error?.message} /> : null}
       <div className="flex flex-wrap gap-2">
         <Button
           isDisabled={mutation.isPending || (!user && (!role || (admin && !companyId)))}

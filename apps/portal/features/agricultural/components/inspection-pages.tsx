@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, toast } from "@heroui/react";
+import { FormNotice, InlineNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { inspectionCreated, inspectionDetail, samplingDetail, samplingFruits } from "../inspection";
@@ -73,14 +74,20 @@ export function SamplingDetails({ id }: { id: string }) {
     );
 
   if (actor && !canManageCompany(actor, "muestreos.ver")) {
-    return <p role="alert">No tienes permiso para consultar muestreos.</p>;
+    return (
+      <InlineNotice
+        status="warning"
+        title="Acceso restringido"
+        description="No tienes permiso para consultar muestreos."
+      />
+    );
   }
 
   return (
     <section className="space-y-5">
-      <h1 className="text-3xl font-semibold">Muestreo #{id}</h1>
+      <PageHeader title={`Muestreo #${id}`} />
       {sample.isPending ? (
-        <p role="status">Cargando muestreo…</p>
+        <LoadingState label="Cargando muestreo" />
       ) : sample.isError ? (
         <AdminError
           error={sample.error}
@@ -130,14 +137,14 @@ export function SamplingDetails({ id }: { id: string }) {
                     : "Iniciar inspección"}
               </Button>
             ) : null}
-            {start.error ? <p role="alert">{start.error.message}</p> : null}
+            {start.error ? <FormNotice message={start.error.message} /> : null}
           </section>
         </div>
       ) : null}
       <section className="space-y-3 rounded-card border border-border bg-surface p-4">
         <h2 className="text-xl font-semibold">Frutos de la muestra</h2>
         {fruits.isPending ? (
-          <p role="status">Cargando frutos…</p>
+          <LoadingState label="Cargando frutos" />
         ) : fruits.isError ? (
           <AdminError
             error={fruits.error}
@@ -180,14 +187,20 @@ export function InspectionDetails({ id }: { id: string }) {
   const value = inspection.data?.data;
 
   if (actor && !canManageCompany(actor, "inspecciones.ver")) {
-    return <p role="alert">No tienes permiso para consultar inspecciones.</p>;
+    return (
+      <InlineNotice
+        status="warning"
+        title="Acceso restringido"
+        description="No tienes permiso para consultar inspecciones."
+      />
+    );
   }
 
   return (
     <section className="space-y-5">
-      <h1 className="text-3xl font-semibold">Inspección #{id}</h1>
+      <PageHeader title={`Inspección #${id}`} />
       {inspection.isPending ? (
-        <p role="status">Cargando inspección…</p>
+        <LoadingState label="Cargando inspección" />
       ) : inspection.isError ? (
         <AdminError
           error={inspection.error}

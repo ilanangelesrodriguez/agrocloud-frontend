@@ -8,6 +8,7 @@ import { Button, Checkbox, Input, Label, ListBox, Select, TextField, toast } fro
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { EmptyState, FormNotice, LoadingState, PageHeader, StatusBadge } from "@agrocloud/ui";
 
 import { kinds, money, offerDetail, offerInput, offerList } from "../schema";
 
@@ -25,6 +26,12 @@ const kindLabels = {
 const listKey = ["admin", "billing-offers"];
 const linkClass = "text-accent underline";
 
+function offerTone(status: Offer["status"]): "success" | "warning" | "neutral" {
+  if (status === "PUBLISHED") return "success";
+  if (status === "DRAFT") return "warning";
+  return "neutral";
+}
+
 export function OfferList() {
   const query = useQuery({
     queryKey: listKey,
@@ -34,12 +41,12 @@ export function OfferList() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold">Ofertas comerciales</h1>
+      <PageHeader title="Ofertas comerciales" />
       <Link className={linkClass} href="/admin/plans/new">
         Crear borrador
       </Link>
       {query.isPending ? (
-        <p role="status">Cargando ofertas…</p>
+        <LoadingState label="Cargando ofertas" />
       ) : query.isError ? (
         <AdminError
           error={query.error}
@@ -55,14 +62,20 @@ export function OfferList() {
                 {offer.terms.name}
               </Link>
               <p>
-                {kindLabels[offer.terms.kind]} · {stateLabels[offer.status]} · Versión{" "}
-                {offer.version} · {money.format(offer.terms.amount_cents / 100)}
+                {kindLabels[offer.terms.kind]} ·{" "}
+                <StatusBadge tone={offerTone(offer.status)}>
+                  {stateLabels[offer.status]}
+                </StatusBadge>{" "}
+                · Versión {offer.version} · {money.format(offer.terms.amount_cents / 100)}
               </p>
             </li>
           ))}
         </ul>
       ) : (
-        <p>No hay ofertas administradas.</p>
+        <EmptyState
+          title="No hay ofertas administradas"
+          description="Crea una nueva oferta para comenzar."
+        />
       )}
     </section>
   );
@@ -75,7 +88,7 @@ export function OfferPage({ offerId, edit = false }: { offerId: string; edit?: b
     retry: false,
   });
 
-  if (query.isPending) return <p role="status">Cargando oferta…</p>;
+  if (query.isPending) return <LoadingState label="Cargando oferta" />;
   if (query.isError)
     return (
       <AdminError
@@ -126,10 +139,11 @@ function OfferSummary({ offer, reload }: { offer: Offer; reload: () => void }) {
       <Link className={linkClass} href="/admin/plans">
         Volver a ofertas
       </Link>
-      <h1 className="text-3xl font-semibold">{terms.name}</h1>
+      <PageHeader title={terms.name} />
       <p>
-        {offer.key} · {kindLabels[terms.kind]} · {stateLabels[offer.status]} · Versión{" "}
-        {offer.version}
+        {offer.key} · {kindLabels[terms.kind]} ·{" "}
+        <StatusBadge tone={offerTone(offer.status)}>{stateLabels[offer.status]}</StatusBadge> ·
+        Versión {offer.version}
       </p>
       <dl className="grid gap-3 rounded-card border border-border bg-surface p-5 sm:grid-cols-2">
         {[
@@ -260,7 +274,7 @@ export function OfferForm({ offer }: { offer?: Offer }) {
       <Link className={linkClass} href={offer ? "/admin/plans/" + offer.key : "/admin/plans"}>
         Cancelar y volver
       </Link>
-      <h1 className="text-3xl font-semibold">{offer ? "Revisar oferta" : "Crear borrador"}</h1>
+      <PageHeader title={offer ? "Revisar oferta" : "Crear borrador"} />
       <form className="space-y-4" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
           {offer ? (
@@ -372,7 +386,7 @@ export function OfferForm({ offer }: { offer?: Offer }) {
             </Checkbox>
           ) : null}
         </fieldset>
-        {error || save.error ? <p role="alert">{error || save.error?.message}</p> : null}
+        {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
         <Button isDisabled={save.isPending} type="submit" variant="primary">
           {save.isPending ? "Guardando…" : offer ? "Guardar nueva versión" : "Crear borrador"}
         </Button>

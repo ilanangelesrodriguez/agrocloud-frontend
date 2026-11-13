@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button, Checkbox, Input, Label, ListBox, Select, TextField, toast } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { EmptyState, FormNotice, LoadingState } from "@agrocloud/ui";
 
 import { procedurePage, samplingInput, samplingResponse } from "../sampling";
 
@@ -97,7 +98,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
     if (result.success) save.mutate(result.data);
   }
 
-  if (query.isPending) return <p role="status">Cargando procedimientos…</p>;
+  if (query.isPending) return <LoadingState label="Cargando procedimientos" />;
   if (query.isError)
     return (
       <AdminError
@@ -132,7 +133,10 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
         </Select.Popover>
       </Select>
       {procedures.length ? null : (
-        <p>No hay procedimientos activos para este producto en esta página.</p>
+        <EmptyState
+          title="No hay procedimientos activos"
+          description="No se encontraron procedimientos aplicables a este producto en la página actual."
+        />
       )}
       <AdminPagination
         last={query.data.meta.last_page}
@@ -191,7 +195,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
               </Checkbox.Content>
             </Checkbox>
           </fieldset>
-          {error || save.error ? <p role="alert">{error || save.error?.message}</p> : null}
+          {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
           <Button isDisabled={!confirmed || save.isPending} type="submit" variant="primary">
             Registrar muestreo
           </Button>

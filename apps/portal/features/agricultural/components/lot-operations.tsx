@@ -7,6 +7,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button, Input, Label, ListBox, Select, TextArea, TextField, toast } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { EmptyState, FormNotice, LoadingState } from "@agrocloud/ui";
 
 import {
   receptionDocuments,
@@ -105,7 +106,7 @@ function Traceability({ id }: { id: number }) {
     <section className="space-y-3 rounded-card border border-border bg-surface p-5">
       <h2 className="text-xl font-semibold">Trazabilidad</h2>
       {query.isPending ? (
-        <p role="status">Cargando eventos…</p>
+        <LoadingState label="Cargando eventos" />
       ) : query.isError ? (
         <AdminError
           error={query.error}
@@ -125,7 +126,10 @@ function Traceability({ id }: { id: number }) {
               ))}
             </ul>
           ) : (
-            <p>Sin eventos en esta página.</p>
+            <EmptyState
+              title="Sin eventos en esta página"
+              description="Cuando se registren eventos de trazabilidad aparecerán aquí."
+            />
           )}
           <AdminPagination last={query.data.last_page} page={page} onChange={setPage} />
         </>
@@ -252,7 +256,7 @@ function ReceptionForm({ lot }: { lot: Lot }) {
           <TextArea className="w-full" maxLength={3000} rows={3} />
         </TextField>
       </fieldset>
-      {error || save.error ? <p role="alert">{error || save.error?.message}</p> : null}
+      {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
       <Button isDisabled={save.isPending} type="submit" variant="primary">
         {save.isPending ? "Guardando…" : "Registrar recepción"}
       </Button>

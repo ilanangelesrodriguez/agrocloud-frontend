@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Alert, Button, Spinner } from "@heroui/react";
+import { ErrorState, LoadingState } from "@agrocloud/ui";
 
 import { AuthRequestError } from "../request";
 import { useCurrentUser } from "../hooks/use-current-user";
@@ -21,39 +21,32 @@ export function AuthGate({ children }: { children: ReactNode }) {
       session.error.status === 401
     ) {
       const next = encodeURIComponent(path);
-
       router.replace(`/login?next=${next}`);
     }
   }, [path, router, session.error, session.isError]);
 
-  if (session.isPending)
+  if (session.isPending) {
     return (
-      <div className="grid min-h-[60vh] place-items-center" role="status">
-        <Spinner size="lg" />
-        <span className="sr-only">Verificando sesión</span>
-      </div>
+      <LoadingState
+        className="mx-auto max-w-md py-16"
+        label="Verificando sesión"
+        variant="spinner"
+      />
     );
-  if (session.isError)
+  }
+
+  if (session.isError) {
     return (
-      <div className="mx-auto max-w-md py-16">
-        <Alert status="danger">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>No se pudo validar el acceso</Alert.Title>
-            <Alert.Description>{session.error.message}</Alert.Description>
-          </Alert.Content>
-        </Alert>
-        <Button
-          className="mt-4"
-          variant="secondary"
-          onPress={() => {
-            void session.refetch();
-          }}
-        >
-          Reintentar
-        </Button>
-      </div>
+      <ErrorState
+        className="mx-auto max-w-md py-16"
+        error={session.error}
+        retry={() => {
+          void session.refetch();
+        }}
+        title="No se pudo validar el acceso"
+      />
     );
+  }
 
   return <>{children}</>;
 }

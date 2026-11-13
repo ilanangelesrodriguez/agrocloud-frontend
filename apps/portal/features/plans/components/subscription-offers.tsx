@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@heroui/react";
+import { EmptyState, FormNotice, InlineNotice, LoadingState } from "@agrocloud/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { companyOffers, money, orderResponse } from "../schema";
@@ -59,9 +60,13 @@ export function SubscriptionOffers() {
       <h2 className="text-xl font-semibold">Ofertas y órdenes</h2>
       <p className="text-sm text-muted">Selecciona una oferta y continúa con el pago seguro.</p>
       {canOrder && !paymentConfigured ? (
-        <p role="alert">El servicio de pago no está disponible en este momento.</p>
+        <InlineNotice
+          title="Pago no disponible"
+          description="El servicio de pago no está disponible en este momento."
+          status="warning"
+        />
       ) : null}
-      {order.error ? <p role="alert">{order.error.message}</p> : null}
+      {order.error ? <FormNotice message={order.error.message} /> : null}
       {checkout && checkoutReady && (order.data || (!order.isPending && !order.error)) ? (
         <PaymentCheckout
           key={checkout.reference}
@@ -72,7 +77,7 @@ export function SubscriptionOffers() {
           }}
         />
       ) : offers.isPending ? (
-        <p role="status">Cargando ofertas…</p>
+        <LoadingState label="Cargando ofertas" />
       ) : offers.isError ? (
         <AdminError
           error={offers.error}
@@ -129,7 +134,10 @@ export function SubscriptionOffers() {
           ))}
         </ul>
       ) : (
-        <p>No hay ofertas aplicables a tu suscripción en este momento.</p>
+        <EmptyState
+          title="Sin ofertas aplicables"
+          description="No hay ofertas disponibles para tu suscripción en este momento."
+        />
       )}
     </section>
   );

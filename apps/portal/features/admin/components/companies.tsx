@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { EmptyState, LoadingState, StatusBadge } from "@agrocloud/ui";
 
 import { adminRequest } from "../api";
 import { companyPageSchema, companyResponseSchema } from "../schema";
@@ -13,6 +14,14 @@ function companyStatus(status: string | boolean) {
   if (typeof status === "string") return status;
 
   return status ? "Activa" : "Inactiva";
+}
+
+function companyTone(status: string | boolean): "success" | "danger" | "warning" {
+  if (typeof status === "boolean") return status ? "success" : "danger";
+  const value = status.toUpperCase();
+  if (["ACTIVA", "ACTIVO", "ACTIVE", "APROBADA"].includes(value)) return "success";
+  if (["INACTIVA", "INACTIVO", "SUSPENDIDA"].includes(value)) return "danger";
+  return "warning";
 }
 
 export function Companies() {
@@ -27,7 +36,7 @@ export function Companies() {
     <section className="space-y-4">
       <AdminHeading title="Empresas registradas" />
       {companies.isPending ? (
-        <p role="status">Cargando empresas…</p>
+        <LoadingState label="Cargando empresas" />
       ) : companies.isError ? (
         <AdminError
           error={companies.error}
@@ -48,13 +57,19 @@ export function Companies() {
                     {company.razon_social}
                   </Link>
                   <p className="text-sm text-muted">
-                    {company.ruc} · {companyStatus(company.estado)}
+                    {company.ruc} ·{" "}
+                    <StatusBadge tone={companyTone(company.estado)}>
+                      {companyStatus(company.estado)}
+                    </StatusBadge>
                   </p>
                 </li>
               ))}
             </ul>
           ) : (
-            <p>No hay empresas en esta página.</p>
+            <EmptyState
+              title="No hay empresas en esta página"
+              description="Cuando se registren empresas aparecerán aquí."
+            />
           )}
           <AdminPagination last={companies.data.meta.last_page} page={page} onChange={setPage} />
         </>
@@ -90,7 +105,7 @@ export function CompanyDetails({ id }: { id: string }) {
         Volver a empresas
       </Link>
       {company.isPending ? (
-        <p role="status">Cargando empresa…</p>
+        <LoadingState label="Cargando empresa" />
       ) : company.isError ? (
         <AdminError
           error={company.error}

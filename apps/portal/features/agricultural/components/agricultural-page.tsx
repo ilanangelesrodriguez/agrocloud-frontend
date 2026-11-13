@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 import { Button, Input, Label, TextField } from "@heroui/react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { EmptyState, FormNotice, InlineNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 import { useRouter } from "next/navigation";
 
 import {
@@ -48,12 +49,19 @@ export function AgriculturalPage({
   const canEdit = resource === "producers" && canManageCompany(actor, "productores.editar");
   const allowed = mode === "new" ? canCreate : mode === "edit" ? canRead && canEdit : canRead;
 
-  if (isPending) return <p role="status">Verificando permisos…</p>;
-  if (!allowed) return <p role="alert">No tienes permiso para esta operación.</p>;
+  if (isPending) return <LoadingState label="Verificando permisos" variant="spinner" />;
+  if (!allowed)
+    return (
+      <InlineNotice
+        status="warning"
+        title="Acceso restringido"
+        description="No tienes permiso para esta operación."
+      />
+    );
 
   return (
     <section className="space-y-5">
-      <h1 className="text-3xl font-semibold">{names[resource]}</h1>
+      <PageHeader title={names[resource]} />
       <nav aria-label={names[resource]} className="flex flex-wrap gap-4">
         <Link className={linkClass} href="/dashboard">
           Panel empresarial
@@ -114,7 +122,7 @@ function RecordList({ resource }: { resource: Resource }) {
     retry: false,
   });
 
-  if (query.isPending) return <p role="status">Cargando…</p>;
+  if (query.isPending) return <LoadingState label="Cargando registros" />;
   if (query.isError)
     return (
       <AdminError
@@ -139,7 +147,10 @@ function RecordList({ resource }: { resource: Resource }) {
           ))}
         </ul>
       ) : (
-        <p>No hay registros en esta página.</p>
+        <EmptyState
+          title="No hay registros en esta página"
+          description="Puedes cambiar de página o registrar un nuevo elemento si tienes permisos."
+        />
       )}
       <AdminPagination last={query.data.meta.last_page} page={page} onChange={setPage} />
     </>
@@ -175,7 +186,7 @@ function RecordDetail({
     retry: false,
   });
 
-  if (query.isPending) return <p role="status">Cargando registro…</p>;
+  if (query.isPending) return <LoadingState label="Cargando registro" />;
   if (query.isError)
     return (
       <AdminError
@@ -329,7 +340,7 @@ function ProducerForm({ producer, canRead }: { producer?: Producer; canRead: boo
           />
         ))}
       </fieldset>
-      {error || save.error ? <p role="alert">{error || save.error?.message}</p> : null}
+      {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
       <Button isDisabled={save.isPending} type="submit" variant="primary">
         {save.isPending ? "Guardando…" : "Guardar productor"}
       </Button>
@@ -417,7 +428,7 @@ function LotForm({ canRead, canReadProducers }: { canRead: boolean; canReadProdu
         }}
       />
     );
-  if (catalogs.some((query) => query.isPending)) return <p role="status">Cargando catálogos…</p>;
+  if (catalogs.some((query) => query.isPending)) return <LoadingState label="Cargando catálogos" />;
 
   return (
     <form className="space-y-4 rounded-card border border-border bg-surface p-5" onSubmit={submit}>
@@ -527,7 +538,7 @@ function LotForm({ canRead, canReadProducers }: { canRead: boolean; canReadProdu
           type="datetime-local"
         />
       </fieldset>
-      {error || save.error ? <p role="alert">{error || save.error?.message}</p> : null}
+      {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
       <Button isDisabled={save.isPending} type="submit" variant="primary">
         {save.isPending ? "Guardando…" : "Guardar lote"}
       </Button>

@@ -1,91 +1,73 @@
 "use client";
 
 import Link from "next/link";
-import { Alert, Card, Typography } from "@heroui/react";
+import { InlineNotice, LoadingState, MetricCard, PageHeader } from "@agrocloud/ui";
 
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany, settingsLinks } from "@/features/company/navigation";
 
 export default function DashboardPage() {
-  const { data: user } = useCurrentUser();
+  const { data: user, isPending } = useCurrentUser();
+
+  if (isPending) {
+    return <LoadingState label="Cargando el panel empresarial" lines={4} />;
+  }
 
   if (!user) return null;
-  if (user.rol?.codigo === "SUPERADMIN")
+
+  if (user.rol?.codigo === "SUPERADMIN") {
     return (
-      <Alert status="warning">
-        <Alert.Indicator />
-        <Alert.Content>
-          <Alert.Description>
-            El administrador global utiliza el{" "}
-            <Link className="underline" href="/admin">
-              panel de plataforma
-            </Link>
-            .
-          </Alert.Description>
-        </Alert.Content>
-      </Alert>
+      <div className="grid gap-3">
+        <InlineNotice
+          description="El administrador global utiliza un panel de plataforma independiente."
+          status="warning"
+          title="Estás en el panel empresarial"
+        />
+        <Link className="font-medium text-accent underline" href="/admin">
+          Ir al panel de plataforma
+        </Link>
+      </div>
     );
+  }
+
+  const links = [
+    { href: "/producers", label: "Productores", permission: "productores.ver" },
+    { href: "/lots", label: "Lotes", permission: "lotes.ver" },
+    ...settingsLinks,
+  ].filter(({ permission }) => canManageCompany(user, permission));
 
   return (
-    <div className="space-y-7">
-      <div>
-        <p className="text-sm font-semibold text-accent">Portal empresarial</p>
-        <Typography.Heading className="mt-2 text-3xl font-semibold" level={1}>
-          Bienvenido, {user.nombre}
-        </Typography.Heading>
-        <Typography.Paragraph className="mt-3 text-muted">
-          Tu sesión está activa. Los módulos agrícolas se conectarán en la siguiente etapa.
-        </Typography.Paragraph>
-      </div>
+    <section className="space-y-7">
+      <PageHeader
+        description="Accede a las operaciones y configuraciones autorizadas para tu empresa."
+        title={`Bienvenido, ${user.nombre}`}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border border-border bg-surface">
-          <Card.Content className="p-6">
-            <p className="text-sm text-muted">Empresa asignada</p>
-            <p className="mt-2 text-xl font-semibold">{user.id_empresa ?? "Sin asignar"}</p>
-          </Card.Content>
-        </Card>
-        <Card className="border border-border bg-surface">
-          <Card.Content className="p-6">
-            <p className="text-sm text-muted">Rol actual</p>
-            <p className="mt-2 text-xl font-semibold">
-              {user.rol?.nombre ?? user.rol?.codigo ?? "Sin rol"}
-            </p>
-          </Card.Content>
-        </Card>
+        <MetricCard title="Empresa asignada" value={user.id_empresa ?? "Sin asignar"} />
+        <MetricCard title="Rol actual" value={user.rol?.nombre ?? user.rol?.codigo ?? "Sin rol"} />
       </div>
-      <nav aria-label="Gestión empresarial" className="flex flex-wrap gap-3">
-        {[
-          { href: "/producers", label: "Productores", permission: "productores.ver" },
-          { href: "/lots", label: "Lotes", permission: "lotes.ver" },
-        ]
-          .filter(({ permission }) => canManageCompany(user, permission))
-          .map(({ href, label }) => (
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">Accesos disponibles</h2>
+        <nav aria-label="Gestión empresarial" className="flex flex-wrap gap-3">
+          {links.map(({ href, label }) => (
             <Link
               key={href}
-              className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-accent"
+              className="inline-flex min-h-10 items-center rounded-control border border-border bg-surface px-4 text-sm font-medium text-accent hover:bg-surface-secondary"
               href={href}
             >
               {label}
             </Link>
           ))}
-        {settingsLinks
-          .filter(({ permission }) => canManageCompany(user, permission))
-          .map(({ href, label }) => (
-            <Link
-              key={href}
-              className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-accent"
-              href={href}
-            >
-              {label}
-            </Link>
-          ))}
-        <Link
-          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-accent"
-          href="/settings/profile"
-        >
-          Mi cuenta
-        </Link>
-      </nav>
-    </div>
+          <Link
+            className="inline-flex min-h-10 items-center rounded-control border border-border bg-surface px-4 text-sm font-medium text-accent hover:bg-surface-secondary"
+            href="/settings/profile"
+          >
+            Mi cuenta
+          </Link>
+        </nav>
+      </div>
+    </section>
   );
 }
