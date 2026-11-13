@@ -1,4 +1,4 @@
-import type { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import type { z } from "zod";
 import type { IdentityUser } from "./schemas";
 
@@ -14,7 +14,7 @@ export function positiveInteger(value: string) {
 export async function authorizedIdentity(
   request: NextRequest,
   authorize: (user: IdentityUser) => string | null,
-  schema: z.ZodType<object>,
+  schema: z.ZodType<object> | "image",
   options: Parameters<typeof identityRequest>[1] & { operation?: string } = {},
 ) {
   const saved = sessionFromRequest(request);
@@ -63,6 +63,16 @@ export async function authorizedIdentity(
         return finish(reply({ message: firstError ?? message ?? "Identity no permite completar esta operación con los datos o el estado actuales." }, 422));
       }
       if (!upstream.ok) return finish(remoteError(upstream.status));
+
+      if (schema === "image") {
+        const mime = upstream.headers.get("content-type")?.split(";")[0];
+        if (!mime || !["image/jpeg", "image/png", "image/webp"].includes(mime) || !upstream.body) {
+          return finish(reply({ message: "La imagen recibida no es válida." }, 502));
+        }
+        return finish(new NextResponse(upstream.body, { headers: {
+          "Content-Type": mime, "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+        } }));
+      }
 
       const parsed = schema.safeParse(await upstream.json().catch(() => null));
       if (!parsed.success) {

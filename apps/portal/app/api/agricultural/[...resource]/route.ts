@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { procedurePage, samplingInput, samplingResponse } from "@/features/agricultural/sampling";
-import { samplingDetail, samplingFruits, inspectionDetail, inspectionCreated } from "@/features/agricultural/inspection";
+import { samplingDetail, samplingFruits, inspectionDetail, inspectionCreated, evidenceResponse, evidenceTypes, evidenceMaxBytes, analysisQueued } from "@/features/agricultural/inspection";
 
 import {
   catalog, catalogType, lotDetail, lotInput, lotList,
@@ -14,6 +14,11 @@ import { parseJson, reply } from "@/lib/auth/route-utils";
 type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
+  const evidencePath = (await params).resource;
+  if (evidencePath.length === 3 && evidencePath[0] === "evidences" && evidencePath[2] === "image" && positiveInteger(evidencePath[1])) {
+    return authorizedIdentity(request, (user) => canManageCompany(user, "inspecciones.ver")
+      ? "/evidences/" + evidencePath[1] + "/image" : null, "image", { service: "agricultural" });
+  }
   const [resource, id, ...rest] = (await params).resource;
   if (resource === "samplings" && id && positiveInteger(id) && rest.length === 1 && rest[0] === "fruits") {
     const page = request.nextUrl.searchParams.get("page") ?? "1";
@@ -102,6 +107,53 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 
 export async function POST(request: NextRequest, context: Context) {
   const [resource, id, action, ...rest] = (await context.params).resource;
+  if (resource === "inspections" && id && positiveInteger(id) && action === "evidences" && !rest.length) {
+    const origin = request.headers.get("origin");
+    if (origin && origin !== request.nextUrl.origin) return reply({ message: "Origen no permitido." }, 403);
+    if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data;")) {
+      return reply({ message: "Envía una fotografía como formulario." }, 415);
+    }
+    const maxBody = evidenceMaxBytes + 64 * 1024;
+    if (Number(request.headers.get("content-length")) > maxBody) return reply({ message: "La fotografía supera los 3 MB." }, 413);
+    const reader = request.body?.getReader();
+    if (!reader) return reply({ message: "Falta la fotografía." }, 400);
+    const chunks: Uint8Array<ArrayBuffer>[] = [];
+    let size = 0;
+    try {
+      for (;;) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        size += chunk.value.byteLength;
+        if (size > maxBody) {
+          await reader.cancel();
+          return reply({ message: "La fotografía supera los 3 MB." }, 413);
+        }
+        chunks.push(new Uint8Array(chunk.value));
+      }
+    } catch {
+      return reply({ message: "No se pudo leer la fotografía." }, 400);
+    }
+    const form = await new Response(new Blob(chunks), {
+      headers: { "Content-Type": request.headers.get("content-type") ?? "" },
+    }).formData().catch(() => null);
+    const fruit = form?.get("id_fruto");
+    const photo = form?.get("foto");
+    if (typeof fruit !== "string" || !positiveInteger(fruit) || !(photo instanceof File) ||
+      !evidenceTypes.includes(photo.type) || photo.size === 0 || photo.size > evidenceMaxBytes) {
+      return reply({ message: "Selecciona un fruto y una imagen JPG, PNG o WebP de hasta 3 MB." }, 422);
+    }
+    const body = new FormData();
+    body.set("id_fruto", fruit);
+    body.set("foto", photo);
+    return authorizedIdentity(request, (user) => user.rol?.codigo === "INSPECTOR" && canManageCompany(user, "inspecciones.capturar")
+      ? "/inspections/" + id + "/evidences" : null, evidenceResponse, { service: "agricultural", body });
+  }
+  if (resource === "evidences" && id && positiveInteger(id) && action === "analyze" && !rest.length) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    return authorizedIdentity(request, (user) => user.rol?.codigo === "INSPECTOR" && canManageCompany(user, "inspecciones.analizar")
+      ? "/evidences/" + id + "/analyze" : null, analysisQueued, { service: "agricultural", body: {} });
+  }
   if (resource === "samplings" && id && positiveInteger(id) && action === "inspections" && !rest.length) {
     return authorizedIdentity(request, (user) => user.rol?.codigo === "INSPECTOR" && canManageCompany(user, "inspecciones.crear")
       ? "/samplings/" + id + "/inspections" : null, inspectionCreated, {

@@ -11,6 +11,7 @@ import { AdminError, AdminPagination } from "@/features/admin/components/admin-u
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 import { inspectionCreated, inspectionDetail, samplingDetail, samplingFruits } from "../inspection";
+import { InspectionEvidence } from "./inspection-evidence";
 
 export function SamplingDetails({ id }: { id: string }) {
   const router = useRouter();
@@ -90,7 +91,7 @@ export function SamplingDetails({ id }: { id: string }) {
         ) : (
           <>
             <ul className="grid gap-2 sm:grid-cols-2">
-              {fruits.data.data.map((fruit) => <li key={fruit.numero} className="rounded-lg bg-surface-secondary px-3 py-2">
+              {fruits.data.data.map((fruit) => <li key={fruit.id} className="rounded-lg bg-surface-secondary px-3 py-2">
                 Fruto #{fruit.numero} · {fruit.codigo ?? "Sin código"}
               </li>)}
             </ul>
@@ -108,6 +109,8 @@ export function InspectionDetails({ id }: { id: string }) {
     enabled: canManageCompany(actor, "inspecciones.ver"),
     queryKey: ["agricultural", "inspections", "detail", id],
     queryFn: ({ signal }) => adminRequest("inspections/" + id, inspectionDetail, { signal }, "agricultural"),
+    refetchInterval: ({ state }) => state.data?.data.evidencias?.some(({ estado_ia }) =>
+      estado_ia === "EN_COLA" || estado_ia === "PROCESANDO") ? 5000 : false,
     retry: false,
   });
   const value = inspection.data?.data;
@@ -134,9 +137,17 @@ export function InspectionDetails({ id }: { id: string }) {
               <h2 className="font-semibold">Dictámenes</h2><p className="text-2xl">{value.dictamenes?.length ?? 0}</p>
             </div>
           </div>
-          <p className="text-sm text-muted">
-            Etapa inicial: consulta y apertura de inspecciones. La carga de evidencias, revisión humana y dictamen se integrarán en la siguiente entrega.
-          </p>
+          <InspectionEvidence
+            key={id}
+            id={id}
+            sampling={value.id_muestreo}
+            photos={value.evidencias ?? []}
+            canReadFruits={canManageCompany(actor, "muestreos.ver")}
+            canUpload={value.estado === "EN_CAPTURA" && (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
+              actor?.rol?.codigo === "INSPECTOR" && canManageCompany(actor, "inspecciones.capturar")}
+            canAnalyze={value.estado === "EN_CAPTURA" && (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
+              actor?.rol?.codigo === "INSPECTOR" && canManageCompany(actor, "inspecciones.analizar")}
+          />
         </>
       ) : null}
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { Button, toast } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,12 +9,9 @@ import { adminRequest } from "@/features/admin/api";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { chargeResponse, money, orderStatus } from "../schema";
 
-type PendingOrder = {
+type CheckoutOrder = {
   reference: string;
-  offer_key: string;
   amount_cents: number;
-  currency: "PEN";
-  kind: "PLAN" | "RENEWAL" | "USER_ADDON" | "LOT_ADDON" | "AI_ADDON";
 };
 
 type CulqiCheckoutInstance = {
@@ -32,12 +29,14 @@ declare global {
 }
 
 const publicKey = process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY ?? "";
-const sandboxEnabled = /^pk_test_[A-Za-z0-9]+$/.test(publicKey);
+export const paymentConfigured = /^pk_test_[A-Za-z0-9]+$/.test(publicKey);
 
 /** Test-only tokenization: card details go exclusively to Culqi, never to AgroCloud. */
-export function SandboxCheckout({ order }: { order: PendingOrder }) {
+export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDone: () => void }) {
   const { data: actor } = useCurrentUser();
   const cache = useQueryClient();
+  const submitted = useRef(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [sdkError, setSdkError] = useState("");
 
@@ -59,13 +58,13 @@ export function SandboxCheckout({ order }: { order: PendingOrder }) {
       "company",
     ),
     onSuccess: () => {
-      toast.success("Cargo enviado. Comprobando la confirmación de Identity.");
+      toast.success("Estamos verificando tu pago.");
       void status.refetch();
     },
     retry: false,
   });
   function openCheckout() {
-    if (!sandboxEnabled || !sdkLoaded || !window.CulqiCheckout || charge.isPending) return;
+    if (!paymentConfigured || !sdkLoaded || !window.CulqiCheckout || submitted.current || !pending || status.isError) return;
     setSdkError("");
     const checkout = new window.CulqiCheckout(publicKey, {
       settings: { title: "AgroCloud", currency: "PEN", amount: order.amount_cents },
@@ -73,6 +72,7 @@ export function SandboxCheckout({ order }: { order: PendingOrder }) {
         email: actor?.correo ?? "", firstName: actor?.nombre ?? "", lastName: actor?.apellido ?? "",
       },
       options: {
+        modal: true,
         lang: "es",
         paymentMethods: {
           tarjeta: true, yape: false, bancaMovil: false,
@@ -82,14 +82,21 @@ export function SandboxCheckout({ order }: { order: PendingOrder }) {
     });
     checkout.culqi = () => {
       const token = checkout.token?.id;
+      if (submitted.current) return;
       if (token && /^tkn_test_[A-Za-z0-9]+$/.test(token)) {
+        submitted.current = true;
+        setAwaitingConfirmation(true);
         checkout.close();
         charge.mutate(token);
       } else {
-        setSdkError(checkout.error?.user_message ?? "Culqi no generó un token de prueba válido.");
+        setSdkError(checkout.error?.user_message ?? "No se pudo autorizar la tarjeta.");
       }
     };
-    checkout.open();
+    try {
+      checkout.open();
+    } catch {
+      setSdkError("No se pudo abrir el formulario de pago. Intenta nuevamente.");
+    }
   }
 
   useEffect(() => {
@@ -103,32 +110,37 @@ export function SandboxCheckout({ order }: { order: PendingOrder }) {
   const pending = status.data?.status === "PENDING";
 
   return (
-    <section className="space-y-3 rounded-card border border-border bg-surface p-5" aria-label="Pago de prueba Culqi">
-      <h3 className="text-lg font-semibold">Pago con Culqi · Sandbox</h3>
+    <section className="space-y-3 rounded-card border border-border bg-surface p-5" aria-label="Pago seguro">
+      <h3 className="text-lg font-semibold">Pago seguro</h3>
       <p className="text-sm text-muted">Orden {order.reference} · {money.format(order.amount_cents / 100)}</p>
       <p className="text-sm" role="status">
-        Estado en Identity: {status.isPending ? "Consultando…" : status.isError ? "No disponible" : status.data?.status ?? "Desconocido"}
+        Estado del pago: {status.isPending ? "Consultando…" : status.isError ? "No disponible" : paid ? "Confirmado" : awaitingConfirmation ? "Por confirmar" : pending ? "Pendiente" : status.data?.status ?? "Desconocido"}
       </p>
-      {!sandboxEnabled ? (
+      {!paymentConfigured ? (
         <p role="status" className="text-sm text-muted">
-          Checkout deshabilitado. Configura NEXT_PUBLIC_CULQI_PUBLIC_KEY con una llave pública pk_test_… para usar el sandbox.
+          El servicio de pago no está disponible en este momento.
         </p>
       ) : (
         <>
           <Script src="https://js.culqi.com/checkout-js" strategy="afterInteractive" onReady={() => setSdkLoaded(true)}
             onError={() => setSdkError("No se pudo cargar Culqi Checkout.")} />
-          <Button type="button" variant="primary" isDisabled={!sdkLoaded || !pending || charge.isPending}
+          <Button type="button" variant="primary" isDisabled={!sdkLoaded || !pending || status.isError || awaitingConfirmation}
             onPress={openCheckout}>
-            {charge.isPending ? "Procesando…" : "Pagar con tarjeta de prueba"}
+            {charge.isPending ? "Procesando…" : "Pagar " + money.format(order.amount_cents / 100)}
           </Button>
         </>
       )}
-      {paid ? <p className="text-sm">Pago aplicado. Comprueba los cupos de tu suscripción.</p> : null}
+      {paid ? (
+        <>
+          <p className="text-sm">Pago confirmado. Los cupos de tu suscripción se actualizaron.</p>
+          <Button type="button" variant="secondary" onPress={onDone}>Volver a las ofertas</Button>
+        </>
+      ) : null}
       {status.isError ? <p role="alert" className="text-sm">No se pudo consultar el estado de la orden. No repitas el cobro hasta verificarlo.</p> : null}
       {charge.error ? <p role="alert" className="text-sm">{charge.error.message} Revisa el estado de la orden antes de volver a intentar.</p> : null}
       {sdkError ? <p role="alert" className="text-sm">{sdkError}</p> : null}
       <p className="text-xs text-muted">
-        Solo tarjetas de prueba. No se aceptan datos de tarjeta en AgroCloud. El cargo no activa el plan hasta que Identity reciba el evento firmado de Billing.
+        Procesamiento seguro mediante Culqi. En este entorno los pagos son simulados.
       </p>
     </section>
   );

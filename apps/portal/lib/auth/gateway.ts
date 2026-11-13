@@ -15,15 +15,16 @@ export async function identityRequest(
   const url = new URL(`/api/v1/${options.service ?? "identity"}${path}`, base.origin);
   if (options.page !== undefined) url.searchParams.set("page", String(options.page));
   if (options.catalogType) url.searchParams.set("tipo", options.catalogType);
+  const multipart = options.body instanceof FormData ? options.body : undefined;
   return fetch(url, {
     method: options.method ?? "GET",
     headers: {
       Accept: "application/json",
       ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
-      ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(options.body !== undefined && !multipart ? { "Content-Type": "application/json" } : {}),
       ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
     },
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: multipart ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
     signal: AbortSignal.timeout(15_000),
     cache: "no-store",
     redirect: "error",

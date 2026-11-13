@@ -1,6 +1,13 @@
 import { z } from "zod";
 
 const id = z.number().int().positive();
+export const evidence = z.object({
+  id_evidencia: id, id_fruto: id, estado_ia: z.string().nullish(), pertinencia: z.string().nullish(),
+});
+export const evidenceResponse = z.object({ data: evidence });
+export const analysisQueued = z.object({ queued: z.literal(true) });
+export const evidenceTypes = ["image/jpeg", "image/png", "image/webp"];
+export const evidenceMaxBytes = 3 * 1024 * 1024;
 const inspection = z.object({
   id_inspeccion: id,
   id_muestreo: id,
@@ -20,7 +27,7 @@ const sample = z.object({
 export const samplingDetail = z.object({ data: sample });
 export const samplingFruits = z.object({
   data: z.array(z.object({
-    id_fruto: id.optional(), id_fruto_muestra: id.optional(),
+    id,
     numero: id,
     codigo: z.string().nullish(),
   })),
@@ -29,9 +36,7 @@ export const samplingFruits = z.object({
 export const inspectionDetail = z.object({
   data: inspection.extend({
     observaciones: z.string().nullish(),
-    evidencias: z.array(z.object({
-      id_evidencia: id, estado_ia: z.string().nullish(),
-    })).optional(),
+    evidencias: z.array(evidence).optional(),
     hallazgos: z.array(z.object({ id_hallazgo: id })).optional(),
     dictamenes: z.array(z.object({ id_dictamen: id, decision: z.string().nullish() })).optional(),
     muestreo: sample.omit({ inspecciones: true }).optional(),
