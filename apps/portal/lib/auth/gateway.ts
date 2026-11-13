@@ -1,7 +1,7 @@
 /** All calls go through the gateway; credentials are never exposed to the browser. */
 export async function identityRequest(
   path: string,
-  options: { method?: "GET" | "POST"; body?: unknown; accessToken?: string; page?: number } = {},
+  options: { method?: "GET" | "POST" | "PATCH"; body?: unknown; accessToken?: string; page?: number } = {},
 ): Promise<Response> {
   const configured = process.env.AGROCLOUD_GATEWAY_URL;
   if (!configured) throw new Error("AGROCLOUD_GATEWAY_URL no está configurada.");

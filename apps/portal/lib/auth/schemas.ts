@@ -60,6 +60,6 @@ export function safeNext(value: string | null | undefined, fallback: string): st
   if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\r\n?#]/.test(value)) {
     return fallback;
   }
-  if (/^\/(?:dashboard|admin|settings\/profile)(?:\/.*)?$/.test(value)) return value;
+  if (/^\/(?:dashboard|admin|settings\/(?:profile|company|users|roles|subscription))(?:\/.*)?$/.test(value)) return value;
   return fallback;
 }

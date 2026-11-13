@@ -1,7 +1,7 @@
 import type { z } from "zod";
 
-export async function adminRequest<T>(path: string, schema: z.ZodType<T>, options?: RequestInit) {
-  const response = await fetch("/api/admin/" + path, { ...options, cache: "no-store" });
+export async function adminRequest<T>(path: string, schema: z.ZodType<T>, options?: RequestInit, scope: "admin" | "company" = "admin") {
+  const response = await fetch("/api/" + scope + "/" + path, { ...options, cache: "no-store" });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     throw new Error(typeof payload?.message === "string" ? payload.message : "No se pudo completar la operación.");

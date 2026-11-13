@@ -5,7 +5,7 @@ import type { AccessRequest } from "../schema";
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, toast } from "@heroui/react";
+import { Button, Checkbox, Input, Label, ListBox, Select, TextArea, TextField, toast } from "@heroui/react";
 import Link from "next/link";
 
 import { adminRequest } from "../api";
@@ -53,33 +53,37 @@ function DecisionForm({ id }: { id: number }) {
     <form className="mt-4 space-y-4 border-t border-border pt-4" onSubmit={submit}>
       <fieldset className="grid gap-3" disabled={mutation.isPending}>
         <legend className="mb-2 font-semibold">Registrar decisión</legend>
-        <label className="grid gap-1">
-          Decisión
-          <select className="rounded-field border border-border bg-surface p-2" value={decision} onChange={(event) => setDecision(event.target.value)}>
-            <option value="EN_REVISION">En revisión</option>
-            <option value="APROBADA">Aprobar</option>
-            <option value="RECHAZADA">Rechazar</option>
-          </select>
-        </label>
+        <Select isDisabled={mutation.isPending} value={decision}
+          onChange={(value) => { if (typeof value === "string") setDecision(value); }}>
+          <Label>Decisión</Label>
+          <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
+          <Select.Popover>
+            <ListBox aria-label="Decisiones">
+              <ListBox.Item id="EN_REVISION" textValue="En revisión">En revisión</ListBox.Item>
+              <ListBox.Item id="APROBADA" textValue="Aprobar">Aprobar</ListBox.Item>
+              <ListBox.Item id="RECHAZADA" textValue="Rechazar">Rechazar</ListBox.Item>
+            </ListBox>
+          </Select.Popover>
+        </Select>
         {decision === "APROBADA" ? (
           <>
             <p className="text-sm text-muted">Identity verifica el RUC al aprobar. Si no confirma que esté activo y habido, debes justificar la revisión manual.</p>
-            <label className="flex items-center gap-2">
-              <input checked={manual} type="checkbox" onChange={(event) => setManual(event.target.checked)} />
-              Confirmo que realicé una revisión manual
-            </label>
+            <Checkbox isDisabled={mutation.isPending} isSelected={manual} onChange={setManual}>
+              <Checkbox.Control><Checkbox.Indicator /></Checkbox.Control>
+              <Checkbox.Content>Confirmo que realicé una revisión manual</Checkbox.Content>
+            </Checkbox>
             {manual ? (
-              <label className="grid gap-1">
-                Referencia de verificación (opcional)
-                <input className="rounded-field border border-border bg-surface p-2" maxLength={255} name="referencia" />
-              </label>
+              <TextField isDisabled={mutation.isPending} name="referencia">
+                <Label>Referencia de verificación (opcional)</Label>
+                <Input maxLength={255} />
+              </TextField>
             ) : null}
           </>
         ) : null}
-        <label className="grid gap-1">
-          Motivo
-          <textarea required className="rounded-field border border-border bg-surface p-2" maxLength={2000} minLength={decision === "APROBADA" && manual ? 20 : 1} name="motivo" rows={3} />
-        </label>
+        <TextField isDisabled={mutation.isPending} isRequired name="motivo">
+          <Label>Motivo</Label>
+          <TextArea maxLength={2000} minLength={decision === "APROBADA" && manual ? 20 : 1} rows={3} />
+        </TextField>
       </fieldset>
       {error || mutation.error ? <p role="alert">{error || mutation.error?.message}</p> : null}
       <Button isDisabled={mutation.isPending} type="submit" variant="primary">
