@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 
 import { canManageCompany } from "@/features/company/navigation";
 import {
-  companyResponseSchema, editUserSchema, invitationSchema, inviteUserSchema,
+  companyResponseSchema, editCompanySchema, editUserSchema, invitationSchema, inviteUserSchema,
   permissionsSchema, rolesSchema, subscriptionSchema, userSchema, usersSchema,
 } from "@/features/company/schema";
 import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-identity";
@@ -69,6 +69,17 @@ export async function POST(request: NextRequest, { params }: Context) {
 
 export async function PATCH(request: NextRequest, { params }: Context) {
   const [resource, id, ...rest] = (await params).resource;
+  if (resource === "profile" && id === undefined) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const parsed = editCompanySchema.safeParse(json.body);
+    if (!parsed.success) return reply({ message: "Revisa los datos de la empresa." }, 422);
+
+    return authorizedIdentity(request, (user) => canManageCompany(user, "empresa.editar")
+      ? "/companies/" + user.id_empresa : null, companyResponseSchema, {
+      body: parsed.data, method: "PATCH", operation: "company.profile.update",
+    });
+  }
   if (resource !== "users" || !id || rest.length || !positiveInteger(id)) {
     return reply({ message: "Usuario no encontrado." }, 404);
   }

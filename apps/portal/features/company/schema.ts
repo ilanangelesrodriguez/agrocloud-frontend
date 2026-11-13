@@ -37,6 +37,14 @@ export const subscriptionSchema = z.object({
   })),
 });
 export const invitationSchema = z.object({ message: z.string() });
+export const editCompanySchema = z.object({
+  razon_social: z.string().trim().min(1).max(200),
+  nombre_comercial: z.string().trim().min(1).max(150),
+  tipo_empresa: z.string().trim().max(80).nullable(),
+  direccion: z.string().trim().max(250).nullable(),
+  telefono: z.string().trim().max(30).nullable(),
+  correo: z.email().max(255).nullable(),
+}).partial().refine((value) => Object.keys(value).length > 0, "Modifica al menos un dato.");
 export const inviteUserSchema = z.object({
   nombre: z.string().trim().min(1, "Ingresa el nombre.").max(150),
   apellido: z.string().trim().max(150).nullable(),
@@ -45,6 +53,7 @@ export const inviteUserSchema = z.object({
   cargo: z.string().trim().max(120).nullable(),
   telefono: z.string().trim().max(30).nullable(),
 });
-export const editUserSchema = z.object({ id_rol: id.optional(), estado: z.boolean().optional() })
-  .refine((value) => value.id_rol !== undefined || value.estado !== undefined, "Selecciona un cambio.");
+export const editUserSchema = inviteUserSchema.omit({ correo: true }).partial()
+  .extend({ estado: z.boolean().optional() })
+  .refine((value) => Object.values(value).some((field) => field !== undefined), "Selecciona un cambio.");
 export type CompanyUser = z.infer<typeof user>;

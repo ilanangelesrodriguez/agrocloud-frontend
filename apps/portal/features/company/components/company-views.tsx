@@ -1,12 +1,76 @@
 "use client";
 
-import { Button } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
+import type { FormEvent } from "react";
+import type { z } from "zod";
+
+import { useState } from "react";
+import { Button, Input, Label, TextField, toast } from "@heroui/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { adminRequest } from "@/features/admin/api";
-import { companyResponseSchema, permissionsSchema, rolesSchema, subscriptionSchema } from "../schema";
+import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+
+import { canManageCompany } from "../navigation";
+import { companyResponseSchema, editCompanySchema, permissionsSchema, rolesSchema, subscriptionSchema } from "../schema";
+
+const editableFields = [
+  ["razon_social", "Razón social", 200], ["nombre_comercial", "Nombre comercial", 150],
+  ["tipo_empresa", "Tipo de empresa", 80], ["direccion", "Dirección", 250],
+  ["correo", "Correo", 255], ["telefono", "Teléfono", 30],
+] as const;
+
+function CompanyEditor({ profile, close }: { profile: z.infer<typeof companyResponseSchema>["data"]; close: () => void }) {
+  const cache = useQueryClient();
+  const [error, setError] = useState("");
+  const update = useMutation({
+    mutationFn: (input: z.infer<typeof editCompanySchema>) => adminRequest("profile", companyResponseSchema, {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input),
+    }, "company"),
+    onSuccess: (result) => {
+      cache.setQueryData(["company", "profile"], result);
+      toast.success("Datos de la empresa actualizados");
+      close();
+    },
+    retry: false,
+  });
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (update.isPending) return;
+    const data = new FormData(event.currentTarget);
+    const changes = editableFields.flatMap(([name]) => {
+      const value = String(data.get(name) ?? "").trim();
+      if (value === (profile[name] ?? "")) return [];
+      return [[name, value || null]];
+    });
+    const parsed = editCompanySchema.safeParse(Object.fromEntries(changes));
+    setError(parsed.success ? "" : parsed.error.issues[0]?.message ?? "Revisa los datos.");
+    if (parsed.success) update.mutate(parsed.data);
+  }
+
+  return (
+    <form className="space-y-4 rounded-card border border-border bg-surface p-5" onSubmit={submit}>
+      <fieldset className="grid gap-4 sm:grid-cols-2" disabled={update.isPending}>
+        <legend className="mb-3 font-semibold">Editar datos de la empresa</legend>
+        {editableFields.map(([name, label, max]) => (
+          <TextField key={name} defaultValue={profile[name] ?? ""} isRequired={name === "razon_social" || name === "nombre_comercial"} name={name} type={name === "correo" ? "email" : "text"}>
+            <Label>{label}</Label>
+            <Input className="w-full" maxLength={max} />
+          </TextField>
+        ))}
+      </fieldset>
+      {error || update.error ? <p role="alert">{error || update.error?.message}</p> : null}
+      <div className="flex gap-3">
+        <Button isDisabled={update.isPending} type="submit" variant="primary">Guardar cambios</Button>
+        <Button isDisabled={update.isPending} type="button" variant="secondary" onPress={close}>Cancelar</Button>
+      </div>
+    </form>
+  );
+}
 
 export function CompanyReadView({ view }: { view: "company" | "roles" | "subscription" }) {
+  const { data: actor } = useCurrentUser();
+  const [editing, setEditing] = useState(false);
   const title = { company: "Mi empresa", roles: "Roles y permisos", subscription: "Suscripción" }[view];
   const company = useQuery({
     queryKey: ["company", "profile"],
@@ -53,6 +117,10 @@ export function CompanyReadView({ view }: { view: "company" | "roles" | "subscri
             <div key={label}><dt className="text-sm text-muted">{label}</dt><dd className="break-words">{value ?? "—"}</dd></div>
           ))}
         </dl>
+      ) : null}
+      {view === "company" && profile && canManageCompany(actor, "empresa.editar") ? (
+        editing ? <CompanyEditor profile={profile} close={() => setEditing(false)} /> :
+          <Button variant="secondary" onPress={() => setEditing(true)}>Editar empresa</Button>
       ) : null}
       {view === "roles" && roles.data ? (
         <>

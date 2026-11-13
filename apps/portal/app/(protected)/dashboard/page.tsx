@@ -21,6 +21,14 @@ export default function DashboardPage() {
         <Card className="border border-border bg-surface"><Card.Content className="p-6"><p className="text-sm text-muted">Rol actual</p><p className="mt-2 text-xl font-semibold">{user.rol?.nombre ?? user.rol?.codigo ?? "Sin rol"}</p></Card.Content></Card>
       </div>
       <nav aria-label="Gestión empresarial" className="flex flex-wrap gap-3">
+        {[
+          { href: "/producers", label: "Productores", permission: "productores.ver" },
+          { href: "/lots", label: "Lotes", permission: "lotes.ver" },
+        ].filter(({ permission }) => canManageCompany(user, permission)).map(({ href, label }) => (
+          <Link key={href} className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-accent" href={href}>
+            {label}
+          </Link>
+        ))}
         {settingsLinks.filter(({ permission }) => canManageCompany(user, permission)).map(({ href, label }) => (
           <Link key={href} className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-accent" href={href}>
             {label}

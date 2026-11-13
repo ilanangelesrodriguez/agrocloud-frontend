@@ -25,6 +25,7 @@ export function Users() {
   const [page, setPage] = useState(1);
   const { data: actor } = useCurrentUser();
   const users = useQuery({
+    enabled: canManageCompany(actor, "usuarios.ver"),
     queryKey: ["company", "users", page],
     queryFn: ({ signal }) => adminRequest("users?page=" + page, usersSchema, { signal }, "company"),
     retry: false,
@@ -62,6 +63,7 @@ export function Users() {
 export function UserDetails({ id }: { id: string }) {
   const { data: actor } = useCurrentUser();
   const user = useQuery({
+    enabled: canManageCompany(actor, "usuarios.ver"),
     queryKey: ["company", "user", id],
     queryFn: ({ signal }) => adminRequest("users/" + id, userSchema, { signal }, "company"),
     retry: false,
@@ -85,7 +87,7 @@ export function UserDetails({ id }: { id: string }) {
             {record.telefono ? <div><dt className="inline font-semibold">Teléfono </dt><dd className="inline">{record.telefono}</dd></div> : null}
           </dl>
           {canManageCompany(actor, "usuarios.editar") ? (
-            <UserForm key={JSON.stringify([id, record.rol?.id_rol, record.estado, record.pending_activation])} user={record} />
+            <UserForm key={JSON.stringify([id, record.rol?.id_rol, record.estado, record.pending_activation, record.nombre, record.apellido, record.telefono, record.cargo])} user={record} />
           ) : null}
         </div>
       ) : null}
@@ -93,11 +95,11 @@ export function UserDetails({ id }: { id: string }) {
   );
 }
 
-function UserField({ name, label, maxLength, required = false, type = "text" }: {
-  name: string; label: string; maxLength: number; required?: boolean; type?: "text" | "email" | "tel";
+function UserField({ name, label, maxLength, required = false, type = "text", initial }: {
+  name: string; label: string; maxLength: number; required?: boolean; type?: "text" | "email" | "tel"; initial?: string | null;
 }) {
   return (
-    <TextField isRequired={required} name={name} type={type}>
+    <TextField defaultValue={initial ?? ""} isRequired={required} name={name} type={type}>
       <Label>{label}</Label>
       <Input className="w-full" maxLength={maxLength} />
     </TextField>
@@ -145,18 +147,29 @@ export function UserForm({ user }: { user?: CompanyUser }) {
     if (mutation.isPending) return;
     const data = new FormData(event.currentTarget);
     const optional = (field: string) => String(data.get(field) ?? "").trim() || null;
+    const profile = {
+      nombre: String(data.get("nombre") ?? "").trim(),
+      apellido: optional("apellido"),
+      telefono: optional("telefono"),
+      cargo: optional("cargo"),
+    };
+    const changedProfile = user ? Object.fromEntries(
+      Object.entries(profile).filter(([key, value]) => value !== (user[key as keyof typeof profile] ?? null)),
+    ) : profile;
     const parsed = user ? editUserSchema.safeParse({
+      ...changedProfile,
       id_rol: role !== null && role !== user.rol?.id_rol ? role : undefined,
       estado: canEditStatus && active !== user.estado ? active : undefined,
     }) : inviteUserSchema.safeParse({
-      nombre: data.get("nombre"), apellido: optional("apellido"),
+      ...profile,
       correo: String(data.get("correo") ?? "").trim(), id_rol: role,
-      cargo: optional("cargo"), telefono: optional("telefono"),
     });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Revisa los datos.");
       return;
     }
+    if (user?.estado && "estado" in parsed.data && parsed.data.estado === false &&
+      !window.confirm("¿Desactivar esta cuenta? Se cerrarán sus sesiones y no podrá iniciar sesión hasta reactivarla.")) return;
     setError("");
     setAction("save");
     mutation.mutate({ kind: "save", body: parsed.data });
@@ -170,15 +183,13 @@ export function UserForm({ user }: { user?: CompanyUser }) {
     <form className="grid gap-4" onSubmit={submit}>
       <fieldset className="grid gap-4" disabled={mutation.isPending}>
         <legend className="mb-2 font-semibold">{user ? "Editar usuario" : "Datos de la invitación"}</legend>
-        {user ? null : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <UserField required label="Nombre" maxLength={150} name="nombre" />
-            <UserField label="Apellido" maxLength={150} name="apellido" />
-            <UserField required label="Correo" maxLength={255} name="correo" type="email" />
-            <UserField label="Teléfono" maxLength={30} name="telefono" type="tel" />
-            <UserField label="Cargo" maxLength={120} name="cargo" />
-          </div>
-        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+            <UserField required initial={user?.nombre} label="Nombre" maxLength={150} name="nombre" />
+            <UserField initial={user?.apellido} label="Apellido" maxLength={150} name="apellido" />
+            {user ? null : <UserField required label="Correo" maxLength={255} name="correo" type="email" />}
+            <UserField initial={user?.telefono} label="Teléfono" maxLength={30} name="telefono" type="tel" />
+            <UserField initial={user?.cargo} label="Cargo" maxLength={120} name="cargo" />
+        </div>
         {roles.isError ? (
           <div className="space-y-2">
             <p role="alert">{roles.error.message}</p>

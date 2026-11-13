@@ -15,7 +15,7 @@ export async function authorizedIdentity(
   request: NextRequest,
   authorize: (user: IdentityUser) => string | null,
   schema: z.ZodType<object>,
-  options: { page?: number; body?: object; method?: "GET" | "POST" | "PATCH"; operation?: string } = {},
+  options: Parameters<typeof identityRequest>[1] & { operation?: string } = {},
 ) {
   const saved = sessionFromRequest(request);
   if (!saved) return remoteError(401);
@@ -38,8 +38,8 @@ export async function authorizedIdentity(
       if (!path) return finish(remoteError(403));
 
       const upstream = await identityRequest(path, {
+        ...options,
         accessToken,
-        page: options.page,
         method: options.method ?? (options.body ? "POST" : "GET"),
         body: options.body,
       });
@@ -54,7 +54,9 @@ export async function authorizedIdentity(
           ? Object.values(errors).flat().find((value): value is string => typeof value === "string")
           : undefined;
 
-        return finish(reply({ message: firstError ?? "Identity no permite completar esta operación con los datos o el estado actuales." }, 422));
+        const message = payload?.message === "Producer RUC already exists in this company."
+          ? "Ya existe un productor con este RUC en tu empresa." : undefined;
+        return finish(reply({ message: firstError ?? message ?? "Identity no permite completar esta operación con los datos o el estado actuales." }, 422));
       }
       if (!upstream.ok) return finish(remoteError(upstream.status));
 
@@ -70,7 +72,7 @@ export async function authorizedIdentity(
         ? reply(parsed.data, upstream.status)
         : reply({ message: "Identity devolvió una respuesta inesperada." }, 502));
     } catch {
-      return finish(remoteError(503));
+      return finish(reply({ message: "No se pudo conectar con el Gateway." }, 502));
     }
   } catch {
     return remoteError(503);

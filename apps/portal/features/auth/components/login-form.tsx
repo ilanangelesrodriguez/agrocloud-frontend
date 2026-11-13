@@ -55,7 +55,20 @@ export function LoginForm() {
         <AuthField label="Contraseña" autoComplete="current-password" placeholder="Tu contraseña"
           {...register("password")} error={errors.password?.message} passwordToggle />
         <div className="flex justify-end"><Link href="/forgot-password" className="text-sm font-medium text-accent hover:underline">¿Olvidaste tu contraseña?</Link></div>
-        <FormFeedback message={!error && (params.has("activated") ? "Cuenta activada. Ingresa con tu contraseña." : params.has("password-reset") ? "Contraseña actualizada. Inicia sesión nuevamente." : params.has("email-confirmed") ? "Correo confirmado. Inicia sesión nuevamente." : null)} success />
+        <FormFeedback
+          success
+          message={
+            error
+              ? null
+              : params.has("activated")
+                ? "Cuenta activada. Ingresa con tu contraseña."
+                : params.has("password-reset")
+                  ? "Contraseña actualizada. Inicia sesión nuevamente."
+                  : params.has("email-confirmed")
+                    ? "Correo confirmado. Inicia sesión nuevamente."
+                    : null
+          }
+        />
         <FormFeedback message={error} />
         <SubmitButton pending={busy}>{busy ? "Validando acceso…" : "Ingresar al portal"}</SubmitButton>
       </Form>
