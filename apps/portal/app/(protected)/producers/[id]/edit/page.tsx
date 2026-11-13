@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { AgriculturalPage } from "@/features/agricultural/components/agricultural-page";
+import { ProducerPage } from "@/features/producers/components/producer-page";
 import { positiveInteger } from "@/lib/auth/authorized-identity";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
@@ -8,5 +8,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   if (!positiveInteger(id)) notFound();
 
-  return <AgriculturalPage id={id} mode="edit" resource="producers" />;
+  return <ProducerPage id={id} mode="edit" />;
 }

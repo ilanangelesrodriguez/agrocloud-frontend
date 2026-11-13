@@ -1,5 +1,5 @@
-import { AgriculturalPage } from "@/features/agricultural/components/agricultural-page";
+import { ProducerPage } from "@/features/producers/components/producer-page";
 
 export default function Page() {
-  return <AgriculturalPage mode="list" resource="producers" />;
+  return <ProducerPage mode="list" />;
 }

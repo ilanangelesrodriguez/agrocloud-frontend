@@ -4,12 +4,13 @@ import type { FormEvent } from "react";
 
 import { useState } from "react";
 import { Button, Checkbox, Input, Label, ListBox, Select, TextField, toast } from "@heroui/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { EmptyState, FormNotice, LoadingState } from "@agrocloud/ui";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { EmptyState, ErrorState, FormNotice, LoadingState, PagePagination } from "@agrocloud/ui";
 
-import { procedurePage, samplingInput, samplingResponse } from "../sampling";
+import { samplingInput } from "../schema";
+import { registerSampling } from "../api";
+import { useSamplingProcedures } from "../hooks";
 
-import { adminRequest } from "@/features/admin/api";
 import { AdminError, AdminPagination } from "@/features/admin/components/admin-ui";
 
 export function SamplingForm({ lotId, product }: { lotId: number; product: string }) {
@@ -19,29 +20,14 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
   const [confirmed, setConfirmed] = useState(false);
   const [workload, setWorkload] = useState(false);
   const [error, setError] = useState("");
-  const query = useQuery({
-    queryKey: ["agricultural", "sampling-procedures", page],
-    queryFn: ({ signal }) =>
-      adminRequest("sampling-procedures?page=" + page, procedurePage, { signal }, "agricultural"),
-    retry: false,
-  });
+  const query = useSamplingProcedures(page);
   const procedures =
     query.data?.data.filter(
       (item) => item.activo && (!item.producto || item.producto === product),
     ) ?? [];
   const procedure = procedures.find((item) => String(item.id) === selected);
   const save = useMutation({
-    mutationFn: (input: object) =>
-      adminRequest(
-        "lots/" + lotId + "/samplings",
-        samplingResponse,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(input),
-        },
-        "agricultural",
-      ),
+    mutationFn: (input: object) => registerSampling(lotId, input),
     onSuccess: async () => {
       toast.success("Muestreo registrado");
       await cache.invalidateQueries({ queryKey: ["agricultural", "lots"] });
@@ -101,7 +87,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
   if (query.isPending) return <LoadingState label="Cargando procedimientos" />;
   if (query.isError)
     return (
-      <AdminError
+      <ErrorState
         error={query.error}
         retry={() => {
           void query.refetch();
@@ -138,7 +124,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
           description="No se encontraron procedimientos aplicables a este producto en la página actual."
         />
       )}
-      <AdminPagination
+      <PagePagination
         last={query.data.meta.last_page}
         page={page}
         onChange={(next) => {

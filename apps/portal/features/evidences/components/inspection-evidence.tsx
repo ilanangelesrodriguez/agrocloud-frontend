@@ -5,19 +5,13 @@ import type { z } from "zod";
 
 import { useState } from "react";
 import { Button, Input, Label, ListBox, Select } from "@heroui/react";
-import { EmptyState, FormNotice, LoadingState } from "@agrocloud/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { EmptyState, FormNotice, LoadingState, PagePagination } from "@agrocloud/ui";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import {
-  analysisQueued,
-  evidence,
-  evidenceMaxBytes,
-  evidenceResponse,
-  evidenceTypes,
-  samplingFruits,
-} from "../inspection";
+import { evidence, evidenceMaxBytes, evidenceTypes } from "../schema";
+import { uploadEvidence, analyzeEvidence } from "../api";
+import { useEvidenceFruits } from "../hooks";
 
-import { adminRequest } from "@/features/admin/api";
 import { AdminPagination } from "@/features/admin/components/admin-ui";
 
 export function InspectionEvidence({
@@ -40,28 +34,11 @@ export function InspectionEvidence({
   const [fruit, setFruit] = useState("");
   const [error, setError] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
-  const fruits = useQuery({
-    enabled: canUpload && canReadFruits,
-    queryKey: ["agricultural", "samplings", "fruits", String(sampling), page],
-    queryFn: ({ signal }) =>
-      adminRequest(
-        "samplings/" + sampling + "/fruits?page=" + page,
-        samplingFruits,
-        { signal },
-        "agricultural",
-      ),
-    retry: false,
-  });
+  const fruits = useEvidenceFruits(sampling, page, canUpload && canReadFruits);
   const refresh = () =>
     cache.invalidateQueries({ queryKey: ["agricultural", "inspections", "detail", id] });
   const upload = useMutation({
-    mutationFn: (body: FormData) =>
-      adminRequest(
-        "inspections/" + id + "/evidences",
-        evidenceResponse,
-        { method: "POST", body },
-        "agricultural",
-      ),
+    mutationFn: (body: FormData) => uploadEvidence(id, body),
     onSuccess: ({ data }) => {
       setSelectedPhoto(data.id_evidencia);
 
@@ -70,17 +47,7 @@ export function InspectionEvidence({
     retry: false,
   });
   const analyze = useMutation({
-    mutationFn: (photo: number) =>
-      adminRequest(
-        "evidences/" + photo + "/analyze",
-        analysisQueued,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: "{}",
-        },
-        "agricultural",
-      ),
+    mutationFn: analyzeEvidence,
     onSuccess: refresh,
     retry: false,
   });
@@ -152,7 +119,7 @@ export function InspectionEvidence({
             </Button>
           ) : null}
           {fruits.data ? (
-            <AdminPagination
+            <PagePagination
               last={fruits.data.meta.last_page}
               page={page}
               onChange={(next) => {

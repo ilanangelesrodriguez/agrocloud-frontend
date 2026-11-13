@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { SamplingDetails } from "@/features/agricultural/components/inspection-pages";
+import { SamplingDetails } from "@/features/samplings/components/sampling-details";
 import { positiveInteger } from "@/lib/auth/authorized-identity";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
