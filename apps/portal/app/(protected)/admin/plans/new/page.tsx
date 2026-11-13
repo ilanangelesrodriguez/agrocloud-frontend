@@ -1,4 +1,4 @@
-import { OfferForm } from "@/features/plans/components/offers";
+import { OfferForm } from "@/features/admin/offers/components/offer-form";
 export default function Page() {
   return <OfferForm />;
 }

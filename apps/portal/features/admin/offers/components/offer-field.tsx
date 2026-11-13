@@ -1,0 +1,26 @@
+"use client";
+
+import { Input, Label, TextField } from "@heroui/react";
+
+export function OfferField({
+  label,
+  name,
+  initial,
+  type = "text",
+  required,
+  step,
+}: {
+  label: string;
+  name: string;
+  initial?: string | number;
+  type?: "text" | "number" | "date";
+  required?: boolean;
+  step?: string;
+}) {
+  return (
+    <TextField defaultValue={String(initial ?? "")} isRequired={required} name={name} type={type}>
+      <Label>{label}</Label>
+      <Input className="w-full" step={step} />
+    </TextField>
+  );
+}

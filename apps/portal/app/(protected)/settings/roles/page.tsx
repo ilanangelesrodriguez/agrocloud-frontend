@@ -1,5 +1,5 @@
-import { CompanyReadView } from "@/features/company/components/company-views";
+import { CompanyRoles } from "@/features/company/roles/components/role-list";
 
 export default function Page() {
-  return <CompanyReadView view="roles" />;
+  return <CompanyRoles />;
 }

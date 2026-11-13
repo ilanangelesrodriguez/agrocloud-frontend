@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { UserForm } from "@/features/company/components/users";
+import { CompanyUserForm } from "@/features/company/users/components";
 
 export default function Page() {
   return (
@@ -9,7 +9,7 @@ export default function Page() {
       <Link className="text-accent underline" href="/settings/users">
         Volver a usuarios
       </Link>
-      <UserForm />
+      <CompanyUserForm />
     </section>
   );
 }

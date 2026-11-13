@@ -1,5 +1,5 @@
-import { Users } from "@/features/company/components/users";
+import { CompanyUsersList } from "@/features/company/users/components";
 
 export default function Page() {
-  return <Users />;
+  return <CompanyUsersList />;
 }

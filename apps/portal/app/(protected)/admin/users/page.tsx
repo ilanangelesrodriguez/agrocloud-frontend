@@ -1,4 +1,4 @@
-import { Users } from "@/features/company/components/users";
+import { AdminUsersList } from "@/features/admin/users/components";
 export default function Page() {
-  return <Users admin />;
+  return <AdminUsersList />;
 }
