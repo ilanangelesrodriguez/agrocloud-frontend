@@ -35,7 +35,12 @@ const adminItems: NavigationItem[] = [
 
 const companyItems: (NavigationItem & { permission?: string })[] = [
   { href: "/dashboard", label: "Panel principal", icon: "dashboard" },
-  { href: "/producers", label: "Productores", icon: "producers", permission: "productores.ver" },
+  {
+    href: "/producers",
+    label: "Productores",
+    icon: "producers",
+    permission: "productores.ver",
+  },
   { href: "/lots", label: "Lotes", icon: "lots", permission: "lotes.ver" },
 ];
 
@@ -50,7 +55,10 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
   if (user.rol?.codigo === "SUPERADMIN") {
     return [
       { title: "Plataforma", items: adminItems },
-      { title: "Cuenta", items: [{ href: "/settings/profile", label: "Mi perfil", icon: "profile" }] },
+      {
+        title: "Cuenta",
+        items: [{ href: "/settings/profile", label: "Mi perfil", icon: "profile" }],
+      },
     ];
   }
 
