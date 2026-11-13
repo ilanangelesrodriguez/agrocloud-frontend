@@ -96,6 +96,10 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
           <Label>Fecha y hora de recepción (hora local)</Label>
           <Input />
         </TextField>
+        <p className="text-xs text-muted sm:col-span-2">
+          Si el peso recibido difiere del peso registrado en el lote, explica el motivo en
+          observaciones.
+        </p>
         <TextField className="sm:col-span-2" name="observaciones">
           <Label>Observaciones</Label>
           <TextArea className="w-full" maxLength={3000} rows={3} />

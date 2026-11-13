@@ -99,12 +99,26 @@ export function SamplingDetails({ id }: { id: string }) {
             ) : (
               <p className="text-muted">No hay inspecciones vinculadas.</p>
             )}
+            {current && !canStart ? (
+              <Link
+                className="font-medium text-accent underline"
+                href={"/inspections/" + current.id_inspeccion}
+              >
+                Consultar inspección en captura
+              </Link>
+            ) : null}
             {canStart ? (
               <Button
                 isDisabled={start.isPending}
                 type="button"
                 variant="primary"
-                onPress={() => start.mutate()}
+                onPress={() => {
+                  if (current) {
+                    router.push("/inspections/" + current.id_inspeccion);
+                  } else {
+                    start.mutate();
+                  }
+                }}
               >
                 {start.isPending
                   ? "Procesando…"

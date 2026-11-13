@@ -4,8 +4,8 @@ import type { FormEvent } from "react";
 import type { z } from "zod";
 
 import { useState } from "react";
-import { Button, Input, Label, ListBox, Select } from "@heroui/react";
-import { EmptyState, FormNotice, LoadingState, PagePagination } from "@agrocloud/ui";
+import { Button, Input, Label, ListBox, Select, toast } from "@heroui/react";
+import { EmptyState, FormNotice, LoadingState, PagePagination, StatusBadge } from "@agrocloud/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { evidence, evidenceMaxBytes, evidenceTypes } from "../schema";
@@ -41,6 +41,8 @@ export function InspectionEvidence({
     mutationFn: (body: FormData) => uploadEvidence(id, body),
     onSuccess: ({ data }) => {
       setSelectedPhoto(data.id_evidencia);
+      setFruit("");
+      toast.success("Fotografía registrada");
 
       return refresh();
     },
@@ -48,7 +50,10 @@ export function InspectionEvidence({
   });
   const analyze = useMutation({
     mutationFn: analyzeEvidence,
-    onSuccess: refresh,
+    onSuccess: () => {
+      toast.success("Análisis IA enviado a la cola");
+      return refresh();
+    },
     retry: false,
   });
 
@@ -74,7 +79,7 @@ export function InspectionEvidence({
     upload.mutate(form);
   }
 
-  const current = photos.find((photo) => photo.id_evidencia === selectedPhoto);
+  const current = photos.find((photo) => photo.id_evidencia === selectedPhoto) ?? photos[0];
 
   return (
     <section className="space-y-4 rounded-card border border-border bg-surface p-5">
@@ -157,9 +162,18 @@ export function InspectionEvidence({
               >
                 Ver evidencia #{photo.id_evidencia}
               </Button>
-              <span>
-                Fruto #{photo.id_fruto} · {photo.estado_ia?.replaceAll("_", " ") ?? "Sin análisis"}
-              </span>
+              <span className="text-sm">Fruto #{photo.id_fruto}</span>
+              <StatusBadge
+                tone={
+                  photo.estado_ia === "COMPLETADO"
+                    ? "success"
+                    : ["EN_COLA", "PROCESANDO"].includes(photo.estado_ia ?? "")
+                      ? "info"
+                      : "neutral"
+                }
+              >
+                {photo.estado_ia?.replaceAll("_", " ") ?? "Sin análisis"}
+              </StatusBadge>
               {canAnalyze &&
               photo.pertinencia !== "INVALIDA" &&
               !["EN_COLA", "PROCESANDO", "COMPLETADO"].includes(photo.estado_ia ?? "") ? (

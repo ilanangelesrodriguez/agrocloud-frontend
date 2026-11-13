@@ -3,6 +3,9 @@
 import type { FormEvent } from "react";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { canManageCompany } from "@/features/company/navigation";
 import { Button, Checkbox, Input, Label, ListBox, Select, TextField, toast } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EmptyState, ErrorState, FormNotice, LoadingState, PagePagination } from "@agrocloud/ui";
@@ -15,6 +18,8 @@ import { AdminError, AdminPagination } from "@/features/admin/components/admin-u
 
 export function SamplingForm({ lotId, product }: { lotId: number; product: string }) {
   const cache = useQueryClient();
+  const router = useRouter();
+  const { data: actor } = useCurrentUser();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -28,9 +33,12 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
   const procedure = procedures.find((item) => String(item.id) === selected);
   const save = useMutation({
     mutationFn: (input: object) => registerSampling(lotId, input),
-    onSuccess: async () => {
+    onSuccess: async ({ data }) => {
       toast.success("Muestreo registrado");
       await cache.invalidateQueries({ queryKey: ["agricultural", "lots"] });
+      if (canManageCompany(actor, "muestreos.ver")) {
+        router.push("/samplings/" + data.id_muestreo);
+      }
     },
     retry: false,
   });

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { InlineNotice, LoadingState, PageHeader, ErrorState } from "@agrocloud/ui";
+import { InlineNotice, LoadingState, PageHeader, ErrorState, StatusBadge } from "@agrocloud/ui";
 
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
@@ -38,8 +38,11 @@ export function InspectionDetails({ id }: { id: string }) {
       ) : value ? (
         <>
           <p>
-            Estado: <strong>{value.estado}</strong> · Inspector #
-            {value.id_inspector ?? "sin asignar"}
+            Estado:{" "}
+            <StatusBadge tone={value.estado === "EN_CAPTURA" ? "info" : "neutral"}>
+              {value.estado.replaceAll("_", " ")}
+            </StatusBadge>{" "}
+            · Inspector #{value.id_inspector ?? "sin asignar"}
           </p>
           <Link className="text-accent underline" href={"/samplings/" + value.id_muestreo}>
             Volver al muestreo
@@ -58,6 +61,13 @@ export function InspectionDetails({ id }: { id: string }) {
               <p className="text-2xl">{value.dictamenes?.length ?? 0}</p>
             </div>
           </div>
+          {value.estado === "EN_CAPTURA" && !value.evidencias?.length ? (
+            <InlineNotice
+              status="info"
+              title="Pendiente de evidencias"
+              description="Adjunta una fotografía de un fruto para iniciar el análisis IA si tu rol lo permite."
+            />
+          ) : null}
           <InspectionEvidence
             key={id}
             canAnalyze={

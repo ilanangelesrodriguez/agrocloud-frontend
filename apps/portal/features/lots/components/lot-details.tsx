@@ -4,6 +4,7 @@ import { LoadingState, ErrorState } from "@agrocloud/ui";
 
 import { useLotDetails } from "../hooks";
 import { LotOperations } from "./lot-operations";
+import { LotWorkflow } from "./lot-workflow";
 
 export function LotDetails({ id }: { id: string }) {
   const query = useLotDetails(id);
@@ -29,6 +30,7 @@ export function LotDetails({ id }: { id: string }) {
           </div>
         ))}
       </dl>
+      <LotWorkflow lot={lot} />
       <LotOperations lot={lot} />
     </div>
   );

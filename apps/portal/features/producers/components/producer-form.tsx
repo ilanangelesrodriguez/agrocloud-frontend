@@ -26,6 +26,7 @@ export function ProducerForm({ producer, canRead }: { producer?: Producer; canRe
   const router = useRouter();
   const cache = useQueryClient();
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const save = useMutation({
     mutationFn: (input: object) => saveProducer(producer?.id_productor, input),
     onSuccess: ({ data }) => {
@@ -46,6 +47,13 @@ export function ProducerForm({ producer, canRead }: { producer?: Producer; canRe
     );
 
     setError(input.success ? "" : (input.error.issues[0]?.message ?? "Revisa los datos."));
+    setFieldErrors(
+      input.success
+        ? {}
+        : Object.fromEntries(
+            input.error.issues.map((issue) => [String(issue.path[0]), issue.message]),
+          ),
+    );
     if (input.success) save.mutate(input.data);
   }
 
@@ -59,6 +67,7 @@ export function ProducerForm({ producer, canRead }: { producer?: Producer; canRe
           <RecordField
             key={name}
             initial={producer?.[name]}
+            error={fieldErrors[name]}
             label={label}
             maxLength={max}
             name={name}

@@ -19,7 +19,10 @@ export function LotOperations({ lot }: { lot: Lot }) {
 
   return (
     <div className="space-y-5">
-      <section className="space-y-3 rounded-card border border-border bg-surface p-5">
+      <section
+        id="lot-reception"
+        className="scroll-mt-24 space-y-3 rounded-card border border-border bg-surface p-5"
+      >
         <h2 className="text-xl font-semibold">Recepción</h2>
         {reception ? (
           <dl className="grid gap-3 sm:grid-cols-2">
@@ -43,7 +46,10 @@ export function LotOperations({ lot }: { lot: Lot }) {
           <p className="text-muted">El lote no tiene una recepción registrada.</p>
         )}
       </section>
-      <section className="space-y-2 rounded-card border border-border bg-surface p-5">
+      <section
+        id="lot-sampling"
+        className="scroll-mt-24 space-y-2 rounded-card border border-border bg-surface p-5"
+      >
         <h2 className="text-xl font-semibold">Muestreos</h2>
         {lot.muestreos?.length ? (
           <ul>
