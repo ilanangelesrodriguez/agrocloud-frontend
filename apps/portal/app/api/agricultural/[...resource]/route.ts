@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { procedurePage, samplingInput, samplingResponse } from "@/features/agricultural/sampling";
+import { samplingDetail, samplingFruits, inspectionDetail, inspectionCreated } from "@/features/agricultural/inspection";
 
 import {
   catalog, catalogType, lotDetail, lotInput, lotList,
@@ -14,6 +15,26 @@ type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
   const [resource, id, ...rest] = (await params).resource;
+  if (resource === "samplings" && id && positiveInteger(id) && rest.length === 1 && rest[0] === "fruits") {
+    const page = request.nextUrl.searchParams.get("page") ?? "1";
+    if (!positiveInteger(page)) return reply({ message: "Página inválida." }, 400);
+    return authorizedIdentity(request, (user) => canManageCompany(user, "muestreos.ver")
+      ? "/samplings/" + id + "/fruits" : null, samplingFruits, {
+      service: "agricultural", page: Number(page), operation: "agricultural.sample.fruits",
+    });
+  }
+  if (resource === "samplings" && id && positiveInteger(id) && !rest.length) {
+    return authorizedIdentity(request, (user) => canManageCompany(user, "muestreos.ver")
+      ? "/samplings/" + id : null, samplingDetail, {
+      service: "agricultural", operation: "agricultural.sample.detail",
+    });
+  }
+  if (resource === "inspections" && id && positiveInteger(id) && !rest.length) {
+    return authorizedIdentity(request, (user) => canManageCompany(user, "inspecciones.ver")
+      ? "/inspections/" + id : null, inspectionDetail, {
+      service: "agricultural", operation: "agricultural.inspection.detail",
+    });
+  }
   if (resource === "lots" && id && positiveInteger(id) && rest.length === 1 && rest[0] === "traceability") {
     const page = request.nextUrl.searchParams.get("page") ?? "1";
     if (!positiveInteger(page)) return reply({ message: "Página inválida." }, 400);
@@ -81,6 +102,12 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 
 export async function POST(request: NextRequest, context: Context) {
   const [resource, id, action, ...rest] = (await context.params).resource;
+  if (resource === "samplings" && id && positiveInteger(id) && action === "inspections" && !rest.length) {
+    return authorizedIdentity(request, (user) => user.rol?.codigo === "INSPECTOR" && canManageCompany(user, "inspecciones.crear")
+      ? "/samplings/" + id + "/inspections" : null, inspectionCreated, {
+      service: "agricultural", method: "POST", body: {}, operation: "agricultural.inspection.start",
+    });
+  }
   if (resource === "lots" && id && positiveInteger(id) && action === "samplings" && !rest.length) {
     const json = await parseJson(request);
     if (!json.ok) return json.response;

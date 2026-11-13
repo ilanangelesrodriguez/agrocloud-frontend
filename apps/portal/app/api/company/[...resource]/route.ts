@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { canManageCompany } from "@/features/company/navigation";
-import { companyOffers, offerKey, orderResponse } from "@/features/plans/schema";
+import { companyOffers, offerKey, orderResponse, orderStatus, chargeResponse } from "@/features/plans/schema";
 import { z } from "zod";
 import {
   companyResponseSchema, editCompanySchema, editUserSchema, invitationSchema, inviteUserSchema,
@@ -14,6 +14,13 @@ type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
   const resource = (await params).resource.join("/");
+  const statusMatch = /^subscription\/orders\/(AGRO-[0-9A-HJKMNP-TV-Z]{26})$/.exec(resource);
+  if (statusMatch) {
+    return authorizedIdentity(request, (user) => canManageCompany(user, "suscripciones.ver")
+      ? "/subscription/orders/" + statusMatch[1] : null, orderStatus, {
+      operation: "company.subscription.order-status",
+    });
+  }
   if (resource === "subscription/offers") {
     return authorizedIdentity(request, (user) => canManageCompany(user, "suscripciones.ver")
       ? "/subscription/offers" : null, companyOffers);
@@ -44,6 +51,17 @@ export async function GET(request: NextRequest, { params }: Context) {
 
 export async function POST(request: NextRequest, { params }: Context) {
   const resource = (await params).resource.join("/");
+  const chargeMatch = /^subscription\/orders\/(AGRO-[0-9A-HJKMNP-TV-Z]{26})\/charge$/.exec(resource);
+  if (chargeMatch) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const token = z.object({ token_id: z.string().regex(/^tkn_test_[A-Za-z0-9]+$/) }).safeParse(json.body);
+    if (!token.success) return reply({ message: "Solo se aceptan tokens Culqi de prueba." }, 422);
+    return authorizedIdentity(request, (user) => canManageCompany(user, "suscripciones.gestionar")
+      ? "/subscription/orders/" + chargeMatch[1] + "/charge" : null, chargeResponse, {
+      method: "POST", body: token.data, operation: "company.subscription.sandbox-charge",
+    });
+  }
   if (resource === "subscription/orders") {
     const json = await parseJson(request);
     if (!json.ok) return json.response;

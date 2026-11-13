@@ -36,3 +36,12 @@ export const companyOffers = z.object({
 });
 export const orderResponse = purchase;
 export const money = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" });
+
+/** Estado autorizado por Identity, no inferido del resultado visible de Culqi. */
+export const orderStatus = z.object({
+  reference: z.string(), offer_key: offerKey, amount_cents: z.number().int(),
+  currency: z.literal("PEN"), kind: z.enum(kinds), status: z.string(),
+});
+export const chargeResponse = z.object({
+  reference: z.string(), status: z.string(), message: z.string(),
+});

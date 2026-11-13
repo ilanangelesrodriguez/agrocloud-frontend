@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import type { Lot } from "../schema";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button, Input, Label, ListBox, Select, TextArea, TextField, toast } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -43,7 +44,7 @@ export function LotOperations({ lot }: { lot: Lot }) {
         <h2 className="text-xl font-semibold">Muestreos</h2>
         {lot.muestreos?.length ? (
           <ul>{lot.muestreos.map(({ id_muestreo, metodo, tamano_muestra, estado }) => (
-            <li key={id_muestreo}>{["Muestreo #" + id_muestreo, metodo, tamano_muestra ? tamano_muestra + " frutos" : null, estado].filter(Boolean).join(" · ")}</li>
+            <li key={id_muestreo}><Link className="text-accent underline" href={"/samplings/" + id_muestreo}>Muestreo #{id_muestreo}</Link> · {[metodo, tamano_muestra ? tamano_muestra + " frutos" : null, estado].filter(Boolean).join(" · ")}</li>
           ))}</ul>
         ) : lot.estado === "RECIBIDO" && reception && actor?.rol?.codigo === "INSPECTOR" && canManageCompany(actor, "muestreos.crear")
           ? <SamplingForm lotId={lot.id_lote} product={lot.producto} />

@@ -9,6 +9,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 
 import { companyOffers, money, orderResponse } from "../schema";
+import { SandboxCheckout } from "./sandbox-checkout";
 
 const queryKey = ["company", "subscription", "offers"];
 const labels = { PLAN: "Contratar", RENEWAL: "Renovar", USER_ADDON: "Usuarios adicionales", LOT_ADDON: "Lotes adicionales", AI_ADDON: "Análisis IA adicionales" };
@@ -42,6 +43,7 @@ export function SubscriptionOffers() {
           <h3 className="font-semibold">Orden pendiente</h3>
           <p>{pending.reference} · {money.format(pending.amount_cents / 100)}</p>
           {canOrder ? <Button isDisabled={order.isPending} variant="secondary" onPress={() => order.mutate(pending.offer_key)}>Recuperar orden</Button> : null}
+          {canOrder ? <SandboxCheckout order={pending} /> : null}
         </div>
       ) : offers.data.data.length ? (
         <ul className="grid gap-4 sm:grid-cols-2">
