@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import {
   catalog, catalogType, lotDetail, lotInput, lotList,
   operationKey, producerDetail, producerInput, producerList,
+  receptionInput, receptionResponse, traceabilityResponse,
 } from "@/features/agricultural/schema";
 import { canManageCompany } from "@/features/company/navigation";
 import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-identity";
@@ -12,6 +13,14 @@ type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
   const [resource, id, ...rest] = (await params).resource;
+  if (resource === "lots" && id && positiveInteger(id) && rest.length === 1 && rest[0] === "traceability") {
+    const page = request.nextUrl.searchParams.get("page") ?? "1";
+    if (!positiveInteger(page)) return reply({ message: "Página inválida." }, 400);
+    return authorizedIdentity(request, (user) => canManageCompany(user, "trazabilidad.ver")
+      ? "/lots/" + id + "/traceability" : null, traceabilityResponse, {
+      service: "agricultural", page: Number(page), operation: "agricultural.traceability",
+    });
+  }
   if (rest.length || (id !== undefined && !positiveInteger(id))) {
     return reply({ message: "Recurso inválido." }, 404);
   }
@@ -65,7 +74,20 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
   });
 }
 
-export function POST(request: NextRequest, context: Context) {
+export async function POST(request: NextRequest, context: Context) {
+  const [resource, id, action, ...rest] = (await context.params).resource;
+  if (resource === "lots" && id && positiveInteger(id) && action === "reception" && !rest.length) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const parsed = receptionInput.safeParse(json.body);
+    if (!parsed.success) return reply({ message: "Revisa los datos de recepción." }, 422);
+
+    return authorizedIdentity(request, (user) =>
+      user.rol?.codigo === "RECEPCION" && canManageCompany(user, "recepciones.crear")
+        ? "/lots/" + id + "/reception" : null, receptionResponse, {
+      service: "agricultural", body: parsed.data, operation: "agricultural.reception",
+    });
+  }
   return save(request, context, "POST");
 }
 

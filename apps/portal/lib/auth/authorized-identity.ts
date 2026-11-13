@@ -62,7 +62,8 @@ export async function authorizedIdentity(
 
       const parsed = schema.safeParse(await upstream.json().catch(() => null));
       if (!parsed.success) {
-        console.warn("Contrato de Identity inesperado", {
+        console.warn("Contrato del servicio inesperado", {
+          service: options.service ?? "identity",
           operation: options.operation ?? "admin",
           issues: parsed.error.issues.map(({ code, path }) => ({ code, path })),
         });
@@ -70,7 +71,9 @@ export async function authorizedIdentity(
 
       return finish(parsed.success
         ? reply(parsed.data, upstream.status)
-        : reply({ message: "Identity devolvió una respuesta inesperada." }, 502));
+        : reply({ message: options.service === "agricultural"
+          ? "Agricultural devolvió una respuesta inesperada."
+          : "Identity devolvió una respuesta inesperada." }, 502));
     } catch {
       return finish(reply({ message: "No se pudo conectar con el Gateway." }, 502));
     }

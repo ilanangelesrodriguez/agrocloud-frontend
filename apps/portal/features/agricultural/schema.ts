@@ -22,12 +22,33 @@ export const lotInput = z.object({
   peso_kg: z.number().min(0.00001).max(99999999999),
   fecha_llegada_prevista: z.iso.datetime({ offset: true }),
 });
+export const receptionDocuments = ["Guía de remisión", "Comprobante interno", "Factura", "Otro"] as const;
+export const receptionInput = z.object({
+  tipo_documento: z.enum(receptionDocuments),
+  documento: z.string().trim().min(1).max(100),
+  transportista: text(150),
+  placa: text(20),
+  peso_recibido_kg: z.number().min(0.01).max(99999999.99),
+  recibido_en: z.iso.datetime({ offset: true }),
+  observaciones: text(3000),
+});
+const reception = receptionInput.extend({
+  tipo_documento: z.string(),
+  peso_recibido_kg: z.union([z.string(), z.number()]),
+});
+export const receptionResponse = z.object({ data: reception });
+export const traceabilityResponse = z.object({
+  data: z.array(z.object({ id, evento: z.string(), created_at: z.string().nullish() })),
+  last_page: id,
+});
 const lot = z.object({
   id_lote: id, codigo_lote: z.string(), id_productor: id,
   producto: z.string(), variedad: z.string().nullish(), estado: z.string(),
   peso_kg: z.union([z.string(), z.number()]), unidad_medida: z.string(),
   fecha_llegada_prevista: z.string(),
   productor: producer.nullish(),
+  recepcion: reception.nullish(),
+  muestreos: z.array(z.object({ id_muestreo: id })).optional(),
 });
 const meta = z.object({ current_page: id, last_page: id });
 export const producerList = z.object({ data: z.array(producer), meta });
@@ -40,3 +61,4 @@ export const catalog = z.object({
 export const catalogType = z.enum(["producto", "variedad", "unidad"]);
 export const operationKey = z.uuid();
 export type Producer = z.infer<typeof producer>;
+export type Lot = z.infer<typeof lot>;

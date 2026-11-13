@@ -15,6 +15,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 
 import { catalog, lotDetail, lotInput, lotList, producerDetail, producerInput, producerList } from "../schema";
+import { LotOperations } from "./lot-operations";
 
 type Resource = "producers" | "lots";
 type Mode = "list" | "new" | "detail" | "edit";
@@ -126,6 +127,7 @@ function RecordDetail({ resource, id, edit, canEdit }: { resource: Resource; id:
         ))}
       </dl>
       {canEdit && producer ? <Link className={linkClass} href={"/producers/" + id + "/edit"}>Editar productor</Link> : null}
+      {lot ? <LotOperations lot={lot} /> : null}
     </>
   );
 }

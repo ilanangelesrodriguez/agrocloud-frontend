@@ -7,6 +7,8 @@ const links = [
   { href: "/admin", label: "Resumen" },
   { href: "/admin/access-requests", label: "Solicitudes" },
   { href: "/admin/companies", label: "Empresas" },
+  { href: "/admin/users", label: "Usuarios" },
+  { href: "/admin/plans", label: "Planes" },
 ];
 
 export function AdminNavigation() {

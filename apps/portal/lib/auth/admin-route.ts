@@ -9,7 +9,7 @@ export function adminIdentity(
   request: NextRequest,
   path: string,
   schema: z.ZodType<object>,
-  options: { page?: number; body?: object } = {},
+  options: { page?: number; body?: object; method?: "PATCH" } = {},
 ) {
   return authorizedIdentity(
     request,

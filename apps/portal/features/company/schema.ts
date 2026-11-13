@@ -10,6 +10,7 @@ const role = z.object({ id_rol: id, nombre: z.string(), codigo: z.string() });
 const permission = z.object({ codigo: z.string(), nombre: text });
 const user = z.object({
   id_usuario: id,
+  id_empresa: id.nullish(),
   nombre: z.string(),
   apellido: text,
   correo: z.string(),

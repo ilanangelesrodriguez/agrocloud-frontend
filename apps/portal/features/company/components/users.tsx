@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { companyPageSchema } from "@/features/admin/schema";
 import { AdminError, AdminPagination } from "@/features/admin/components/admin-ui";
 import { adminRequest } from "@/features/admin/api";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -21,21 +22,24 @@ function userStatus(user: CompanyUser) {
   return user.estado ? "Activo" : "Inactivo";
 }
 
-export function Users() {
+export function Users({ admin = false }: { admin?: boolean }) {
   const [page, setPage] = useState(1);
   const { data: actor } = useCurrentUser();
+  const scope = admin ? "admin" : "company";
+  const base = admin ? "/admin/users" : "/settings/users";
+  const isGlobal = admin && actor?.rol?.codigo === "SUPERADMIN";
   const users = useQuery({
-    enabled: canManageCompany(actor, "usuarios.ver"),
-    queryKey: ["company", "users", page],
-    queryFn: ({ signal }) => adminRequest("users?page=" + page, usersSchema, { signal }, "company"),
+    enabled: isGlobal || canManageCompany(actor, "usuarios.ver"),
+    queryKey: [scope, "users", page],
+    queryFn: ({ signal }) => adminRequest("users?page=" + page, usersSchema, { signal }, scope),
     retry: false,
   });
 
   return (
     <section className="space-y-4">
-      <h1 className="text-3xl font-semibold">Usuarios de la empresa</h1>
-      {canManageCompany(actor, "usuarios.crear") ? (
-        <Link className="inline-block text-accent underline" href="/settings/users/new">Invitar usuario</Link>
+      <h1 className="text-3xl font-semibold">{admin ? "Usuarios de plataforma" : "Usuarios de la empresa"}</h1>
+      {isGlobal || canManageCompany(actor, "usuarios.crear") ? (
+        <Link className="inline-block text-accent underline" href={base + "/new"}>Invitar usuario</Link>
       ) : null}
       {users.isPending ? <p role="status">Cargando usuarios…</p> : users.isError ? (
         <AdminError error={users.error} retry={() => { void users.refetch(); }} />
@@ -45,10 +49,13 @@ export function Users() {
             <ul className="divide-y divide-border rounded-card border border-border bg-surface">
               {users.data.data.map((user) => (
                 <li key={user.id_usuario} className="space-y-1 p-4">
-                  <Link className="font-semibold text-accent underline" href={"/settings/users/" + user.id_usuario}>
+                  <Link className="font-semibold text-accent underline" href={base + "/" + user.id_usuario}>
                     {user.nombre} {user.apellido}
                   </Link>
                   <p className="break-words text-sm text-muted">{user.correo} · {user.rol?.nombre ?? "Sin rol"} · {userStatus(user)}</p>
+                  {admin && user.id_empresa ? (
+                    <Link className="text-sm text-accent underline" href={"/admin/companies/" + user.id_empresa}>Empresa #{user.id_empresa}</Link>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -60,12 +67,15 @@ export function Users() {
   );
 }
 
-export function UserDetails({ id }: { id: string }) {
+export function UserDetails({ id, admin = false }: { id: string; admin?: boolean }) {
   const { data: actor } = useCurrentUser();
+  const scope = admin ? "admin" : "company";
+  const base = admin ? "/admin/users" : "/settings/users";
+  const isGlobal = admin && actor?.rol?.codigo === "SUPERADMIN";
   const user = useQuery({
-    enabled: canManageCompany(actor, "usuarios.ver"),
-    queryKey: ["company", "user", id],
-    queryFn: ({ signal }) => adminRequest("users/" + id, userSchema, { signal }, "company"),
+    enabled: isGlobal || canManageCompany(actor, "usuarios.ver"),
+    queryKey: [scope, "user", id],
+    queryFn: ({ signal }) => adminRequest("users/" + id, userSchema, { signal }, scope),
     retry: false,
   });
   const record = user.data?.data;
@@ -73,7 +83,7 @@ export function UserDetails({ id }: { id: string }) {
   return (
     <section className="space-y-4">
       <h1 className="text-3xl font-semibold">Detalle de usuario</h1>
-      <Link className="text-accent underline" href="/settings/users">Volver a usuarios</Link>
+      <Link className="text-accent underline" href={base}>Volver a usuarios</Link>
       {user.isPending ? <p role="status">Cargando usuario…</p> : user.isError ? (
         <AdminError error={user.error} retry={() => { void user.refetch(); }} />
       ) : record ? (
@@ -86,8 +96,8 @@ export function UserDetails({ id }: { id: string }) {
             {record.cargo ? <div><dt className="inline font-semibold">Cargo </dt><dd className="inline">{record.cargo}</dd></div> : null}
             {record.telefono ? <div><dt className="inline font-semibold">Teléfono </dt><dd className="inline">{record.telefono}</dd></div> : null}
           </dl>
-          {canManageCompany(actor, "usuarios.editar") ? (
-            <UserForm key={JSON.stringify([id, record.rol?.id_rol, record.estado, record.pending_activation, record.nombre, record.apellido, record.telefono, record.cargo])} user={record} />
+          {(isGlobal || canManageCompany(actor, "usuarios.editar")) && record.rol?.codigo !== "SUPERADMIN" ? (
+            <UserForm admin={admin} key={JSON.stringify([id, record.rol?.id_rol, record.estado, record.pending_activation, record.nombre, record.apellido, record.telefono, record.cargo])} user={record} />
           ) : null}
         </div>
       ) : null}
@@ -106,21 +116,32 @@ function UserField({ name, label, maxLength, required = false, type = "text", in
   );
 }
 
-export function UserForm({ user }: { user?: CompanyUser }) {
+export function UserForm({ user, admin = false }: { user?: CompanyUser; admin?: boolean }) {
   const router = useRouter();
   const cache = useQueryClient();
   const { data: actor } = useCurrentUser();
+  const scope = admin ? "admin" : "company";
+  const base = admin ? "/admin/users" : "/settings/users";
+  const isGlobal = admin && actor?.rol?.codigo === "SUPERADMIN";
   const [role, setRole] = useState(user?.rol?.id_rol ?? null);
   const [active, setActive] = useState(user?.estado ?? false);
   const [error, setError] = useState("");
   const [action, setAction] = useState<"save" | "resend">("save");
   const canEditStatus = Boolean(user && actor?.id_usuario !== user.id_usuario &&
-    !user.pending_activation && canManageCompany(actor, "usuarios.estado"));
-  const canSubmit = canManageCompany(actor, user ? "usuarios.editar" : "usuarios.crear");
+    !user.pending_activation && (isGlobal || canManageCompany(actor, "usuarios.estado")));
+  const canSubmit = isGlobal || canManageCompany(actor, user ? "usuarios.editar" : "usuarios.crear");
+  const [companyPage, setCompanyPage] = useState(1);
+  const [companyId, setCompanyId] = useState<number | null>(null);
+  const companies = useQuery({
+    enabled: isGlobal && !user,
+    queryKey: ["admin", "companies", companyPage],
+    queryFn: ({ signal }) => adminRequest("companies?page=" + companyPage, companyPageSchema, { signal }),
+    retry: false,
+  });
   const roles = useQuery({
     enabled: canSubmit,
-    queryKey: ["company", "roles"],
-    queryFn: ({ signal }) => adminRequest("roles", rolesSchema, { signal }, "company"),
+    queryKey: [scope, "roles"],
+    queryFn: ({ signal }) => adminRequest("roles", rolesSchema, { signal }, scope),
     retry: false,
   });
   const mutation = useMutation({
@@ -128,16 +149,16 @@ export function UserForm({ user }: { user?: CompanyUser }) {
       const headers = { "Content-Type": "application/json" };
       const body = JSON.stringify(operation.body);
       if (operation.kind === "resend" && user) {
-        await adminRequest("users/" + user.id_usuario + "/invitation", invitationSchema, { method: "POST", headers, body }, "company");
+        await adminRequest("users/" + user.id_usuario + "/invitation", invitationSchema, { method: "POST", headers, body }, scope);
         return;
       }
 
-      await adminRequest(user ? "users/" + user.id_usuario : "users", userSchema, { method: user ? "PATCH" : "POST", headers, body }, "company");
+      await adminRequest(user ? "users/" + user.id_usuario : "users", userSchema, { method: user ? "PATCH" : "POST", headers, body }, scope);
     },
     onSuccess: (_, operation) => {
       toast.success(operation.kind === "resend" || !user ? "Invitación en cola" : "Usuario actualizado");
-      void cache.invalidateQueries({ queryKey: ["company"] });
-      if (!user) router.push("/settings/users");
+      void cache.invalidateQueries({ queryKey: [scope] });
+      if (!user) router.push(base);
     },
     retry: false,
   });
@@ -145,6 +166,10 @@ export function UserForm({ user }: { user?: CompanyUser }) {
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (mutation.isPending) return;
+    if (admin && !user && !companyId) {
+      setError("Selecciona una empresa.");
+      return;
+    }
     const data = new FormData(event.currentTarget);
     const optional = (field: string) => String(data.get(field) ?? "").trim() || null;
     const profile = {
@@ -172,7 +197,7 @@ export function UserForm({ user }: { user?: CompanyUser }) {
       !window.confirm("¿Desactivar esta cuenta? Se cerrarán sus sesiones y no podrá iniciar sesión hasta reactivarla.")) return;
     setError("");
     setAction("save");
-    mutation.mutate({ kind: "save", body: parsed.data });
+    mutation.mutate({ kind: "save", body: admin && !user ? { ...parsed.data, id_empresa: companyId } : parsed.data });
   }
 
   if (!canSubmit) {
@@ -190,6 +215,30 @@ export function UserForm({ user }: { user?: CompanyUser }) {
             <UserField initial={user?.telefono} label="Teléfono" maxLength={30} name="telefono" type="tel" />
             <UserField initial={user?.cargo} label="Cargo" maxLength={120} name="cargo" />
         </div>
+        {admin && !user ? (
+          <div className="space-y-2">
+            <Select isDisabled={mutation.isPending || companies.isPending} value={companyId === null ? null : String(companyId)}
+              placeholder="Selecciona una empresa" onChange={(value) => setCompanyId(value ? Number(value) : null)}>
+              <Label>Empresa</Label>
+              <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
+              <Select.Popover><ListBox aria-label="Empresas">
+                {(companies.data?.data ?? []).filter((item) => item.estado === true).map((item) => (
+                  <ListBox.Item key={item.id_empresa} id={String(item.id_empresa)} textValue={item.razon_social}>
+                    {item.razon_social} · {item.ruc}
+                  </ListBox.Item>
+                ))}
+              </ListBox></Select.Popover>
+            </Select>
+            {companies.isError ? (
+              <div className="space-y-2">
+                <p role="alert">{companies.error.message}</p>
+                <Button type="button" variant="secondary" onPress={() => { void companies.refetch(); }}>Reintentar cargar empresas</Button>
+              </div>
+            ) : null}
+            {companies.data ? <AdminPagination last={companies.data.meta.last_page} page={companyPage} onChange={(page) => { setCompanyId(null); setCompanyPage(page); }} /> : null}
+            {companies.data && !companies.data.data.some((item) => item.estado === true) ? <p>No hay empresas activas en esta página.</p> : null}
+          </div>
+        ) : null}
         {roles.isError ? (
           <div className="space-y-2">
             <p role="alert">{roles.error.message}</p>
@@ -204,7 +253,7 @@ export function UserForm({ user }: { user?: CompanyUser }) {
             <Select.Trigger className="min-h-11 w-full"><Select.Value /><Select.Indicator /></Select.Trigger>
             <Select.Popover>
               <ListBox aria-label="Roles disponibles">
-                {(roles.data?.data ?? []).map((option) => (
+                {(roles.data?.data ?? []).filter((option) => option.codigo !== "SUPERADMIN").map((option) => (
                   <ListBox.Item key={option.id_rol} id={String(option.id_rol)} textValue={option.nombre}>{option.nombre}</ListBox.Item>
                 ))}
               </ListBox>
@@ -220,7 +269,7 @@ export function UserForm({ user }: { user?: CompanyUser }) {
       </fieldset>
       {error || mutation.error ? <p role="alert">{error || mutation.error?.message}</p> : null}
       <div className="flex flex-wrap gap-2">
-        <Button isDisabled={mutation.isPending || (!user && !role)} type="submit" variant="primary">
+        <Button isDisabled={mutation.isPending || (!user && (!role || (admin && !companyId)))} type="submit" variant="primary">
           {mutation.isPending && action === "save" ? "Guardando…" : user ? "Guardar cambios" : "Enviar invitación"}
         </Button>
         {user?.pending_activation ? (
