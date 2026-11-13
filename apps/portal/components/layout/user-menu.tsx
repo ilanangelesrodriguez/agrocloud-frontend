@@ -51,7 +51,13 @@ export function UserMenu({ user }: { user: IdentityUser }) {
         </Button>
       </Dropdown.Trigger>
       <Dropdown.Popover placement="bottom end">
-        <Dropdown.Menu aria-label="Opciones de cuenta">
+        <Dropdown.Menu
+          aria-label="Opciones de cuenta"
+          onAction={(key) => {
+            if (key === "profile") router.push("/settings/profile");
+            if (key === "logout") void signOut();
+          }}
+        >
           <Dropdown.Item id="account" isDisabled textValue={user.correo}>
             <Label>{user.correo}</Label>
           </Dropdown.Item>
@@ -59,7 +65,6 @@ export function UserMenu({ user }: { user: IdentityUser }) {
           <Dropdown.Item
             id="profile"
             textValue="Mi perfil"
-            onAction={() => router.push("/settings/profile")}
           >
             <Label>Mi perfil</Label>
           </Dropdown.Item>
@@ -67,7 +72,6 @@ export function UserMenu({ user }: { user: IdentityUser }) {
             id="logout"
             isDisabled={busy}
             textValue="Cerrar sesión"
-            onAction={() => void signOut()}
           >
             <Label>{busy ? "Cerrando sesión…" : "Cerrar sesión"}</Label>
           </Dropdown.Item>
