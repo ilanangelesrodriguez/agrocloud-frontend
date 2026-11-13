@@ -14,7 +14,12 @@ export function UserMenu({ user }: { user: IdentityUser }) {
   const router = useRouter();
   const cache = useQueryClient();
   const [busy, setBusy] = useState(false);
-  const initials = [user.nombre, user.apellido].filter(Boolean).map((part) => part!.trim()[0]).join("").slice(0, 2).toUpperCase();
+  const initials = [user.nombre, user.apellido]
+    .filter(Boolean)
+    .map((part) => part!.trim()[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   async function signOut() {
     if (busy) return;
@@ -62,17 +67,10 @@ export function UserMenu({ user }: { user: IdentityUser }) {
             <Label>{user.correo}</Label>
           </Dropdown.Item>
           <Separator />
-          <Dropdown.Item
-            id="profile"
-            textValue="Mi perfil"
-          >
+          <Dropdown.Item id="profile" textValue="Mi perfil">
             <Label>Mi perfil</Label>
           </Dropdown.Item>
-          <Dropdown.Item
-            id="logout"
-            isDisabled={busy}
-            textValue="Cerrar sesión"
-          >
+          <Dropdown.Item id="logout" isDisabled={busy} textValue="Cerrar sesión">
             <Label>{busy ? "Cerrando sesión…" : "Cerrar sesión"}</Label>
           </Dropdown.Item>
         </Dropdown.Menu>
