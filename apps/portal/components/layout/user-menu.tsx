@@ -39,22 +39,18 @@ export function UserMenu({ user }: { user: IdentityUser }) {
 
   return (
     <Dropdown>
-      <Dropdown.Trigger>
-        <Button
-          aria-label="Abrir menú de usuario"
-          className="max-w-52 gap-2 px-2"
-          size="sm"
-          variant="tertiary"
-        >
-          <Avatar className="size-8 shrink-0">
-            <Avatar.Fallback>{initials || "AC"}</Avatar.Fallback>
-          </Avatar>
-          <span className="hidden min-w-0 truncate text-sm font-medium sm:block">
-            {user.nombre}
-          </span>
-          <FiChevronDown aria-hidden="true" className="hidden size-4 shrink-0 sm:block" />
-        </Button>
-      </Dropdown.Trigger>
+      <Button
+        aria-label="Abrir menú de usuario"
+        className="max-w-52 gap-2 px-2"
+        size="sm"
+        variant="tertiary"
+      >
+        <Avatar className="size-8 shrink-0">
+          <Avatar.Fallback>{initials || "AC"}</Avatar.Fallback>
+        </Avatar>
+        <span className="hidden min-w-0 truncate text-sm font-medium sm:block">{user.nombre}</span>
+        <FiChevronDown aria-hidden="true" className="hidden size-4 shrink-0 sm:block" />
+      </Button>
       <Dropdown.Popover placement="bottom end">
         <Dropdown.Menu
           aria-label="Opciones de cuenta"
