@@ -1,0 +1,28 @@
+/** All calls go through the gateway; credentials are never exposed to the browser. */
+export async function identityRequest(
+  path: string,
+  options: { method?: "GET" | "POST"; body?: unknown; accessToken?: string } = {},
+): Promise<Response> {
+  const configured = process.env.AGROCLOUD_GATEWAY_URL;
+  if (!configured) throw new Error("AGROCLOUD_GATEWAY_URL no está configurada.");
+  const base = new URL(configured);
+  if (!["http:", "https:"].includes(base.protocol) || base.username || base.password || base.search || base.hash) {
+    throw new Error("AGROCLOUD_GATEWAY_URL es inválida.");
+  }
+  if (!/^\/[a-zA-Z0-9/-]+$/.test(path) || path.includes("//") || path.includes("..")) {
+    throw new Error("Ruta de Identity no autorizada.");
+  }
+  const url = new URL(`/api/v1/identity${path}`, base.origin);
+  return fetch(url, {
+    method: options.method ?? "GET",
+    headers: {
+      Accept: "application/json",
+      ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
+    },
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    signal: AbortSignal.timeout(15_000),
+    cache: "no-store",
+    redirect: "error",
+  });
+}

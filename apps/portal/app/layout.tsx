@@ -1,25 +1,16 @@
 import "@/styles/globals.css";
-import { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import clsx from "clsx";
-
 import { Providers } from "./providers";
-
-import { siteConfig } from "@/config/site";
 import { fontMono, fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
 
 export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
+  title: { default: "AgroCloud AI | Portal", template: "%s | AgroCloud AI" },
+  description: "Acceso seguro al portal empresarial de AgroCloud AI.",
+  icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
 };
-
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f7faf8" },
@@ -27,34 +18,11 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={clsx(fontSans.variable, fontMono.variable)} lang="en" suppressHydrationWarning>
-      <head />
-      <body className="min-h-screen text-foreground bg-background font-sans antialiased">
-        <Providers>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              {children}
-            </main>
-            <footer className="w-full flex items-center justify-center py-3">
-              <a
-                className="flex items-center gap-1 text-current no-underline"
-                href="https://heroui.com?utm_source=next-app-template"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <span className="text-muted">Powered by</span>
-                <p className="text-accent">HeroUI</p>
-              </a>
-            </footer>
-          </div>
-        </Providers>
+    <html lang="es" suppressHydrationWarning className={clsx(fontSans.variable, fontMono.variable)}>
+      <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
