@@ -4,11 +4,20 @@ import Link from "next/link";
 export default function DesignSystemLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <nav aria-label="Biblioteca de diseño" className="mx-auto mt-5 flex max-w-6xl flex-wrap gap-2 px-1">
-        <Link href="/design-system" className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:text-accent focus-visible:outline-2 focus-visible:outline-focus">
+      <nav
+        aria-label="Biblioteca de diseño"
+        className="mx-auto mt-5 flex max-w-6xl flex-wrap gap-2 px-1"
+      >
+        <Link
+          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:text-accent focus-visible:outline-2 focus-visible:outline-focus"
+          href="/design-system"
+        >
           Fundamentos
         </Link>
-        <Link href="/design-system/advanced" className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:text-accent focus-visible:outline-2 focus-visible:outline-focus">
+        <Link
+          className="rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:text-accent focus-visible:outline-2 focus-visible:outline-focus"
+          href="/design-system/advanced"
+        >
           Componentes avanzados
         </Link>
       </nav>

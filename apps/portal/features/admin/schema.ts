@@ -2,15 +2,18 @@ import { z } from "zod";
 
 const text = z.string().nullish();
 const verification = z.object({ resultado: text, estado: text, condicion: text }).nullish();
-export const decisionSchema = z.object({
-  decision: z.enum(["APROBADA", "RECHAZADA", "EN_REVISION"]),
-  motivo: z.string().trim().min(1).max(2000),
-  revision_manual: z.boolean().optional(),
-  referencia_verificacion: z.string().trim().max(255).optional(),
-}).refine(
-  (value) => !value.revision_manual || value.decision !== "APROBADA" || value.motivo.length >= 20,
-  { message: "Justifica la aprobación manual en al menos 20 caracteres." },
-);
+
+export const decisionSchema = z
+  .object({
+    decision: z.enum(["APROBADA", "RECHAZADA", "EN_REVISION"]),
+    motivo: z.string().trim().min(1).max(2000),
+    revision_manual: z.boolean().optional(),
+    referencia_verificacion: z.string().trim().max(255).optional(),
+  })
+  .refine(
+    (value) => !value.revision_manual || value.decision !== "APROBADA" || value.motivo.length >= 20,
+    { message: "Justifica la aprobación manual en al menos 20 caracteres." },
+  );
 
 export const requestSchema = z.object({
   id: z.number().int().positive(),

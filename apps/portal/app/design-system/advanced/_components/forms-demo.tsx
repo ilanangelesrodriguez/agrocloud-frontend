@@ -25,6 +25,7 @@ import {
   TextField,
   toast,
 } from "@heroui/react";
+
 import { DemoLabel, DemoSection } from "./demo-section";
 
 const producers = [
@@ -43,8 +44,8 @@ export function FormsDemo() {
 
   return (
     <DemoSection
-      title="Formularios y selección"
       description="Form · Fieldset · FieldError · ErrorMessage · Input · InputGroup · Autocomplete · ComboBox · Checkbox · CheckboxGroup · RadioGroup · Switch"
+      title="Formularios y selección"
     >
       <div className="grid gap-3">
         <DemoLabel>Form, Fieldset, Input y FieldError</DemoLabel>
@@ -67,11 +68,11 @@ export function FormsDemo() {
                 <Label>Razón social</Label>
                 <Input placeholder="Empresa Agroindustrial S.A.C." />
               </TextField>
-              <TextField name="correo" isInvalid={invalidEmail}>
+              <TextField isInvalid={invalidEmail} name="correo">
                 <Label>Correo empresarial</Label>
                 <Input
-                  type="email"
                   placeholder="contacto@empresa.pe"
+                  type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                 />
@@ -87,16 +88,27 @@ export function FormsDemo() {
               </TextField>
             </Fieldset.Group>
             <Fieldset.Actions>
-              <Button type="submit" variant="primary">Validar formulario</Button>
-              <Button type="reset" variant="secondary" onPress={() => {
-                setEmail("");
-                setSubmitted(false);
-              }}>Limpiar</Button>
+              <Button type="submit" variant="primary">
+                Validar formulario
+              </Button>
+              <Button
+                type="reset"
+                variant="secondary"
+                onPress={() => {
+                  setEmail("");
+                  setSubmitted(false);
+                }}
+              >
+                Limpiar
+              </Button>
             </Fieldset.Actions>
           </Fieldset>
         </Form>
         <Surface className="rounded-lg border border-border px-3 py-2">
-          <ErrorMessage>Ejemplo de ErrorMessage: para errores de componentes no asociados a un campo de formulario.</ErrorMessage>
+          <ErrorMessage>
+            Ejemplo de ErrorMessage: para errores de componentes no asociados a un campo de
+            formulario.
+          </ErrorMessage>
         </Surface>
       </div>
 
@@ -122,7 +134,7 @@ export function FormsDemo() {
                 </SearchField>
                 <ListBox>
                   {producers.map((producer) => (
-                    <ListBox.Item id={producer.id} textValue={producer.name} key={producer.id}>
+                    <ListBox.Item key={producer.id} id={producer.id} textValue={producer.name}>
                       <Label>{producer.name}</Label>
                       <ListBox.ItemIndicator />
                     </ListBox.Item>
@@ -143,7 +155,7 @@ export function FormsDemo() {
             <ComboBox.Popover>
               <ListBox>
                 {producers.map((producer) => (
-                  <ListBox.Item id={producer.id} textValue={producer.name} key={producer.id}>
+                  <ListBox.Item key={producer.id} id={producer.id} textValue={producer.name}>
                     <Label>{producer.name}</Label>
                     <ListBox.ItemIndicator />
                   </ListBox.Item>
@@ -162,13 +174,28 @@ export function FormsDemo() {
           <CheckboxGroup name="permissions" value={checked} onChange={setChecked}>
             <Label>Módulos habilitados (ejemplo)</Label>
             <Checkbox value="traceability">
-              <Checkbox.Content><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control>Trazabilidad</Checkbox.Content>
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                Trazabilidad
+              </Checkbox.Content>
             </Checkbox>
             <Checkbox value="reports">
-              <Checkbox.Content><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control>Reportes</Checkbox.Content>
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                Reportes
+              </Checkbox.Content>
             </Checkbox>
             <Checkbox value="ai">
-              <Checkbox.Content><Checkbox.Control><Checkbox.Indicator /></Checkbox.Control>Inspecciones con IA</Checkbox.Content>
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                Inspecciones con IA
+              </Checkbox.Content>
             </Checkbox>
           </CheckboxGroup>
           <p className="text-xs text-muted">Seleccionados: {checked.length}</p>
@@ -180,17 +207,29 @@ export function FormsDemo() {
             <RadioGroup value={mode} onChange={setMode}>
               <Label>Modo de inspección</Label>
               <Radio value="manual">
-                <Radio.Content><Radio.Control><Radio.Indicator /></Radio.Control>Manual</Radio.Content>
+                <Radio.Content>
+                  <Radio.Control>
+                    <Radio.Indicator />
+                  </Radio.Control>
+                  Manual
+                </Radio.Content>
               </Radio>
               <Radio value="assisted">
-                <Radio.Content><Radio.Control><Radio.Indicator /></Radio.Control>Asistida por IA</Radio.Content>
+                <Radio.Content>
+                  <Radio.Control>
+                    <Radio.Indicator />
+                  </Radio.Control>
+                  Asistida por IA
+                </Radio.Content>
               </Radio>
             </RadioGroup>
           </div>
           <div className="grid gap-2">
             <DemoLabel>Switch</DemoLabel>
             <Switch isSelected={emailAlerts} onChange={setEmailAlerts}>
-              <Switch.Control><Switch.Thumb /></Switch.Control>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
               <Switch.Content>
                 <Label>Alertas por correo</Label>
                 <Description>Control visual local, sin conexión a preferencias reales.</Description>

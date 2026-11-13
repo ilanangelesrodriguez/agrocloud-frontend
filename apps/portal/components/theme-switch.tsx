@@ -9,7 +9,11 @@ import { MoonFilledIcon, SunFilledIcon } from "@/components/icons";
 const subscribe = () => () => {};
 
 export function ThemeSwitch({ className }: { className?: string }) {
-  const mounted = useSyncExternalStore(subscribe, () => true, () => false);
+  const mounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const { resolvedTheme, setTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 

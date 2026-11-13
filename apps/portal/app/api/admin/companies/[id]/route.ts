@@ -6,6 +6,7 @@ import { reply } from "@/lib/auth/route-utils";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
   if (!positiveInteger(id)) return reply({ message: "Empresa inválida." }, 400);
 
   return adminIdentity(request, "/companies/" + id, companyResponseSchema);

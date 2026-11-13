@@ -21,7 +21,11 @@
     "typecheck": "turbo run typecheck",
     "check": "npm run lint && npm run typecheck && npm run build",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "format:portal": "prettier --write \"apps/portal/**/*.{ts,tsx,js,mjs,json,css,md}\"",
+    "format:portal:check": "prettier --check \"apps/portal/**/*.{ts,tsx,js,mjs,json,css,md}\"",
+    "cleanup:portal:check": "node scripts/phase1-cleanup.mjs",
+    "cleanup:portal:apply": "node scripts/phase1-cleanup.mjs --apply"
   },
   "devDependencies": {
     "turbo": "2.11.10",

@@ -9,16 +9,22 @@ export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   const body = await parseJson(request);
+
   if (!body.ok) return body.response;
   const parsed = confirmEmailSchema.safeParse(body.body);
+
   if (!parsed.success) return reply({ message: "Enlace de confirmación incorrecto." }, 422);
   try {
     const upstream = await identityRequest("/auth/confirm-email", {
-      method: "POST", body: parsed.data,
+      method: "POST",
+      body: parsed.data,
     });
+
     if (!upstream.ok) return remoteError(upstream.status);
     const response = reply({ message: "Correo confirmado. Inicia sesión con el nuevo correo." });
+
     clearSession(response);
+
     return response;
   } catch {
     return reply({ message: "No se pudo confirmar el cambio de correo." }, 503);

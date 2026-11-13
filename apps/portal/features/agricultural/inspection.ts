@@ -1,8 +1,12 @@
 import { z } from "zod";
 
 const id = z.number().int().positive();
+
 export const evidence = z.object({
-  id_evidencia: id, id_fruto: id, estado_ia: z.string().nullish(), pertinencia: z.string().nullish(),
+  id_evidencia: id,
+  id_fruto: id,
+  estado_ia: z.string().nullish(),
+  pertinencia: z.string().nullish(),
 });
 export const evidenceResponse = z.object({ data: evidence });
 export const analysisQueued = z.object({ queued: z.literal(true) });
@@ -24,13 +28,16 @@ const sample = z.object({
   inspecciones: z.array(inspection).optional(),
   lote: z.object({ id_lote: id, codigo_lote: z.string() }).optional(),
 });
+
 export const samplingDetail = z.object({ data: sample });
 export const samplingFruits = z.object({
-  data: z.array(z.object({
-    id,
-    numero: id,
-    codigo: z.string().nullish(),
-  })),
+  data: z.array(
+    z.object({
+      id,
+      numero: id,
+      codigo: z.string().nullish(),
+    }),
+  ),
   meta: z.object({ current_page: id, last_page: id }),
 });
 export const inspectionDetail = z.object({

@@ -8,6 +8,9 @@ export const settingsLinks = [
 ] as const;
 
 export function canManageCompany(user: IdentityUser | undefined, permission?: string) {
-  return Boolean(user?.id_empresa && user.rol?.codigo !== "SUPERADMIN" &&
-    (!permission || user.permissions.includes(permission)));
+  return Boolean(
+    user?.id_empresa &&
+    user.rol?.codigo !== "SUPERADMIN" &&
+    (!permission || user.permissions.includes(permission)),
+  );
 }

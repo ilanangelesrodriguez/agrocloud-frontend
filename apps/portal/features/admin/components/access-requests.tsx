@@ -5,11 +5,22 @@ import type { AccessRequest } from "../schema";
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Checkbox, Input, Label, ListBox, Select, TextArea, TextField, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  TextArea,
+  TextField,
+  toast,
+} from "@heroui/react";
 import Link from "next/link";
 
 import { adminRequest } from "../api";
 import { decisionResponseSchema, decisionSchema, requestPageSchema } from "../schema";
+
 import { AdminError, AdminHeading, AdminPagination } from "./admin-ui";
 
 function DecisionForm({ id }: { id: number }) {
@@ -18,16 +29,17 @@ function DecisionForm({ id }: { id: number }) {
   const [manual, setManual] = useState(false);
   const [error, setError] = useState("");
   const mutation = useMutation({
-    mutationFn: (body: object) => adminRequest(
-      "access-requests/" + id + "/decision",
-      decisionResponseSchema,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
-    ),
+    mutationFn: (body: object) =>
+      adminRequest("access-requests/" + id + "/decision", decisionResponseSchema, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }),
     onSuccess: async ({ data }) => {
       toast.success("Decisión registrada");
       queryClient.setQueriesData<ReturnType<typeof requestPageSchema.parse>>(
         { queryKey: ["admin", "access-requests"] },
-        (page) => page && { ...page, data: page.data.map((row) => row.id === id ? data : row) },
+        (page) => page && { ...page, data: page.data.map((row) => (row.id === id ? data : row)) },
       );
       await queryClient.invalidateQueries({ queryKey: ["admin"] });
     },
@@ -45,7 +57,9 @@ function DecisionForm({ id }: { id: number }) {
       referencia_verificacion: fields.get("referencia") || undefined,
     });
 
-    setError(parsed.success ? "" : parsed.error.issues[0]?.message ?? "Revisa los datos ingresados.");
+    setError(
+      parsed.success ? "" : (parsed.error.issues[0]?.message ?? "Revisa los datos ingresados."),
+    );
     if (parsed.success) mutation.mutate(parsed.data);
   }
 
@@ -53,23 +67,42 @@ function DecisionForm({ id }: { id: number }) {
     <form className="mt-4 space-y-4 border-t border-border pt-4" onSubmit={submit}>
       <fieldset className="grid gap-3" disabled={mutation.isPending}>
         <legend className="mb-2 font-semibold">Registrar decisión</legend>
-        <Select isDisabled={mutation.isPending} value={decision}
-          onChange={(value) => { if (typeof value === "string") setDecision(value); }}>
+        <Select
+          isDisabled={mutation.isPending}
+          value={decision}
+          onChange={(value) => {
+            if (typeof value === "string") setDecision(value);
+          }}
+        >
           <Label>Decisión</Label>
-          <Select.Trigger><Select.Value /><Select.Indicator /></Select.Trigger>
+          <Select.Trigger>
+            <Select.Value />
+            <Select.Indicator />
+          </Select.Trigger>
           <Select.Popover>
             <ListBox aria-label="Decisiones">
-              <ListBox.Item id="EN_REVISION" textValue="En revisión">En revisión</ListBox.Item>
-              <ListBox.Item id="APROBADA" textValue="Aprobar">Aprobar</ListBox.Item>
-              <ListBox.Item id="RECHAZADA" textValue="Rechazar">Rechazar</ListBox.Item>
+              <ListBox.Item id="EN_REVISION" textValue="En revisión">
+                En revisión
+              </ListBox.Item>
+              <ListBox.Item id="APROBADA" textValue="Aprobar">
+                Aprobar
+              </ListBox.Item>
+              <ListBox.Item id="RECHAZADA" textValue="Rechazar">
+                Rechazar
+              </ListBox.Item>
             </ListBox>
           </Select.Popover>
         </Select>
         {decision === "APROBADA" ? (
           <>
-            <p className="text-sm text-muted">Identity verifica el RUC al aprobar. Si no confirma que esté activo y habido, debes justificar la revisión manual.</p>
+            <p className="text-sm text-muted">
+              Identity verifica el RUC al aprobar. Si no confirma que esté activo y habido, debes
+              justificar la revisión manual.
+            </p>
             <Checkbox isDisabled={mutation.isPending} isSelected={manual} onChange={setManual}>
-              <Checkbox.Control><Checkbox.Indicator /></Checkbox.Control>
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
               <Checkbox.Content>Confirmo que realicé una revisión manual</Checkbox.Content>
             </Checkbox>
             {manual ? (
@@ -80,9 +113,13 @@ function DecisionForm({ id }: { id: number }) {
             ) : null}
           </>
         ) : null}
-        <TextField isDisabled={mutation.isPending} isRequired name="motivo">
+        <TextField isRequired isDisabled={mutation.isPending} name="motivo">
           <Label>Motivo</Label>
-          <TextArea maxLength={2000} minLength={decision === "APROBADA" && manual ? 20 : 1} rows={3} />
+          <TextArea
+            maxLength={2000}
+            minLength={decision === "APROBADA" && manual ? 20 : 1}
+            rows={3}
+          />
         </TextField>
       </fieldset>
       {error || mutation.error ? <p role="alert">{error || mutation.error?.message}</p> : null}
@@ -102,7 +139,14 @@ function RequestDetails({ request }: { request: AccessRequest }) {
     ["Correo", request.correo],
     ["Teléfono", request.telefono],
     ["Uso previsto", request.uso],
-    ["Verificación tributaria", verification ? [verification.resultado, verification.estado, verification.condicion].filter(Boolean).join(" · ") : "Sin resultado registrado"],
+    [
+      "Verificación tributaria",
+      verification
+        ? [verification.resultado, verification.estado, verification.condicion]
+            .filter(Boolean)
+            .join(" · ")
+        : "Sin resultado registrado",
+    ],
     ["Motivo de la última decisión", request.motivo],
   ];
 
@@ -110,20 +154,31 @@ function RequestDetails({ request }: { request: AccessRequest }) {
     <details className="rounded-card border border-border bg-surface p-4">
       <summary className="cursor-pointer">
         <strong>{request.razon_social}</strong>
-        <span className="ml-2 text-sm text-muted">{request.ruc} · {request.estado.replaceAll("_", " ")}</span>
+        <span className="ml-2 text-sm text-muted">
+          {request.ruc} · {request.estado.replaceAll("_", " ")}
+        </span>
       </summary>
       <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-        {fields.map(([label, value]) => value ? (
-          <div key={label} className="min-w-0">
-            <dt className="text-sm text-muted">{label}</dt>
-            <dd className="whitespace-pre-wrap break-words">{value}</dd>
-          </div>
-        ) : null)}
+        {fields.map(([label, value]) =>
+          value ? (
+            <div key={label} className="min-w-0">
+              <dt className="text-sm text-muted">{label}</dt>
+              <dd className="whitespace-pre-wrap break-words">{value}</dd>
+            </div>
+          ) : null,
+        )}
       </dl>
       {request.id_empresa ? (
-        <Link className="mt-4 inline-block text-accent underline" href={"/admin/companies/" + request.id_empresa}>Ver empresa</Link>
+        <Link
+          className="mt-4 inline-block text-accent underline"
+          href={"/admin/companies/" + request.id_empresa}
+        >
+          Ver empresa
+        </Link>
       ) : null}
-      {request.estado === "APROBADA" || request.estado === "RECHAZADA" ? null : <DecisionForm id={request.id} />}
+      {request.estado === "APROBADA" || request.estado === "RECHAZADA" ? null : (
+        <DecisionForm id={request.id} />
+      )}
     </details>
   );
 }
@@ -132,20 +187,32 @@ export function AccessRequests() {
   const [page, setPage] = useState(1);
   const requests = useQuery({
     queryKey: ["admin", "access-requests", page],
-    queryFn: ({ signal }) => adminRequest("access-requests?page=" + page, requestPageSchema, { signal }),
+    queryFn: ({ signal }) =>
+      adminRequest("access-requests?page=" + page, requestPageSchema, { signal }),
     retry: false,
   });
 
   return (
     <section className="space-y-4">
       <AdminHeading title="Solicitudes empresariales" />
-      {requests.isPending ? <p role="status">Cargando solicitudes…</p> : requests.isError ? (
-        <AdminError error={requests.error} retry={() => { void requests.refetch(); }} />
+      {requests.isPending ? (
+        <p role="status">Cargando solicitudes…</p>
+      ) : requests.isError ? (
+        <AdminError
+          error={requests.error}
+          retry={() => {
+            void requests.refetch();
+          }}
+        />
       ) : (
         <>
-          {requests.data.data.length ? requests.data.data.map((request) => (
-            <RequestDetails key={request.id} request={request} />
-          )) : <p>No hay solicitudes en esta página.</p>}
+          {requests.data.data.length ? (
+            requests.data.data.map((request) => (
+              <RequestDetails key={request.id} request={request} />
+            ))
+          ) : (
+            <p>No hay solicitudes en esta página.</p>
+          )}
           <AdminPagination last={requests.data.last_page} page={page} onChange={setPage} />
         </>
       )}

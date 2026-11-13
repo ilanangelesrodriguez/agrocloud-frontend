@@ -1,7 +1,10 @@
 import "@/styles/globals.css";
 import type { Metadata, Viewport } from "next";
+
 import clsx from "clsx";
+
 import { Providers } from "./providers";
+
 import { fontMono, fontSans } from "@/config/fonts";
 
 export const metadata: Metadata = {
@@ -20,7 +23,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning className={clsx(fontSans.variable, fontMono.variable)}>
+    <html suppressHydrationWarning className={clsx(fontSans.variable, fontMono.variable)} lang="es">
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
         <Providers>{children}</Providers>
       </body>

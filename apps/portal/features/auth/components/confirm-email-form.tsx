@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
+
 import { postAuth } from "../request";
+
 import { AuthCard } from "./auth-card";
 import { FormFeedback } from "./form-feedback";
 
@@ -29,14 +31,31 @@ export function ConfirmEmailForm() {
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo confirmar el cambio de correo.");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   };
+
   return (
-    <AuthCard title="Confirmar nuevo correo" description="Verifica el cambio de dirección de tu cuenta AgroCloud. Este enlace vence en 24 horas."
-      footer={<Link href="/login" className="font-semibold text-accent hover:underline">Volver al acceso</Link>}>
+    <AuthCard
+      description="Verifica el cambio de dirección de tu cuenta AgroCloud. Este enlace vence en 24 horas."
+      footer={
+        <Link className="font-semibold text-accent hover:underline" href="/login">
+          Volver al acceso
+        </Link>
+      }
+      title="Confirmar nuevo correo"
+    >
       {!valid && <FormFeedback message="El enlace de confirmación es inválido o incompleto." />}
       <FormFeedback message={error} />
-      <Button className="w-full min-h-12" variant="primary" isDisabled={!valid || busy} onPress={() => { void confirm(); }}>
+      <Button
+        className="w-full min-h-12"
+        isDisabled={!valid || busy}
+        variant="primary"
+        onPress={() => {
+          void confirm();
+        }}
+      >
         {busy ? "Confirmando…" : "Confirmar correo"}
       </Button>
     </AuthCard>

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint, TypeScript and build
+    name: Format, lint, TypeScript and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -37,6 +37,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # El formato del portal se aplica localmente con npm run format:portal.
+      # No se modifica código automáticamente en CI: se comprueba la convención.
+      - name: Check portal formatting
+        run: npm run format:portal:check
 
       - name: Lint
         run: npm run lint

@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const email = z.email("Ingresa un correo electrónico válido.").max(255);
-export const password = z.string().min(12, "Usa al menos 12 caracteres.")
+export const password = z
+  .string()
+  .min(12, "Usa al menos 12 caracteres.")
   .regex(/[a-z]/, "Incluye una letra minúscula.")
   .regex(/[A-Z]/, "Incluye una letra mayúscula.")
   .regex(/[0-9]/, "Incluye un número.")
@@ -12,35 +14,41 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Ingresa tu contraseña.").max(255),
 });
 export const forgotSchema = z.object({ correo: email });
-export const passwordPair = z.object({ password, password_confirmation: z.string() })
+export const passwordPair = z
+  .object({ password, password_confirmation: z.string() })
   .refine((value) => value.password === value.password_confirmation, {
-    message: "Las contraseñas no coinciden.", path: ["password_confirmation"],
+    message: "Las contraseñas no coinciden.",
+    path: ["password_confirmation"],
   });
 export const activationSchema = passwordPair.safeExtend({
   user_id: z.coerce.number().int().positive(),
   token: z.string().min(1).max(128),
 });
 export const resetSchema = passwordPair.safeExtend({
-  correo: email, token: z.string().min(1).max(255),
+  correo: email,
+  token: z.string().min(1).max(255),
 });
 export const confirmEmailSchema = z.object({
-  user_id: z.coerce.number().int().positive(), token: z.string().min(1).max(128),
+  user_id: z.coerce.number().int().positive(),
+  token: z.string().min(1).max(128),
 });
 export const changeEmailSchema = z.object({
   correo: email,
   current_password: z.string().min(1, "Confirma tu contraseña actual.").max(255),
 });
 
-export const identityUserSchema = z.object({
-  id_usuario: z.number().int(),
-  id_empresa: z.number().int().nullable(),
-  nombre: z.string(),
-  apellido: z.string().nullable(),
-  correo: z.string(),
-  estado: z.boolean(),
-  rol: z.object({ codigo: z.string(), nombre: z.string().optional() }).nullable(),
-  permissions: z.array(z.string()),
-}).passthrough();
+export const identityUserSchema = z
+  .object({
+    id_usuario: z.number().int(),
+    id_empresa: z.number().int().nullable(),
+    nombre: z.string(),
+    apellido: z.string().nullable(),
+    correo: z.string(),
+    estado: z.boolean(),
+    rol: z.object({ codigo: z.string(), nombre: z.string().optional() }).nullable(),
+    permissions: z.array(z.string()),
+  })
+  .passthrough();
 export const identityTokenSchema = z.object({
   token_type: z.literal("Bearer"),
   access_token: z.string().min(30),
@@ -60,6 +68,12 @@ export function safeNext(value: string | null | undefined, fallback: string): st
   if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\r\n?#]/.test(value)) {
     return fallback;
   }
-  if (/^\/(?:dashboard|admin|producers|lots|settings\/(?:profile|company|users|roles|subscription))(?:\/.*)?$/.test(value)) return value;
+  if (
+    /^\/(?:dashboard|admin|producers|lots|settings\/(?:profile|company|users|roles|subscription))(?:\/.*)?$/.test(
+      value,
+    )
+  )
+    return value;
+
   return fallback;
 }

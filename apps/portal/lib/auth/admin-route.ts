@@ -13,7 +13,7 @@ export function adminIdentity(
 ) {
   return authorizedIdentity(
     request,
-    (user) => user.rol?.codigo === "SUPERADMIN" ? path : null,
+    (user) => (user.rol?.codigo === "SUPERADMIN" ? path : null),
     schema,
     options,
   );

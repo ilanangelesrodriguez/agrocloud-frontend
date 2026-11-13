@@ -7,12 +7,15 @@ import { Form } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { passwordPair } from "@/lib/auth/schemas";
+
 import { postAuth } from "../request";
+
 import { AuthCard } from "./auth-card";
 import { AuthField } from "./auth-field";
 import { FormFeedback } from "./form-feedback";
 import { SubmitButton } from "./submit-button";
+
+import { passwordPair } from "@/lib/auth/schemas";
 
 export function ResetForm() {
   const params = useSearchParams();
@@ -22,7 +25,11 @@ export function ResetForm() {
   const validLink = Boolean(correo && token);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof passwordPair>>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof passwordPair>>({
     resolver: zodResolver(passwordPair),
   });
   const submit = handleSubmit(async (fields) => {
@@ -34,18 +41,42 @@ export function ResetForm() {
       router.replace("/login?password-reset=1");
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo cambiar la contraseña.");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   });
+
   return (
-    <AuthCard title="Nueva contraseña" description="Restablece tu contraseña. El enlace de recuperación es válido durante 60 minutos."
-      footer={<Link href="/forgot-password" className="font-semibold text-accent hover:underline">Solicitar otro enlace</Link>}>
-      {!validLink ? <FormFeedback message="El enlace de recuperación no es válido. Solicita otro enlace." /> : (
+    <AuthCard
+      description="Restablece tu contraseña. El enlace de recuperación es válido durante 60 minutos."
+      footer={
+        <Link className="font-semibold text-accent hover:underline" href="/forgot-password">
+          Solicitar otro enlace
+        </Link>
+      }
+      title="Nueva contraseña"
+    >
+      {!validLink ? (
+        <FormFeedback message="El enlace de recuperación no es válido. Solicita otro enlace." />
+      ) : (
         <Form className="space-y-5" validationBehavior="aria" onSubmit={submit}>
-          <AuthField label="Nueva contraseña" passwordToggle autoComplete="new-password"
-            {...register("password")} error={errors.password?.message} />
-          <AuthField label="Confirmar contraseña" passwordToggle autoComplete="new-password"
-            {...register("password_confirmation")} error={errors.password_confirmation?.message} />
-          <p className="text-xs leading-6 text-muted">Al restablecer la contraseña, se cerrarán las sesiones anteriores de la cuenta.</p>
+          <AuthField
+            passwordToggle
+            autoComplete="new-password"
+            label="Nueva contraseña"
+            {...register("password")}
+            error={errors.password?.message}
+          />
+          <AuthField
+            passwordToggle
+            autoComplete="new-password"
+            label="Confirmar contraseña"
+            {...register("password_confirmation")}
+            error={errors.password_confirmation?.message}
+          />
+          <p className="text-xs leading-6 text-muted">
+            Al restablecer la contraseña, se cerrarán las sesiones anteriores de la cuenta.
+          </p>
           <FormFeedback message={error} />
           <SubmitButton pending={busy}>Guardar contraseña</SubmitButton>
         </Form>

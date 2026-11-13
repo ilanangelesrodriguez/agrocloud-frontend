@@ -8,12 +8,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { loginSchema, safeNext } from "@/lib/auth/schemas";
+
 import { postAuth } from "../request";
+
 import { AuthField } from "./auth-field";
 import { AuthCard } from "./auth-card";
 import { FormFeedback } from "./form-feedback";
 import { SubmitButton } from "./submit-button";
+
+import { loginSchema, safeNext } from "@/lib/auth/schemas";
 
 export function LoginForm() {
   const router = useRouter();
@@ -21,8 +24,13 @@ export function LoginForm() {
   const params = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema), defaultValues: { correo: "", password: "" },
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { correo: "", password: "" },
   });
 
   const submit = handleSubmit(async (fields) => {
@@ -30,13 +38,17 @@ export function LoginForm() {
     setBusy(true);
     setError(null);
     try {
-      const result = await postAuth("/api/auth/login", fields) as {
-        redirectTo: string; user: { rol: { codigo: string } | null };
+      const result = (await postAuth("/api/auth/login", fields)) as {
+        redirectTo: string;
+        user: { rol: { codigo: string } | null };
       };
+
       queryClient.clear();
       const target = safeNext(params.get("next"), result.redirectTo);
-      const restricted = target.startsWith("/admin") && result.user.rol?.codigo !== "SUPERADMIN"
-        || target.startsWith("/dashboard") && result.user.rol?.codigo === "SUPERADMIN";
+      const restricted =
+        (target.startsWith("/admin") && result.user.rol?.codigo !== "SUPERADMIN") ||
+        (target.startsWith("/dashboard") && result.user.rol?.codigo === "SUPERADMIN");
+
       router.replace(restricted ? result.redirectTo : target);
       router.refresh();
     } catch (e) {
@@ -47,14 +59,45 @@ export function LoginForm() {
   });
 
   return (
-    <AuthCard title="Bienvenido a AgroCloud" description="Ingresa con el correo y la contraseña de tu cuenta empresarial."
-      footer={process.env.NEXT_PUBLIC_MARKETING_URL ? <>¿Tu organización aún no tiene acceso? <a className="font-semibold text-accent underline" href={process.env.NEXT_PUBLIC_MARKETING_URL}>Solicitar acceso</a></> : undefined}>
-      <Form className="space-y-5" onSubmit={submit} validationBehavior="aria">
-        <AuthField label="Correo electrónico" autoComplete="email" placeholder="nombre@empresa.com" type="email"
-          {...register("correo")} error={errors.correo?.message} />
-        <AuthField label="Contraseña" autoComplete="current-password" placeholder="Tu contraseña"
-          {...register("password")} error={errors.password?.message} passwordToggle />
-        <div className="flex justify-end"><Link href="/forgot-password" className="text-sm font-medium text-accent hover:underline">¿Olvidaste tu contraseña?</Link></div>
+    <AuthCard
+      description="Ingresa con el correo y la contraseña de tu cuenta empresarial."
+      footer={
+        process.env.NEXT_PUBLIC_MARKETING_URL ? (
+          <>
+            ¿Tu organización aún no tiene acceso?{" "}
+            <a
+              className="font-semibold text-accent underline"
+              href={process.env.NEXT_PUBLIC_MARKETING_URL}
+            >
+              Solicitar acceso
+            </a>
+          </>
+        ) : undefined
+      }
+      title="Bienvenido a AgroCloud"
+    >
+      <Form className="space-y-5" validationBehavior="aria" onSubmit={submit}>
+        <AuthField
+          autoComplete="email"
+          label="Correo electrónico"
+          placeholder="nombre@empresa.com"
+          type="email"
+          {...register("correo")}
+          error={errors.correo?.message}
+        />
+        <AuthField
+          autoComplete="current-password"
+          label="Contraseña"
+          placeholder="Tu contraseña"
+          {...register("password")}
+          passwordToggle
+          error={errors.password?.message}
+        />
+        <div className="flex justify-end">
+          <Link className="text-sm font-medium text-accent hover:underline" href="/forgot-password">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
         <FormFeedback
           success
           message={
@@ -70,7 +113,9 @@ export function LoginForm() {
           }
         />
         <FormFeedback message={error} />
-        <SubmitButton pending={busy}>{busy ? "Validando acceso…" : "Ingresar al portal"}</SubmitButton>
+        <SubmitButton pending={busy}>
+          {busy ? "Validando acceso…" : "Ingresar al portal"}
+        </SubmitButton>
       </Form>
     </AuthCard>
   );
