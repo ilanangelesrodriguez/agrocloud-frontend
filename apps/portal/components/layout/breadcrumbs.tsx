@@ -45,7 +45,11 @@ export function crumbsFor(pathname: string, admin: boolean): Crumb[] {
     parts.shift();
   }
 
-  let path = pathname.startsWith("/settings/") ? "/settings" : pathname.startsWith("/admin") ? "/admin" : "";
+  let path = pathname.startsWith("/settings/")
+    ? "/settings"
+    : pathname.startsWith("/admin")
+      ? "/admin"
+      : "";
 
   for (let index = 0; index < parts.length; index++) {
     const segment = parts[index];
