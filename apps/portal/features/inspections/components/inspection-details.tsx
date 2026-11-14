@@ -63,7 +63,7 @@ export function InspectionDetails({ id }: { id: string }) {
           </div>
           {value.estado === "EN_CAPTURA" && !value.evidencias?.length ? (
             <InlineNotice
-              status="info"
+              status="default"
               title="Pendiente de evidencias"
               description="Adjunta una fotografía de un fruto para iniciar el análisis IA si tu rol lo permite."
             />

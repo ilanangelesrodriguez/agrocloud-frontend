@@ -10,6 +10,8 @@ export const publicOffersSchema = z.object({
       amount_cents: z.number().int().nonnegative(),
       duration_days: z.number().int().nonnegative(),
       available: z.boolean(),
+      valid_from: z.string().optional(),
+      valid_until: z.string().optional(),
       limits: z.object({
         usuarios: z.number().int().nonnegative(),
         lotes: z.number().int().nonnegative(),

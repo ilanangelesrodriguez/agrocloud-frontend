@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@heroui/react";
@@ -14,6 +14,18 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    }
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isMenuOpen]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/75 bg-background/90 backdrop-blur-xl">
       <div className="site-container flex h-[72px] items-center justify-between gap-5">
@@ -23,9 +35,9 @@ export function SiteHeader() {
           {siteConfig.nav.map(({ href, label }) => (
             <Link
               key={href}
-              href={href}
               aria-current={pathname === href ? "page" : undefined}
               className={`site-nav-link ${pathname === href ? "site-nav-active" : ""}`}
+              href={href}
             >
               {label}
             </Link>
@@ -34,14 +46,14 @@ export function SiteHeader() {
 
         <div className="hidden shrink-0 items-center gap-3 lg:flex">
           <ThemeSwitch className="!size-10 border border-border" />
-          {portalLoginUrl && (
-            <a href={portalLoginUrl} className="site-nav-link">
+          {portalLoginUrl ? (
+            <a className="site-nav-link" href={portalLoginUrl}>
               Ingresar
             </a>
-          )}
+          ) : null}
           <Link
-            href="/solicitar-acceso"
             className="site-button site-button-primary !px-4 !py-2.5 text-sm"
+            href="/solicitar-acceso"
           >
             Solicitar acceso
           </Link>
@@ -50,14 +62,14 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 lg:hidden">
           <ThemeSwitch className="!size-10 border border-border" />
           <Button
-            variant="outline"
-            size="md"
             isIconOnly
-            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             aria-controls="mobile-navigation"
             aria-expanded={isMenuOpen}
-            onPress={() => setIsMenuOpen((previous) => !previous)}
+            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             className="size-10 rounded-xl"
+            size="md"
+            variant="outline"
+            onPress={() => setIsMenuOpen((previous) => !previous)}
           >
             {isMenuOpen ? (
               <FiX aria-hidden="true" className="size-5" />
@@ -68,7 +80,7 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {isMenuOpen && (
+      {isMenuOpen ? (
         <nav
           id="mobile-navigation"
           aria-label="Navegación móvil"
@@ -78,29 +90,29 @@ export function SiteHeader() {
             {siteConfig.nav.map(({ href, label }) => (
               <Link
                 key={href}
-                href={href}
-                onClick={() => setIsMenuOpen(false)}
                 aria-current={pathname === href ? "page" : undefined}
                 className={`site-nav-link px-4 py-3 ${pathname === href ? "site-nav-active" : ""}`}
+                href={href}
+                onClick={() => setIsMenuOpen(false)}
               >
                 {label}
               </Link>
             ))}
-            {portalLoginUrl && (
-              <a href={portalLoginUrl} className="site-nav-link px-4 py-3">
+            {portalLoginUrl ? (
+              <a className="site-nav-link px-4 py-3" href={portalLoginUrl}>
                 Ingresar al portal
               </a>
-            )}
+            ) : null}
             <Link
+              className="site-button site-button-primary mt-3 text-center"
               href="/solicitar-acceso"
               onClick={() => setIsMenuOpen(false)}
-              className="site-button site-button-primary mt-3 text-center"
             >
               Solicitar acceso
             </Link>
           </div>
         </nav>
-      )}
+      ) : null}
     </header>
   );
 }

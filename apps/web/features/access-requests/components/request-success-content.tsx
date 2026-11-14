@@ -1,10 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Card, Typography } from "@heroui/react";
-import { FiCheckCircle } from "react-icons/fi";
+import { Button, Card, toast, Typography } from "@heroui/react";
+import { FiCheckCircle, FiCopy } from "react-icons/fi";
 
-export function RequestSuccessContent({ reference }: { reference?: string }) {
+type Props = { reference?: string };
+
+export function RequestSuccessContent({ reference }: Props) {
+  async function copyReference() {
+    if (!reference) return;
+
+    try {
+      await navigator.clipboard.writeText(reference);
+      toast.success("Referencia copiada");
+    } catch {
+      toast.danger("No fue posible copiar la referencia");
+    }
+  }
+
   return (
     <section className="site-container flex min-h-[65vh] items-center justify-center py-20">
       <Card className="site-card w-full max-w-xl">
@@ -16,18 +29,31 @@ export function RequestSuccessContent({ reference }: { reference?: string }) {
             {reference ? "Solicitud enviada para revisión" : "Recepción de solicitudes"}
           </Typography.Heading>
           <Typography.Paragraph className="mt-4 text-sm leading-8 text-muted">
-            Si acabas de completar el formulario y recibiste una confirmación, la solicitud fue
-            registrada. El siguiente paso depende de su revisión. No es necesario enviar el
-            formulario repetidamente.
+            Si recibiste una confirmación tras completar el formulario, tu solicitud fue registrada
+            y está pendiente de revisión. No es necesario enviarla repetidamente.
           </Typography.Paragraph>
           {reference ? (
-            <dl className="mt-6 rounded-xl bg-surface-secondary p-4 text-sm">
-              <dt className="font-semibold">Referencia de recepción</dt>
-              <dd className="mt-1 break-all font-mono">{reference}</dd>
-            </dl>
+            <div className="mt-6 rounded-xl bg-surface-secondary p-4">
+              <Typography.Paragraph className="text-sm font-semibold">
+                Referencia de recepción
+              </Typography.Paragraph>
+              <Typography.Paragraph className="mt-1 break-all font-mono text-sm">
+                {reference}
+              </Typography.Paragraph>
+              <Button
+                className="mt-4"
+                size="sm"
+                variant="secondary"
+                onPress={() => void copyReference()}
+              >
+                <FiCopy aria-hidden="true" className="size-4" />
+                Copiar referencia
+              </Button>
+            </div>
           ) : null}
           <Typography.Paragraph className="mt-3 text-xs leading-6 text-muted">
-            La referencia es un comprobante de recepción. Esta página no consulta el estado de la solicitud.
+            Esta referencia no permite consultar información privada ni verifica por sí sola el
+            estado de una solicitud. La revisión y activación se gestionan por separado.
           </Typography.Paragraph>
           <Link className="site-button site-button-primary mt-8" href="/">
             Volver al inicio

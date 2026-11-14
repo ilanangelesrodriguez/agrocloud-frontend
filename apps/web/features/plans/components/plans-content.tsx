@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { Alert, Button, Card, Chip, Typography } from "@heroui/react";
-import { FiCheck } from "react-icons/fi";
+import { Alert } from "@heroui/react";
 
 import { CallToAction, PageHero } from "@/components/marketing";
+import { portalLoginUrl } from "@/config/site";
 
 import { usePublicOffers } from "../hooks/use-public-offers";
+import { PlanCard } from "./plan-card";
+import { PlansState } from "./plans-state";
 
 const freeFeatures = [
   "Solicitud empresarial",
@@ -15,77 +16,8 @@ const freeFeatures = [
   "Alcance sujeto al plan asignado",
 ];
 
-const currency = new Intl.NumberFormat("es-PE", {
-  style: "currency",
-  currency: "PEN",
-});
-
+const currency = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" });
 const numbers = new Intl.NumberFormat("es-PE");
-
-type PlanCardProps = {
-  title: string;
-  description: string;
-  tag: string;
-  features: string[];
-  href: string;
-  actionLabel: string;
-  highlighted?: boolean;
-  price?: string;
-};
-
-function PlanCard({
-  title,
-  description,
-  tag,
-  features,
-  href,
-  actionLabel,
-  highlighted = false,
-  price,
-}: PlanCardProps) {
-  return (
-    <Card className="site-card h-full">
-      <Card.Content className="flex h-full flex-col p-7 sm:p-9">
-        <Chip color={highlighted ? "accent" : "default"} size="sm" variant="soft">
-          {tag}
-        </Chip>
-        <Typography.Heading className="mt-5 text-2xl font-semibold" level={2}>
-          {title}
-        </Typography.Heading>
-        <Typography.Paragraph className="mt-3 text-sm leading-7 text-muted">
-          {description}
-        </Typography.Paragraph>
-
-        {price ? (
-          <Typography.Paragraph className="mt-4 text-xl font-semibold tabular-nums">
-            {price}
-          </Typography.Paragraph>
-        ) : null}
-
-        <div className="mt-7 flex-1 space-y-3">
-          {features.map((feature) => (
-            <Typography.Paragraph
-              key={feature}
-              className="flex items-start gap-2.5 text-sm text-foreground"
-            >
-              <FiCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-              {feature}
-            </Typography.Paragraph>
-          ))}
-        </div>
-
-        <Link
-          className={`site-button mt-8 w-full justify-center ${
-            highlighted ? "site-button-primary" : "site-button-outline"
-          }`}
-          href={href}
-        >
-          {actionLabel}
-        </Link>
-      </Card.Content>
-    </Card>
-  );
-}
 
 export function PlansContent() {
   const offers = usePublicOffers();
@@ -94,79 +26,64 @@ export function PlansContent() {
   return (
     <>
       <PageHero
-        description="Explora las modalidades de incorporación a AgroCloud. Las condiciones, capacidades, complementos y precios deben confirmarse en una oferta vigente."
+        description="Explora las modalidades de incorporación a AgroCloud. Los precios y cupos empresariales se muestran desde las ofertas vigentes."
         eyebrow="Planes y acceso"
         title="Una plataforma que acompaña tu operación"
       />
-
       <section className="site-section">
         <div className="site-container grid max-w-5xl gap-6 md:grid-cols-2">
           <PlanCard
             highlighted
             actionLabel="Solicitar acceso"
-            description="Modalidad de solicitud empresarial con revisión y aprobación antes de la incorporación."
+            description="Solicitud empresarial gratuita, sujeta a revisión y aprobación. Los cupos se asignan al aprobarla."
             features={freeFeatures}
             href="/solicitar-acceso"
-            tag="Sujeto a evaluación"
+            tag="Acceso sujeto a aprobación"
             title="Acceso gratuito"
           />
           {publishedOffers.map((offer) => (
             <PlanCard
               key={offer.key}
-              actionLabel="Consultar condiciones"
-              description={offer.description || "Plan empresarial de AgroCloud AI."}
+              actionLabel={portalLoginUrl ? "Acceder para contratar" : "Consultar condiciones"}
+              description={offer.description || "Plan empresarial publicado por AgroCloud AI."}
               features={[
-                `Duración: ${numbers.format(offer.duration_days)} días`,
+                `Vigencia: ${numbers.format(offer.duration_days)} días`,
                 `Usuarios: ${numbers.format(offer.limits.usuarios)}`,
                 `Lotes: ${numbers.format(offer.limits.lotes)}`,
                 `Análisis IA: ${numbers.format(offer.limits.analisis_ia)}`,
               ]}
-              href="/contacto"
+              href={portalLoginUrl || "/contacto"}
               price={currency.format(offer.amount_cents / 100)}
               tag="Oferta vigente"
               title={offer.name}
             />
           ))}
           {offers.isPending ? (
-            <p className="rounded-card border border-border p-7 text-muted" role="status">
-              Cargando planes empresariales…
-            </p>
+            <PlansState state="loading" />
           ) : offers.isError && !offers.data ? (
-            <div className="rounded-card border border-border p-7">
-              <p className="text-muted" role="status">{offers.error.message}</p>
-              <Button
-                className="mt-4"
-                isDisabled={offers.isFetching}
-                variant="secondary"
-                onPress={() => {
-                  void offers.refetch();
-                }}
-              >
-                Reintentar
-              </Button>
-            </div>
+            <PlansState
+              error={offers.error.message}
+              isFetching={offers.isFetching}
+              state="error"
+              onRetry={() => void offers.refetch()}
+            />
           ) : publishedOffers.length === 0 ? (
-            <p className="rounded-card border border-border p-7 text-muted" role="status">
-              Actualmente no hay ofertas empresariales publicadas.
-            </p>
+            <PlansState state="empty" />
           ) : null}
         </div>
-
         <div className="site-container mt-8 max-w-5xl">
           <Alert className="border border-warning/25" status="warning">
             <Alert.Indicator />
             <Alert.Content>
-              <Alert.Title>Información sobre precios</Alert.Title>
+              <Alert.Title>Condiciones de contratación</Alert.Title>
               <Alert.Description>
-                Esta página no constituye una cotización. Las capacidades, los límites y las tarifas
-                deben confirmarse antes de contratar. El pago y la gestión de suscripciones se
-                realizarán mediante el flujo seguro de la plataforma.
+                Los precios se obtienen del catálogo vigente. La contratación, renovación y pago se
+                realizan dentro del portal autenticado; este sitio no procesa tarjetas.
               </Alert.Description>
             </Alert.Content>
           </Alert>
         </div>
       </section>
-
       <CallToAction
         button="Enviar solicitud"
         text="Puedes comenzar enviando una solicitud empresarial y compartiendo las necesidades de tu equipo."

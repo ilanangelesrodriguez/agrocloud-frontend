@@ -1,7 +1,4 @@
-export async function fetchPublicJson(
-  path: string,
-  options: RequestInit = {},
-): Promise<unknown> {
+export async function fetchPublicJson(path: string, options: RequestInit = {}): Promise<unknown> {
   let response: Response;
 
   try {
