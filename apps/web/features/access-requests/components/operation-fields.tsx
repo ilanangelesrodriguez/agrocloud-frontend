@@ -7,6 +7,7 @@ import NextLink from "next/link";
 import { Checkbox, Description, FieldError, Label, TextArea, TextField } from "@heroui/react";
 import { Controller } from "react-hook-form";
 
+import { fieldSurface, fieldSurfaceInvalid } from "./field-styles";
 import { FormSection } from "./form-section";
 
 type Props = {
@@ -24,10 +25,12 @@ export function OperationFields({ register, control, errors, privacyVersion }: P
       title="Tu operación agrícola"
     >
       <TextField isInvalid={Boolean(errors.uso)}>
-        <Label>¿Cómo planeas utilizar AgroCloud? *</Label>
+        <Label className="text-sm font-medium text-foreground">
+          ¿Cómo planeas utilizar AgroCloud? *
+        </Label>
         <TextArea
           {...register("uso")}
-          className="min-h-32 w-full resize-y"
+          className={`min-h-32 w-full resize-y ${errors.uso ? fieldSurfaceInvalid : fieldSurface}`}
           maxLength={4000}
           placeholder="Por ejemplo: necesitamos registrar recepciones de palta, realizar muestreos e inspecciones y consultar dictámenes."
           rows={5}
@@ -41,7 +44,9 @@ export function OperationFields({ register, control, errors, privacyVersion }: P
         render={({ field }) => (
           <Checkbox
             isRequired
-            className="mt-6 rounded-xl border border-border bg-background p-4"
+            className={`mt-6 rounded-xl p-4 ${
+              errors.consentimiento ? fieldSurfaceInvalid : fieldSurface
+            }`}
             isInvalid={Boolean(errors.consentimiento)}
             isSelected={field.value}
             name={field.name}

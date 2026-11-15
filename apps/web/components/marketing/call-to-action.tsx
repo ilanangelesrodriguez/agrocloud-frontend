@@ -13,10 +13,14 @@ export function CallToAction({
 }: Props) {
   return (
     <section className="site-container py-14 sm:py-20">
-      <div className="relative overflow-hidden rounded-[2rem] bg-[#104C37] px-7 py-10 text-white sm:px-12 sm:py-14 lg:px-16">
+      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#104C37] to-[#0F523C] px-7 py-10 text-white shadow-xl shadow-brand-700/20 sm:px-12 sm:py-14 lg:px-16">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-32 -top-40 size-[360px] rounded-full border-[65px] border-white/5"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 -left-16 size-64 rounded-full bg-[#B7F5A2]/10 blur-2xl"
         />
         <div className="relative flex flex-col items-start justify-between gap-7 lg:flex-row lg:items-center">
           <div className="max-w-2xl">
@@ -35,7 +39,7 @@ export function CallToAction({
           </div>
           <Link
             href="/solicitar-acceso"
-            className="site-button shrink-0 bg-white text-[#104C37] hover:bg-[#E7F9EB]"
+            className="site-button shrink-0 bg-white text-[#104C37] shadow-lg shadow-black/10 hover:bg-[#E7F9EB]"
           >
             {button}
             <FiArrowUpRight aria-hidden="true" className="size-4" />

@@ -1,26 +1,75 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Alert, Card, Chip, Typography } from "@heroui/react";
-import { FiArrowRight, FiArrowUpRight, FiCheck, FiSearch, FiStar } from "react-icons/fi";
+import {
+  FiArrowRight,
+  FiArrowUpRight,
+  FiCamera,
+  FiCheck,
+  FiClipboard,
+  FiFileText,
+  FiPackage,
+  FiSearch,
+  FiShield,
+} from "react-icons/fi";
 
 import { Faq } from "@/components/faq";
 import { CallToAction, Eyebrow, FeatureCard, SectionIntro } from "@/components/marketing";
 import { Reveal } from "@/components/reveal";
 
 const stages = [
-  { n: "01", title: "Recepción", text: "Registra el ingreso del lote y su origen." },
-  { n: "02", title: "Muestreo", text: "Documenta la selección y las muestras." },
-  { n: "03", title: "Inspección", text: "Vincula fotografías, hallazgos y revisión." },
-  { n: "04", title: "Dictamen", text: "Conserva decisiones y trazabilidad." },
+  {
+    n: "01",
+    title: "Recepción",
+    text: "Registra el ingreso del lote y su origen.",
+    detail: "Productor, fecha, peso y procedencia quedan asociados al lote desde el primer minuto.",
+    icon: FiPackage,
+  },
+  {
+    n: "02",
+    title: "Muestreo",
+    text: "Documenta la selección y las muestras.",
+    detail: "Cada muestra se vincula al lote para saber qué se revisó y bajo qué criterio.",
+    icon: FiClipboard,
+  },
+  {
+    n: "03",
+    title: "Inspección",
+    text: "Vincula fotografías, hallazgos y revisión.",
+    detail: "Las fotos y hallazgos se guardan junto al fruto inspeccionado, listos para revisión.",
+    icon: FiCamera,
+  },
+  {
+    n: "04",
+    title: "Dictamen",
+    text: "Conserva decisiones y trazabilidad.",
+    detail: "La decisión final queda registrada con su historial completo y su responsable.",
+    icon: FiFileText,
+  },
 ];
 
 const benefits = ["Trazabilidad por lote", "Evidencia vinculada", "Acceso por funciones"];
 
+const highlights = [
+  { icon: FiPackage, label: "Lotes", text: "con origen identificado" },
+  { icon: FiCamera, label: "Evidencias", text: "ligadas a cada fruto" },
+  { icon: FiShield, label: "Roles", text: "con acceso controlado" },
+];
+
 export function HomeContent() {
+  const [active, setActive] = useState(0);
+  const current = stages[active];
+  const CurrentIcon = current.icon;
+
   return (
     <>
-      <section className="site-hero-grid relative overflow-hidden border-b border-border">
+      <section className="site-hero-grid relative overflow-hidden border-b border-border bg-gradient-to-b from-brand-50/70 via-background to-background dark:from-brand-700/10">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-32 top-10 size-96 rounded-full bg-brand-600/10 blur-3xl"
+        />
         <div className="site-container relative grid items-center gap-12 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:gap-14 lg:py-28">
           <Reveal className="relative z-10 space-y-6">
             <Eyebrow>Calidad agrícola · Trazabilidad · IA asistida</Eyebrow>
@@ -47,79 +96,98 @@ export function HomeContent() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap gap-4 pt-2 text-xs font-medium text-muted">
+            <div className="flex flex-wrap gap-2 pt-2">
               {benefits.map((benefit) => (
-                <span key={benefit} className="inline-flex items-center gap-2">
-                  <FiCheck aria-hidden="true" className="size-4 text-accent" />
+                <Chip key={benefit} color="accent" size="sm" variant="soft">
+                  <FiCheck aria-hidden="true" className="size-3.5" />
                   {benefit}
-                </span>
+                </Chip>
               ))}
             </div>
           </Reveal>
 
           <Reveal className="relative z-10" delay={0.12}>
-            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-2xl shadow-brand-700/10">
+            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-2xl shadow-brand-700/15">
               <Card.Content className="p-4 sm:p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
-                  <span className="text-xs font-semibold uppercase tracking-[0.17em] text-accent">
-                    Expediente agrícola
-                  </span>
+                  <span className="text-sm font-semibold text-accent">Expediente agrícola</span>
                   <Chip color="accent" size="sm" variant="soft">
                     Flujo ilustrativo
                   </Chip>
                 </div>
 
-                <div className="my-5 rounded-2xl bg-[#0F523C] p-5 text-white sm:p-6">
+                {/* Panel que cambia según la etapa elegida */}
+                <div className="my-5 rounded-2xl bg-gradient-to-br from-[#0F523C] to-[#103D35] p-5 text-white sm:p-6">
                   <div className="flex items-start justify-between">
                     <span className="text-xs font-medium text-white/70">
-                      Un lote, una historia completa
+                      Etapa {current.n} de 04
                     </span>
-                    <FiStar aria-hidden="true" className="size-6 text-[#B7F5A2]" />
+                    <span className="grid size-10 place-items-center rounded-xl bg-white/10">
+                      <CurrentIcon aria-hidden="true" className="size-5 text-[#B7F5A2]" />
+                    </span>
                   </div>
-                  <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight">
-                    Cada etapa con su contexto.
+                  <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight text-white">
+                    {current.title}
                   </Typography.Paragraph>
-                  <Typography.Paragraph className="mt-2 text-sm leading-6 text-white/75">
-                    Origen, evidencias y decisiones relacionados en un solo recorrido.
+                  <Typography.Paragraph
+                    aria-live="polite"
+                    className="mt-2 min-h-[3.5rem] text-sm leading-6 text-white/80"
+                  >
+                    {current.detail}
                   </Typography.Paragraph>
-                  <div aria-hidden="true" className="mt-6 flex items-center gap-1.5">
+                  <div aria-hidden="true" className="mt-5 flex items-center gap-1.5">
                     {stages.map((stage, index) => (
                       <div
                         key={stage.n}
-                        className={`h-1.5 flex-1 rounded-full ${
-                          index === 3 ? "bg-[#B7F5A2]" : "bg-white/55"
+                        className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
+                          index <= active ? "bg-[#B7F5A2]" : "bg-white/25"
                         }`}
                       />
                     ))}
                   </div>
                 </div>
 
-                <div className="grid gap-3">
-                  {stages.map((stage, index) => (
-                    <div
-                      key={stage.n}
-                      className="flex items-center gap-4 rounded-xl border border-border bg-background p-3.5"
-                    >
-                      <span
-                        className={`grid size-10 shrink-0 place-items-center rounded-xl font-mono text-xs font-semibold ${
-                          index === 3
-                            ? "bg-brand-700 text-white"
-                            : "bg-brand-50 text-brand-700 dark:bg-brand-700/20 dark:text-brand-400"
+                <div className="grid gap-2.5">
+                  {stages.map((stage, index) => {
+                    const selected = index === active;
+                    return (
+                      <button
+                        key={stage.n}
+                        aria-pressed={selected}
+                        className={`flex w-full items-center gap-4 rounded-xl border p-3.5 text-left transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+                          selected
+                            ? "border-brand-600/50 bg-brand-50 shadow-sm dark:bg-brand-700/15"
+                            : "border-border bg-background hover:border-brand-600/30 hover:bg-brand-50/50 dark:hover:bg-brand-700/10"
                         }`}
+                        type="button"
+                        onClick={() => setActive(index)}
+                        onFocus={() => setActive(index)}
+                        onMouseEnter={() => setActive(index)}
                       >
-                        {stage.n}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <Typography.Paragraph className="text-sm font-semibold">
-                          {stage.title}
-                        </Typography.Paragraph>
-                        <Typography.Paragraph className="text-xs text-muted">
-                          {stage.text}
-                        </Typography.Paragraph>
-                      </div>
-                      <FiCheck aria-hidden="true" className="size-4 text-accent" />
-                    </div>
-                  ))}
+                        <span
+                          className={`grid size-10 shrink-0 place-items-center rounded-xl font-mono text-xs font-semibold transition-colors ${
+                            selected
+                              ? "bg-brand-700 text-white"
+                              : "bg-brand-50 text-brand-700 dark:bg-brand-700/20 dark:text-brand-400"
+                          }`}
+                        >
+                          {stage.n}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-foreground">
+                            {stage.title}
+                          </span>
+                          <span className="block text-xs text-muted">{stage.text}</span>
+                        </span>
+                        <FiCheck
+                          aria-hidden="true"
+                          className={`size-4 text-accent transition-opacity ${
+                            selected ? "opacity-100" : "opacity-30"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <Typography.Paragraph className="mt-4 text-center text-[11px] text-muted">
@@ -128,6 +196,22 @@ export function HomeContent() {
               </Card.Content>
             </Card>
           </Reveal>
+        </div>
+      </section>
+
+      {/* Franja de valor rápido */}
+      <section className="border-b border-border bg-brand-50/60 dark:bg-brand-700/10">
+        <div className="site-container grid gap-4 py-6 sm:grid-cols-3">
+          {highlights.map(({ icon: Icon, label, text }) => (
+            <div key={label} className="flex items-center gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-700 text-white">
+                <Icon aria-hidden="true" className="size-5" />
+              </span>
+              <p className="text-sm text-muted">
+                <span className="font-semibold text-foreground">{label}</span> {text}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -177,7 +261,10 @@ export function HomeContent() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             {stages.map((stage) => (
-              <Card key={stage.n} className="border border-border bg-background">
+              <Card
+                key={stage.n}
+                className="border border-border bg-background transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-lg hover:shadow-brand-700/10"
+              >
                 <Card.Content className="p-5">
                   <span className="font-mono text-sm font-semibold text-accent">{stage.n}</span>
                   <Typography.Heading className="mt-4 font-semibold" level={3}>
@@ -195,19 +282,21 @@ export function HomeContent() {
 
       <section className="site-section">
         <div className="site-container grid items-center gap-10 lg:grid-cols-[.9fr_1.1fr]">
-          <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] bg-[#103D35] p-7 text-white sm:p-10">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#A4E8C3]">
-              Análisis de imágenes
-            </span>
+          <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#103D35] to-[#0F523C] p-7 text-white shadow-xl shadow-brand-700/20 sm:p-10">
+            <span className="text-sm font-semibold text-[#A4E8C3]">Análisis de imágenes</span>
             <div
               aria-hidden="true"
               className="absolute -right-20 -top-28 size-80 rounded-full border-[50px] border-white/5"
             />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-24 -left-16 size-64 rounded-full bg-[#B7F5A2]/10 blur-2xl"
+            />
             <div className="relative mt-12 max-w-xs space-y-5">
-              <span className="flex size-16 items-center justify-center rounded-2xl bg-white/10">
-                <FiSearch aria-hidden="true" className="size-8" />
+              <span className="flex size-16 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-[#B7F5A2]/30">
+                <FiSearch aria-hidden="true" className="size-8 text-[#B7F5A2]" />
               </span>
-              <Typography.Paragraph className="text-2xl font-semibold leading-snug">
+              <Typography.Paragraph className="text-2xl font-semibold leading-snug text-white">
                 La tecnología aporta información. Tu equipo conserva el criterio.
               </Typography.Paragraph>
               <Typography.Paragraph className="text-sm leading-6 text-[#D3EDE2]">
