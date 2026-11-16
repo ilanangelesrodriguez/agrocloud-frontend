@@ -87,32 +87,31 @@ export function RucLookupField({ errors, getValues, register, setValue }: Props)
 
   return (
     <div className="min-w-0">
-      <div className="flex flex-wrap items-start gap-2">
-        <div className="min-w-36 flex-1">
-          <AccessTextField
-            errors={errors}
-            inputMode="numeric"
-            label="RUC"
-            maxLength={11}
-            name="ruc"
-            onValueChange={onRucChange}
-            placeholder="11 dígitos"
-            prefix="ruc"
-            register={register}
-          />
-        </div>
-        <Button
-          className="mt-6 min-h-11"
-          isDisabled={lookup.isPending}
-          isPending={lookup.isPending}
-          type="button"
-          variant="secondary"
-          onPress={() => void consultRuc()}
-        >
-          <FiSearch aria-hidden="true" className="size-4" />
-          {lookup.isPending ? "Consultando…" : "Consultar"}
-        </Button>
-      </div>
+      <AccessTextField
+        action={
+          // h-11 = misma altura que el input (min-h-11), así quedan a ras
+          <Button
+            className="h-11 shrink-0"
+            isDisabled={lookup.isPending}
+            isPending={lookup.isPending}
+            type="button"
+            variant="secondary"
+            onPress={() => void consultRuc()}
+          >
+            <FiSearch aria-hidden="true" className="size-4" />
+            {lookup.isPending ? "Consultando…" : "Consultar"}
+          </Button>
+        }
+        errors={errors}
+        inputMode="numeric"
+        label="RUC"
+        maxLength={11}
+        name="ruc"
+        placeholder="11 dígitos"
+        prefix="ruc"
+        register={register}
+        onValueChange={onRucChange}
+      />
       <div aria-live="polite" role="status">
         {feedback ? (
           <Typography.Paragraph className="mt-2 text-sm leading-6 text-muted">
