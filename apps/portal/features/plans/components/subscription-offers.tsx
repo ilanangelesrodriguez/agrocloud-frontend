@@ -132,7 +132,9 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
               key={offer.key}
               className="space-y-2 rounded-card border border-border bg-surface p-4"
             >
-              {offer === selectedOffer ? <p className="text-sm text-accent">Plan seleccionado</p> : null}
+              {offer === selectedOffer ? (
+                <p className="text-sm text-accent">Plan seleccionado</p>
+              ) : null}
               <h3 className="font-semibold">{offer.name ?? offer.plan ?? labels[offer.kind]}</h3>
               <p>
                 {labels[offer.kind]} · {money.format(offer.amount_cents / 100)}
