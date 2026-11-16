@@ -2,8 +2,9 @@
 
 import { Typography } from "@heroui/react";
 import Link from "next/link";
+
 import { SiteBrand } from "@/components/site-brand";
-import { portalLoginUrl } from "@/config/site";
+import { portalEntryUrl } from "@/config/site";
 
 export function SiteFooter() {
   return (
@@ -17,7 +18,7 @@ export function SiteFooter() {
           </Typography.Paragraph>
         </div>
         <div className="space-y-3">
-          <Typography.Heading level={2} className="text-sm font-semibold text-foreground">
+          <Typography.Heading className="text-sm font-semibold text-foreground" level={2}>
             Explorar
           </Typography.Heading>
           <nav aria-label="Enlaces del sitio" className="flex flex-col gap-2 text-sm text-muted">
@@ -36,7 +37,7 @@ export function SiteFooter() {
           </nav>
         </div>
         <div className="space-y-3">
-          <Typography.Heading level={2} className="text-sm font-semibold text-foreground">
+          <Typography.Heading className="text-sm font-semibold text-foreground" level={2}>
             Información
           </Typography.Heading>
           <nav aria-label="Información y acceso" className="flex flex-col gap-2 text-sm text-muted">
@@ -46,8 +47,8 @@ export function SiteFooter() {
             <Link className="hover:text-accent" href="/solicitar-acceso">
               Solicitar acceso
             </Link>
-            {portalLoginUrl && (
-              <a className="hover:text-accent" href={portalLoginUrl}>
+            {portalEntryUrl && (
+              <a className="hover:text-accent" href={portalEntryUrl}>
                 Acceso al portal
               </a>
             )}

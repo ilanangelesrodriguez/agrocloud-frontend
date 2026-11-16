@@ -28,16 +28,16 @@ export function FeatureCard({ number, icon, title, description, tag, accentTag =
             {icon ?? number}
           </span>
           {tag && (
-            <Chip variant="soft" size="sm" color={accentTag ? "accent" : "default"}>
+            <Chip color={accentTag ? "accent" : "default"} size="sm" variant="soft">
               {tag}
             </Chip>
           )}
         </div>
         <div className="space-y-3">
-          <Typography.Heading level={3} className="text-lg">
+          <Typography.Heading className="text-lg" level={3}>
             {title}
           </Typography.Heading>
-          <Typography.Paragraph size="sm" color="muted" className="leading-7">
+          <Typography.Paragraph className="leading-7" color="muted" size="sm">
             {description}
           </Typography.Paragraph>
         </div>

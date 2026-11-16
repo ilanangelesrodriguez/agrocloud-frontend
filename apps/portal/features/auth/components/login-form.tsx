@@ -17,6 +17,7 @@ import { FormFeedback } from "./form-feedback";
 import { SubmitButton } from "./submit-button";
 
 import { loginSchema, safeNext } from "@/lib/auth/schemas";
+import { offerKey } from "@/features/plans/schema";
 
 export function LoginForm() {
   const router = useRouter();
@@ -49,7 +50,18 @@ export function LoginForm() {
         (target.startsWith("/admin") && result.user.rol?.codigo !== "SUPERADMIN") ||
         (target.startsWith("/dashboard") && result.user.rol?.codigo === "SUPERADMIN");
 
-      router.replace(restricted ? result.redirectTo : target);
+      const requestedOffer = offerKey.safeParse(params.get("offer"));
+      const subscription = target === "/settings/subscription";
+      const destination =
+        subscription && requestedOffer.success
+          ? target + "?" + new URLSearchParams({ offer: requestedOffer.data })
+          : target;
+
+      router.replace(
+        restricted || (subscription && result.user.rol?.codigo === "SUPERADMIN")
+          ? result.redirectTo
+          : destination,
+      );
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");

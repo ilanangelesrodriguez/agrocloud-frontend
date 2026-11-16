@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { fetchPublicJson } from "@/lib/api/public-client";
 import { rucLookupSchema } from "../schema";
+
+import { fetchPublicJson } from "@/lib/api/public-client";
 
 export function useRucLookup() {
   return useMutation({
@@ -12,6 +13,7 @@ export function useRucLookup() {
         body: JSON.stringify({ ruc }),
         signal: AbortSignal.timeout(20_000),
       });
+
       return rucLookupSchema.parse(result).data;
     },
     retry: 0,

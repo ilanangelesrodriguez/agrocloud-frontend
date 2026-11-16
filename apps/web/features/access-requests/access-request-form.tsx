@@ -43,7 +43,10 @@ export function AccessRequestForm({ privacyVersion }: { privacyVersion: string }
   } = useForm<AccessFormValues>({
     resolver: zodResolver(clientAccessFormSchema),
     defaultValues,
-    mode: "onBlur",
+    // Evita mostrar bordes rojos mientras alguien aún completa el formulario.
+    // Tras el primer intento de envío, los errores se corrigen en tiempo real.
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const onSubmit = handleSubmit(async ({ consentimiento, ...data }) => {
@@ -57,6 +60,7 @@ export function AccessRequestForm({ privacyVersion }: { privacyVersion: string }
       };
 
       const result = await mutation.mutateAsync({ ...payload, website });
+
       toast.success("Solicitud enviada", { description: result.message });
       router.push(
         result.reference
@@ -73,18 +77,12 @@ export function AccessRequestForm({ privacyVersion }: { privacyVersion: string }
   return (
     <Form
       aria-label="Solicitud de acceso empresarial"
-      className="space-y-6"
+      className="space-y-5"
       validationBehavior="aria"
       onSubmit={onSubmit}
     >
-      <CompanyFields
-        control={control}
-        errors={errors}
-        getValues={getValues}
-        register={register}
-        setValue={setValue}
-      />
-      <RepresentativeFields errors={errors} register={register} />
+      <CompanyFields control={control} errors={errors} getValues={getValues} setValue={setValue} />
+      <RepresentativeFields control={control} errors={errors} />
       <OperationFields
         control={control}
         errors={errors}

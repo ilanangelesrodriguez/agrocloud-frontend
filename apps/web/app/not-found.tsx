@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="mt-3 max-w-md text-sm leading-7 text-muted">
         Es posible que el enlace haya cambiado. Puedes volver al inicio y continuar navegando.
       </p>
-      <Link href="/" className="site-button site-button-primary mt-7">
+      <Link className="site-button site-button-primary mt-7" href="/">
         Volver al inicio
       </Link>
     </section>

@@ -3,11 +3,12 @@ import { z } from "zod";
 import { rucSchema } from "@/features/ruc/schema";
 
 // Nombres y límites alineados con ms-identity/app/Http/Requests/AccessRequest.php.
+// Solo cambiamos el texto visible de validación; el contrato se mantiene.
 const accessRequestFields = z.object({
   ruc: rucSchema,
   razon_social: z.string().trim().min(3, "Ingresa la razón social.").max(200),
   nombre_comercial: z.string().trim().min(2, "Ingresa el nombre comercial.").max(150),
-  tipo_empresa: z.string().trim().min(2, "Selecciona el tipo de empresa.").max(80),
+  tipo_empresa: z.string().trim().min(2, "Selecciona la actividad principal.").max(80),
   nombre: z.string().trim().min(2, "Ingresa los nombres del representante.").max(100),
   apellido: z.string().trim().min(2, "Ingresa los apellidos del representante.").max(100),
   correo: z.email("Ingresa un correo electrónico válido.").max(255),

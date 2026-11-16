@@ -22,13 +22,14 @@ const labels = {
   AI_ADDON: "Análisis IA adicionales",
 };
 
-export function SubscriptionOffers() {
+export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: string }) {
   const { data: actor } = useCurrentUser();
   const cache = useQueryClient();
+  const canView = canManageCompany(actor, "suscripciones.ver");
   const canOrder = canManageCompany(actor, "suscripciones.gestionar");
   const offers = useQuery({
     queryKey,
-    enabled: canManageCompany(actor, "suscripciones.ver"),
+    enabled: canView,
     queryFn: ({ signal }) =>
       adminRequest("subscription/offers", companyOffers, { signal }, "company"),
     retry: false,
@@ -54,11 +55,32 @@ export function SubscriptionOffers() {
   const pending = offers.data?.pending_order;
   const checkout = order.data ?? pending;
   const checkoutReady = canOrder && paymentConfigured;
+  const availableOffers = offers.data?.data ?? [];
+  const selectedOffer = availableOffers.find(
+    (offer) => offer.kind === "PLAN" && offer.key === selectedOfferKey,
+  );
+  const visibleOffers = selectedOffer
+    ? [selectedOffer, ...availableOffers.filter((offer) => offer !== selectedOffer)]
+    : availableOffers;
 
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">Ofertas y órdenes</h2>
       <p className="text-sm text-muted">Selecciona una oferta y continúa con el pago seguro.</p>
+      {!canView ? (
+        <InlineNotice
+          title="Acceso a suscripciones"
+          description="Tu cuenta necesita permiso para ver las suscripciones de la empresa."
+          status="warning"
+        />
+      ) : null}
+      {selectedOfferKey && offers.isSuccess && !selectedOffer && !pending ? (
+        <InlineNotice
+          title="El plan seleccionado no está disponible"
+          description="Consulta las ofertas que tu empresa puede contratar actualmente."
+          status="warning"
+        />
+      ) : null}
       {canOrder && !paymentConfigured ? (
         <InlineNotice
           title="Pago no disponible"
@@ -67,7 +89,9 @@ export function SubscriptionOffers() {
         />
       ) : null}
       {order.error ? <FormNotice message={order.error.message} /> : null}
-      {checkout && checkoutReady && (order.data || (!order.isPending && !order.error)) ? (
+      {!canView ? null : checkout &&
+        checkoutReady &&
+        (order.data || (!order.isPending && !order.error)) ? (
         <PaymentCheckout
           key={checkout.reference}
           order={checkout}
@@ -101,13 +125,14 @@ export function SubscriptionOffers() {
             </Button>
           ) : null}
         </div>
-      ) : offers.data.data.length ? (
+      ) : visibleOffers.length ? (
         <ul className="grid gap-4 sm:grid-cols-2">
-          {offers.data.data.map((offer) => (
+          {visibleOffers.map((offer) => (
             <li
               key={offer.key}
               className="space-y-2 rounded-card border border-border bg-surface p-4"
             >
+              {offer === selectedOffer ? <p className="text-sm text-accent">Plan seleccionado</p> : null}
               <h3 className="font-semibold">{offer.name ?? offer.plan ?? labels[offer.kind]}</h3>
               <p>
                 {labels[offer.kind]} · {money.format(offer.amount_cents / 100)}

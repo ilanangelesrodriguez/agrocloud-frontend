@@ -1,46 +1,45 @@
 "use client";
 
-import type {
-  FieldErrors,
-  UseFormGetValues,
-  UseFormRegister,
-  UseFormSetValue,
-} from "react-hook-form";
+import type { Control, FieldErrors, UseFormGetValues, UseFormSetValue } from "react-hook-form";
 import type { AccessFormValues } from "../schema";
 
 import { useRef, useState } from "react";
 import { Button, Typography } from "@heroui/react";
-import { FiSearch } from "react-icons/fi";
+import { FiAlertCircle, FiCheckCircle, FiSearch } from "react-icons/fi";
+
+import { AccessTextField } from "./text-field-input";
 
 import { useRucLookup } from "@/features/ruc/hooks/use-ruc-lookup";
 import { rucSchema } from "@/features/ruc/schema";
 
-import { AccessTextField } from "./text-field-input";
-
 type Props = {
+  control: Control<AccessFormValues>;
   errors: FieldErrors<AccessFormValues>;
   getValues: UseFormGetValues<AccessFormValues>;
-  register: UseFormRegister<AccessFormValues>;
   setValue: UseFormSetValue<AccessFormValues>;
 };
 
-export function RucLookupField({ errors, getValues, register, setValue }: Props) {
+type LookupFeedback = { tone: "success" | "warning"; message: string };
+
+export function RucLookupField({ control, errors, getValues, setValue }: Props) {
   const lookup = useRucLookup();
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState<LookupFeedback | null>(null);
   const lookupRevision = useRef(0);
   const filledName = useRef<string | null>(null);
 
   function onRucChange() {
+    // Invalida los resultados de consultas anteriores al modificar el RUC.
     lookupRevision.current += 1;
-    setFeedback("");
+    setFeedback(null);
 
+    // Solo elimina la razón social que el sistema había rellenado y que
+    // el usuario no modificó. Nunca borra una corrección manual.
     if (filledName.current !== null && getValues("razon_social") === filledName.current) {
       setValue("razon_social", "", {
         shouldDirty: true,
         shouldValidate: Boolean(errors.razon_social),
       });
     }
-
     filledName.current = null;
   }
 
@@ -48,18 +47,20 @@ export function RucLookupField({ errors, getValues, register, setValue }: Props)
     const parsed = rucSchema.safeParse(getValues("ruc"));
 
     if (!parsed.success) {
-      setFeedback("Ingresa los 11 dígitos del RUC para consultar.");
+      setFeedback({ tone: "warning", message: "Ingresa exactamente 11 dígitos para consultar." });
+
       return;
     }
 
     const revision = ++lookupRevision.current;
     const previousName = getValues("razon_social");
 
-    setFeedback("");
+    setFeedback(null);
 
     try {
       const result = await lookup.mutateAsync(parsed.data);
 
+      // No aplicar datos de una respuesta antigua sobre un RUC recién escrito.
       if (revision !== lookupRevision.current || getValues("ruc") !== parsed.data) return;
 
       const name = result.razon_social?.trim();
@@ -68,28 +69,44 @@ export function RucLookupField({ errors, getValues, register, setValue }: Props)
         if (getValues("razon_social") === previousName) {
           setValue("razon_social", name, { shouldDirty: true, shouldValidate: true });
           filledName.current = name;
+          setFeedback({
+            tone: "success",
+            message: "RUC verificado. La razón social se completó automáticamente.",
+          });
+        } else {
+          setFeedback({
+            tone: "success",
+            message: "RUC verificado. Conservamos la razón social que escribiste; revísala.",
+          });
         }
-
-        setFeedback(`Razón social encontrada: ${name}. Revisa el dato antes de enviar.`);
       } else if (result.resultado === "no_encontrado") {
-        setFeedback("El proveedor no encontró el RUC. Revísalo o completa los datos manualmente.");
+        setFeedback({
+          tone: "warning",
+          message: "No encontramos ese RUC. Revísalo o completa los datos manualmente.",
+        });
       } else {
-        setFeedback("No fue posible verificar el RUC. Puedes completar los datos manualmente.");
+        setFeedback({
+          tone: "warning",
+          message: "No fue posible verificar el RUC. Puedes completar los datos manualmente.",
+        });
       }
     } catch (error) {
       if (revision !== lookupRevision.current) return;
-
       const message = error instanceof Error ? error.message : "No se pudo consultar el RUC.";
 
-      setFeedback(`${message} Puedes completar los datos manualmente.`);
+      setFeedback({
+        tone: "warning",
+        message: `${message} Puedes completar los datos manualmente.`,
+      });
     }
   }
 
+  const isVerified = feedback?.tone === "success";
+
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 space-y-2">
       <AccessTextField
         action={
-          // h-11 = misma altura que el input (min-h-11), así quedan a ras
           <Button
             className="h-11 shrink-0"
             isDisabled={lookup.isPending}
@@ -102,6 +119,7 @@ export function RucLookupField({ errors, getValues, register, setValue }: Props)
             {lookup.isPending ? "Consultando…" : "Consultar"}
           </Button>
         }
+        control={control}
         errors={errors}
         inputMode="numeric"
         label="RUC"
@@ -109,14 +127,26 @@ export function RucLookupField({ errors, getValues, register, setValue }: Props)
         name="ruc"
         placeholder="11 dígitos"
         prefix="ruc"
-        register={register}
         onValueChange={onRucChange}
       />
       <div aria-live="polite" role="status">
         {feedback ? (
-          <Typography.Paragraph className="mt-2 text-sm leading-6 text-muted">
-            {feedback}
-          </Typography.Paragraph>
+          <div
+            className={`flex items-start gap-2 rounded-lg px-3 py-2 ${
+              isVerified
+                ? "bg-brand-600/10 text-brand-700 dark:text-brand-400"
+                : "bg-warning/10 text-foreground"
+            }`}
+          >
+            {isVerified ? (
+              <FiCheckCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+            ) : (
+              <FiAlertCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+            )}
+            <Typography.Paragraph className="text-xs leading-5">
+              {feedback.message}
+            </Typography.Paragraph>
+          </div>
         ) : null}
       </div>
     </div>

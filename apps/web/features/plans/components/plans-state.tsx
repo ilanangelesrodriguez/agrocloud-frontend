@@ -17,7 +17,7 @@ export function PlansState({ error, isFetching, onRetry, state }: Props) {
       <div aria-busy="true" role="status">
         <span className="sr-only">Cargando planes empresariales…</span>
         <Card className="site-card h-full border border-brand-600/20">
-          <Card.Content className="space-y-4 p-7 sm:p-9" aria-hidden="true">
+          <Card.Content aria-hidden="true" className="space-y-4 p-7 sm:p-9">
             <div className="h-6 w-32 animate-pulse rounded-full bg-brand-600/10 motion-reduce:animate-none" />
             <div className="h-8 w-3/4 animate-pulse rounded-lg bg-brand-600/10 motion-reduce:animate-none" />
             <div className="h-9 w-1/3 animate-pulse rounded-lg bg-brand-600/10 motion-reduce:animate-none" />

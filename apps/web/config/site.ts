@@ -16,3 +16,8 @@ export const siteConfig = {
 } as const;
 
 export const portalLoginUrl = siteConfig.portalLoginUrl;
+
+export const portalEntryUrl =
+  process.env.NEXT_PUBLIC_PORTAL_URL ||
+  siteConfig.portalLoginUrl?.replace(/\/login\/?$/, "") ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:3000" : null);

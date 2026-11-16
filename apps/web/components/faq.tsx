@@ -29,9 +29,9 @@ export function Faq() {
       <Accordion className="flex flex-col gap-3" variant="default">
         {faqs.map((item, i) => (
           <Accordion.Item
-            id={`faq-${i}`}
             key={item.title}
             className="rounded-2xl border border-brand-600/20 bg-background px-4 shadow-sm shadow-brand-700/5 after:hidden transition-colors duration-200 hover:border-brand-600/40 data-[expanded]:border-brand-600/50 data-[expanded]:bg-brand-50/60 sm:px-5 dark:data-[expanded]:bg-brand-700/10"
+            id={`faq-${i}`}
           >
             <Accordion.Heading>
               <Accordion.Trigger className="flex w-full items-center gap-3 rounded-xl !px-0 py-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:py-5">

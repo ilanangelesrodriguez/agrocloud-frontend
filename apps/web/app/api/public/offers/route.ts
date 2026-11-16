@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const response = await requestIdentity("/public/offers");
+
     if (!response || response.status === 503) {
       return publicReply({ message: "El catálogo está temporalmente indisponible." }, 503);
     }
@@ -14,6 +15,7 @@ export async function GET() {
     }
     if (response.ok) {
       const result = publicOffersSchema.safeParse(await response.json());
+
       if (result.success) return publicReply(result.data);
     }
   } catch {

@@ -23,11 +23,11 @@ export function ThemeSwitch({ className }: { className?: string }) {
 
   return (
     <Button
-      type="button"
-      variant="tertiary"
       isIconOnly
       aria-label={isLight ? "Cambiar a tema oscuro" : "Cambiar a tema claro"}
       className={clsx("size-10 rounded-xl text-muted", className)}
+      type="button"
+      variant="tertiary"
       onPress={() => setTheme(isLight ? "dark" : "light")}
     >
       {isLight ? (

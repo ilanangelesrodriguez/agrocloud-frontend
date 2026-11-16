@@ -16,7 +16,7 @@ export default function Error({
       <p className="mt-3 max-w-md text-sm leading-7 text-muted">
         Ocurrió un problema temporal. Intenta nuevamente sin perder el contexto de tu navegación.
       </p>
-      <Button variant="primary" size="lg" className="mt-7" onPress={reset}>
+      <Button className="mt-7" size="lg" variant="primary" onPress={reset}>
         <FiRefreshCw aria-hidden="true" className="size-4" />
         Reintentar
       </Button>

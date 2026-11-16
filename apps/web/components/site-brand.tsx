@@ -4,18 +4,18 @@ import Link from "next/link";
 export function SiteBrand({ compact = false }: { compact?: boolean }) {
   return (
     <Link
-      href="/"
       aria-label="AgroCloud AI · Inicio"
       className="inline-flex shrink-0 items-center gap-2 focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus"
+      href="/"
     >
       <Image
+        priority
         alt=""
         aria-hidden="true"
+        className="size-9 rounded-xl"
+        height={38}
         src="/agrocloud/logo-mark.svg"
         width={38}
-        height={38}
-        className="size-9 rounded-xl"
-        priority
       />
       <span
         className={`font-sans text-lg font-bold tracking-tight text-foreground ${compact ? "sm:hidden" : ""}`}

@@ -1,17 +1,17 @@
 "use client";
 
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { Control, FieldErrors } from "react-hook-form";
 import type { AccessFormValues } from "../schema";
 
 import { AccessTextField } from "./text-field-input";
 import { FormSection } from "./form-section";
 
 type Props = {
-  register: UseFormRegister<AccessFormValues>;
+  control: Control<AccessFormValues>;
   errors: FieldErrors<AccessFormValues>;
 };
 
-export function RepresentativeFields({ register, errors }: Props) {
+export function RepresentativeFields({ control, errors }: Props) {
   return (
     <FormSection
       description="Utilizaremos esta información para atender la solicitud empresarial."
@@ -21,34 +21,35 @@ export function RepresentativeFields({ register, errors }: Props) {
       <div className="grid gap-5 sm:grid-cols-2">
         <AccessTextField
           autoComplete="given-name"
+          control={control}
           errors={errors}
           label="Nombres"
           maxLength={100}
           name="nombre"
           placeholder="Nombres"
-          register={register}
         />
         <AccessTextField
           autoComplete="family-name"
+          control={control}
           errors={errors}
           label="Apellidos"
           maxLength={100}
           name="apellido"
           placeholder="Apellidos"
-          register={register}
         />
         <AccessTextField
           autoComplete="email"
+          control={control}
           errors={errors}
           label="Correo electrónico"
           maxLength={255}
           name="correo"
           placeholder="nombre@empresa.com"
           prefix="email"
-          register={register}
           type="email"
         />
         <AccessTextField
+          control={control}
           errors={errors}
           inputMode="tel"
           label="Teléfono"
@@ -56,7 +57,6 @@ export function RepresentativeFields({ register, errors }: Props) {
           name="telefono"
           placeholder="+51 987 654 321"
           prefix="phone"
-          register={register}
           type="tel"
         />
       </div>

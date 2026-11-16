@@ -25,12 +25,12 @@ export function CallToAction({
         <div className="relative flex flex-col items-start justify-between gap-7 lg:flex-row lg:items-center">
           <div className="max-w-2xl">
             <Typography.Paragraph
-              size="xs"
               className="font-bold uppercase tracking-[0.2em] text-[#A5E9BE]"
+              size="xs"
             >
               Comienza con AgroCloud
             </Typography.Paragraph>
-            <Typography.Heading level={2} className="mt-4 text-3xl text-white sm:text-4xl">
+            <Typography.Heading className="mt-4 text-3xl text-white sm:text-4xl" level={2}>
               {title}
             </Typography.Heading>
             <Typography.Paragraph className="mt-4 leading-7 text-white/80">
@@ -38,8 +38,8 @@ export function CallToAction({
             </Typography.Paragraph>
           </div>
           <Link
-            href="/solicitar-acceso"
             className="site-button shrink-0 bg-white text-[#104C37] shadow-lg shadow-black/10 hover:bg-[#E7F9EB]"
+            href="/solicitar-acceso"
           >
             {button}
             <FiArrowUpRight aria-hidden="true" className="size-4" />

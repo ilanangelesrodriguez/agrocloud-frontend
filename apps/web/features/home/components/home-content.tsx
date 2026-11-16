@@ -150,6 +150,7 @@ export function HomeContent() {
                 <div className="grid gap-2.5">
                   {stages.map((stage, index) => {
                     const selected = index === active;
+
                     return (
                       <button
                         key={stage.n}

@@ -9,6 +9,7 @@ export async function requestIdentity(path: string, body?: object): Promise<Resp
 
   try {
     const base = new URL(process.env.AGROCLOUD_GATEWAY_URL ?? "");
+
     if (!["https:", "http:"].includes(base.protocol)) return;
     endpoint = new URL("/api/v1/identity" + path, base.origin);
   } catch {

@@ -9,7 +9,7 @@ import { FiArrowUpRight, FiLogIn, FiMenu, FiX } from "react-icons/fi";
 
 import { SiteBrand } from "@/components/site-brand";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { portalLoginUrl, siteConfig } from "@/config/site";
+import { portalEntryUrl, siteConfig } from "@/config/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -101,13 +101,13 @@ export function SiteHeader() {
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <ThemeSwitch className="!size-10 border border-border" />
-          {portalLoginUrl ? (
+          {portalEntryUrl ? (
             <a
               className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted transition-colors hover:bg-brand-50/70 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:hover:bg-brand-700/10"
-              href={portalLoginUrl}
+              href={portalEntryUrl}
             >
               <FiLogIn aria-hidden="true" className="size-4" />
-              Ingresar
+              Ir al portal
             </a>
           ) : null}
           <Link
@@ -143,11 +143,11 @@ export function SiteHeader() {
       <AnimatePresence>
         {isMenuOpen ? (
           <motion.nav
-            id="mobile-navigation"
             animate={{ opacity: 1, y: 0 }}
             aria-label="Navegación móvil"
             className="border-t border-border bg-background px-5 py-4 shadow-xl shadow-brand-700/10 lg:hidden"
             exit={{ opacity: 0, y: -8 }}
+            id="mobile-navigation"
             initial={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
@@ -174,13 +174,13 @@ export function SiteHeader() {
                   </Link>
                 );
               })}
-              {portalLoginUrl ? (
+              {portalEntryUrl ? (
                 <a
                   className="flex items-center gap-2 rounded-xl px-4 py-3 text-base font-medium text-foreground transition-colors hover:bg-brand-50/70 dark:hover:bg-brand-700/10"
-                  href={portalLoginUrl}
+                  href={portalEntryUrl}
                 >
                   <FiLogIn aria-hidden="true" className="size-4" />
-                  Ingresar al portal
+                  Ir al portal
                 </a>
               ) : null}
               <Link

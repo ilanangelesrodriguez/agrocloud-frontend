@@ -2,12 +2,13 @@
 
 import { Alert } from "@heroui/react";
 
-import { CallToAction, PageHero } from "@/components/marketing";
-import { portalLoginUrl } from "@/config/site";
-
 import { usePublicOffers } from "../hooks/use-public-offers";
+
 import { PlanCard } from "./plan-card";
 import { PlansState } from "./plans-state";
+
+import { portalLoginUrl } from "@/config/site";
+import { CallToAction, PageHero } from "@/components/marketing";
 
 const freeFeatures = [
   "Solicitud empresarial",
@@ -18,6 +19,25 @@ const freeFeatures = [
 
 const currency = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" });
 const numbers = new Intl.NumberFormat("es-PE");
+
+function planPurchaseUrl(offerKey: string): string | null {
+  const login =
+    portalLoginUrl ||
+    (process.env.NODE_ENV === "development" ? "http://localhost:3000/login" : null);
+
+  if (!login) return null;
+  try {
+    const url = new URL(login);
+
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) return null;
+    url.searchParams.set("next", "/settings/subscription");
+    url.searchParams.set("offer", offerKey);
+
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 export function PlansContent() {
   const offers = usePublicOffers();
@@ -41,23 +61,27 @@ export function PlansContent() {
             tag="Acceso sujeto a aprobación"
             title="Acceso gratuito"
           />
-          {publishedOffers.map((offer) => (
-            <PlanCard
-              key={offer.key}
-              actionLabel={portalLoginUrl ? "Acceder para contratar" : "Consultar condiciones"}
-              description={offer.description || "Plan empresarial publicado por AgroCloud AI."}
-              features={[
-                `Vigencia: ${numbers.format(offer.duration_days)} días`,
-                `Usuarios: ${numbers.format(offer.limits.usuarios)}`,
-                `Lotes: ${numbers.format(offer.limits.lotes)}`,
-                `Análisis IA: ${numbers.format(offer.limits.analisis_ia)}`,
-              ]}
-              href={portalLoginUrl || "/contacto"}
-              price={currency.format(offer.amount_cents / 100)}
-              tag="Oferta vigente"
-              title={offer.name}
-            />
-          ))}
+          {publishedOffers.map((offer) => {
+            const purchaseUrl = planPurchaseUrl(offer.key);
+
+            return (
+              <PlanCard
+                key={offer.key}
+                actionLabel={purchaseUrl ? "Contratar plan" : "Consultar disponibilidad"}
+                description={offer.description || "Plan empresarial publicado por AgroCloud AI."}
+                features={[
+                  `Vigencia: ${numbers.format(offer.duration_days)} días`,
+                  `Usuarios: ${numbers.format(offer.limits.usuarios)}`,
+                  `Lotes: ${numbers.format(offer.limits.lotes)}`,
+                  `Análisis IA: ${numbers.format(offer.limits.analisis_ia)}`,
+                ]}
+                href={purchaseUrl ?? "/contacto"}
+                price={currency.format(offer.amount_cents / 100)}
+                tag="Oferta vigente"
+                title={offer.name}
+              />
+            );
+          })}
           {offers.isPending ? (
             <PlansState state="loading" />
           ) : offers.isError && !offers.data ? (
@@ -77,8 +101,8 @@ export function PlansContent() {
             <Alert.Content>
               <Alert.Title>Condiciones de contratación</Alert.Title>
               <Alert.Description>
-                Los precios se obtienen del catálogo vigente. La contratación, renovación y pago se
-                realizan dentro del portal autenticado; este sitio no procesa tarjetas.
+                Inicia sesión en el portal para confirmar tu oferta y continuar al pago. Si tu
+                empresa todavía no tiene una cuenta, solicita acceso primero.
               </Alert.Description>
             </Alert.Content>
           </Alert>

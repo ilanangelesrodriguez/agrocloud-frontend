@@ -7,10 +7,12 @@ export async function fetchPublicJson(path: string, options: RequestInit = {}): 
     throw new Error("No se pudo conectar con el servicio. Intenta más tarde.");
   }
   const payload = await response.json().catch(() => null);
+
   if (!response.ok) {
     throw new Error(
       typeof payload?.message === "string" ? payload.message : "El servicio no está disponible.",
     );
   }
+
   return payload;
 }

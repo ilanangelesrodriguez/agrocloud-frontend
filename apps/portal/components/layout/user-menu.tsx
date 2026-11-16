@@ -10,6 +10,10 @@ import type { IdentityUser } from "@/lib/auth/schemas";
 
 import { postAuth } from "@/features/auth/request";
 
+const websiteUrl =
+  process.env.NEXT_PUBLIC_WEBSITE_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : undefined);
+
 export function UserMenu({ user }: { user: IdentityUser }) {
   const router = useRouter();
   const cache = useQueryClient();
@@ -66,6 +70,11 @@ export function UserMenu({ user }: { user: IdentityUser }) {
           <Dropdown.Item id="profile" textValue="Mi perfil">
             <Label>Mi perfil</Label>
           </Dropdown.Item>
+          {websiteUrl ? (
+            <Dropdown.Item id="website" href={websiteUrl} textValue="Volver al sitio web">
+              <Label>Volver al sitio web</Label>
+            </Dropdown.Item>
+          ) : null}
           <Dropdown.Item id="logout" isDisabled={busy} textValue="Cerrar sesión">
             <Label>{busy ? "Cerrando sesión…" : "Cerrar sesión"}</Label>
           </Dropdown.Item>
