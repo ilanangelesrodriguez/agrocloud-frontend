@@ -1,0 +1,25 @@
+# Compilar desde la RAIZ de agrocloud-frontend (no desde apps/portal).
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --platform
+      - linux/amd64
+      - -f
+      - Dockerfile.cloudrun
+      - --build-arg
+      - NEXT_PUBLIC_SITE_URL=${_SITE_URL}
+      - --build-arg
+      - NEXT_PUBLIC_CULQI_PUBLIC_KEY=${_CULQI_PUBLIC_KEY}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/agrocloud/frontend:${_TAG}
+      - .
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/agrocloud/frontend:${_TAG}
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _REGION: us-central1
+  _TAG: manual
+  _SITE_URL: https://example.invalid
+  _CULQI_PUBLIC_KEY: ''

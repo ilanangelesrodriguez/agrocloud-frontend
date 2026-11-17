@@ -1,0 +1,12 @@
+.git
+.github
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/coverage
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/.venv
