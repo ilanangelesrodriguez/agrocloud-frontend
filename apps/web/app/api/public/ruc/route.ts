@@ -2,11 +2,12 @@ import type { NextRequest } from "next/server";
 
 import { rucLookupSchema, rucSchema } from "@/features/ruc/schema";
 import { publicReply, requestIdentity } from "@/lib/api/public-gateway";
+import { isAllowedWebOrigin } from "@/lib/security/origin";
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
 
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isAllowedWebOrigin(request)) {
     return publicReply({ message: "Origen de solicitud no permitido." }, 403);
   }
 

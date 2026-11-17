@@ -7,6 +7,7 @@ import {
 import { publicReply, requestIdentity } from "@/lib/api/public-gateway";
 import { isPublicOnboardingEnabled } from "@/lib/onboarding";
 import { getPrivacyVersion } from "@/lib/privacy-version";
+import { isAllowedWebOrigin } from "@/lib/security/origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,9 +40,7 @@ export async function POST(request: NextRequest) {
     return reply("La recepción de solicitudes está temporalmente deshabilitada.", 503);
   }
 
-  const origin = request.headers.get("origin");
-
-  if (origin && origin !== request.nextUrl.origin) {
+  if (!isAllowedWebOrigin(request)) {
     return reply("Origen de solicitud no permitido.", 403);
   }
 
