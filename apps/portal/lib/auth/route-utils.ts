@@ -40,6 +40,12 @@ export async function parseJson(
   ) {
     return { ok: false, response: reply({ message: "Solo se permite JSON." }, 415) };
   }
+  if (!isAllowedOrigin(request)) {
+    return {
+      ok: false,
+      response: reply({ message: "Origen no permitido." }, 403),
+    };
+  }
   if (Number(request.headers.get("content-length") ?? "0") > 12_000) {
     return { ok: false, response: reply({ message: "Solicitud demasiado grande." }, 413) };
   }
@@ -57,9 +63,25 @@ export async function parseJson(
 }
 
 export function validatePost(request: NextRequest): NextResponse | null {
+  return isAllowedOrigin(request) ? null : reply({ message: "Origen no permitido." }, 403);
+}
+
+export function isAllowedOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
 
-  return origin && origin !== request.nextUrl.origin
-    ? reply({ message: "Origen no permitido." }, 403)
-    : null;
+  if (!origin) return true;
+
+  const configured = process.env.PORTAL_PUBLIC_ORIGIN;
+
+  if (!configured && process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  try {
+    const expected = configured ? new URL(configured).origin : request.nextUrl.origin;
+
+    return origin === expected;
+  } catch {
+    return false;
+  }
 }
