@@ -1,20 +1,40 @@
 import type { Metadata } from "next";
 
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 
 import { LoginForm } from "@/features/auth/components/login-form";
+import { PortalEntry } from "@/features/auth/components/portal-entry";
+import { SESSION_COOKIE, unseal } from "@/lib/auth/cookie-session";
 
 export const metadata: Metadata = {
   title: "Iniciar sesión",
   robots: { index: false, follow: false },
 };
 
-export default function Page() {
-  return (
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[]; offer?: string | string[] }>;
+}) {
+  const cookieJar = await cookies();
+  const form = (
     <Suspense
       fallback={<div className="grid min-h-dvh place-items-center text-muted">Cargando…</div>}
     >
       <LoginForm />
     </Suspense>
+  );
+
+  if (!unseal(cookieJar.get(SESSION_COOKIE)?.value)) return form;
+
+  const { next, offer } = await searchParams;
+
+  return (
+    <PortalEntry
+      requestedPath={typeof next === "string" ? next : undefined}
+      requestedOffer={typeof offer === "string" ? offer : undefined}
+      signedOut={form}
+    />
   );
 }

@@ -6,7 +6,7 @@ import { authRequest } from "../request";
 
 import { identityUserSchema } from "@/lib/auth/schemas";
 
-export function useCurrentUser() {
+export function useCurrentUser(verifyOnMount = false) {
   return useQuery({
     queryKey: ["auth", "me"],
     queryFn: async ({ signal }) => {
@@ -16,6 +16,7 @@ export function useCurrentUser() {
     },
     staleTime: 30_000,
     retry: false,
+    refetchOnMount: verifyOnMount ? "always" : true,
     refetchOnWindowFocus: false,
   });
 }

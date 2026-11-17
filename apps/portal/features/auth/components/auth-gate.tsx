@@ -9,23 +9,21 @@ import { ErrorState, LoadingState } from "@agrocloud/ui";
 import { AuthRequestError } from "../request";
 import { useCurrentUser } from "../hooks/use-current-user";
 
-export function AuthGate({ children }: { children: ReactNode }) {
+export function AuthGate({ children, signedOut }: { children: ReactNode; signedOut?: ReactNode }) {
   const router = useRouter();
   const path = usePathname();
-  const session = useCurrentUser();
+  const session = useCurrentUser(signedOut !== undefined);
+  const unauthorized =
+    session.isError && session.error instanceof AuthRequestError && session.error.status === 401;
 
   useEffect(() => {
-    if (
-      session.isError &&
-      session.error instanceof AuthRequestError &&
-      session.error.status === 401
-    ) {
+    if (unauthorized && signedOut === undefined) {
       const next = encodeURIComponent(path);
       router.replace(`/login?next=${next}`);
     }
-  }, [path, router, session.error, session.isError]);
+  }, [path, router, signedOut, unauthorized]);
 
-  if (session.isPending) {
+  if (session.isPending || (signedOut !== undefined && session.isFetching)) {
     return (
       <LoadingState
         className="mx-auto max-w-md py-16"
@@ -34,6 +32,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
       />
     );
   }
+
+  if (unauthorized && signedOut !== undefined) return <>{signedOut}</>;
 
   if (session.isError) {
     return (
