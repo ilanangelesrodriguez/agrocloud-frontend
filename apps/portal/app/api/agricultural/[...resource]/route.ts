@@ -27,7 +27,7 @@ import {
 } from "@/features/agricultural/schema";
 import { canManageCompany } from "@/features/company/navigation";
 import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-identity";
-import { parseJson, reply } from "@/lib/auth/route-utils";
+import { isAllowedOrigin, parseJson, reply } from "@/lib/auth/route-utils";
 
 type Context = { params: Promise<{ resource: string[] }> };
 
@@ -226,10 +226,9 @@ export async function POST(request: NextRequest, context: Context) {
     action === "evidences" &&
     !rest.length
   ) {
-    const origin = request.headers.get("origin");
-
-    if (origin && origin !== request.nextUrl.origin)
+    if (!isAllowedOrigin(request)) {
       return reply({ message: "Origen no permitido." }, 403);
+    }
     if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data;")) {
       return reply({ message: "Envía una fotografía como formulario." }, 415);
     }

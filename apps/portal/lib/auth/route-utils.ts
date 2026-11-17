@@ -30,11 +30,6 @@ export function remoteError(status: number): NextResponse {
 export async function parseJson(
   request: NextRequest,
 ): Promise<{ ok: true; body: unknown } | { ok: false; response: NextResponse }> {
-  const origin = request.headers.get("origin");
-
-  if (origin && origin !== request.nextUrl.origin) {
-    return { ok: false, response: reply({ message: "Origen no permitido." }, 403) };
-  }
   if (
     request.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase() !== "application/json"
   ) {
