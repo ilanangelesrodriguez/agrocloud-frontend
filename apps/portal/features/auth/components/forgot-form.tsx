@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Form } from "@heroui/react";
+import { Form, toast } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,7 +32,9 @@ export function ForgotForm() {
       const response = (await postAuth("/api/auth/forgot-password", fields)) as { message: string };
 
       setFeedback({ message: response.message, success: true });
+      toast.success("Solicitud registrada", { description: response.message });
     } catch (e) {
+      toast.danger(e instanceof Error ? e.message : "No se pudo completar la solicitud.");
       setFeedback({
         message: e instanceof Error ? e.message : "No se pudo completar la solicitud.",
         success: false,

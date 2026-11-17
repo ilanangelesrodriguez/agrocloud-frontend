@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LoadingState } from "@agrocloud/ui";
+import { SessionLoading } from "./session-loading";
 
 import { offerKey } from "@/features/plans/schema";
 import { homeForUser, safeNext } from "@/lib/auth/schemas";
@@ -29,9 +29,7 @@ function RedirectToHome({ requestedPath, requestedOffer }: EntryDestination) {
     if (destination) router.replace(destination);
   }, [destination, router]);
 
-  return (
-    <LoadingState className="mx-auto max-w-md py-16" label="Abriendo el portal" variant="spinner" />
-  );
+  return <SessionLoading label="Abriendo tu espacio de trabajo" />;
 }
 
 export function PortalEntry({

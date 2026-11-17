@@ -1,3 +1,5 @@
+import { RouteDrawer } from "@/components/route-drawer";
+import { AdminUsersList } from "@/features/admin/users/components";
 import { notFound } from "next/navigation";
 
 import { AdminUserDetails } from "@/features/admin/users/components";
@@ -8,5 +10,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   if (!positiveInteger(id)) notFound();
 
-  return <AdminUserDetails id={id} />;
+  return (
+    <RouteDrawer
+      title="Usuario y permisos"
+      description="Consulta la información y completa las acciones disponibles sin salir del listado."
+      back="/admin/users"
+      background={<AdminUsersList />}
+    >
+      <AdminUserDetails id={id} />
+    </RouteDrawer>
+  );
 }

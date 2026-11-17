@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 
+import { SessionLoading } from "@/features/auth/components/session-loading";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { PortalEntry } from "@/features/auth/components/portal-entry";
 import { SESSION_COOKIE, unseal } from "@/lib/auth/cookie-session";
@@ -19,9 +20,7 @@ export default async function Page({
 }) {
   const cookieJar = await cookies();
   const form = (
-    <Suspense
-      fallback={<div className="grid min-h-dvh place-items-center text-muted">Cargando…</div>}
-    >
+    <Suspense fallback={<SessionLoading label="Preparando el acceso" />}>
       <LoginForm />
     </Suspense>
   );

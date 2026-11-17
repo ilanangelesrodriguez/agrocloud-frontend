@@ -2,19 +2,24 @@
 
 import type { Offer } from "../schema";
 import Link from "next/link";
+import { FiArchive, FiEdit3, FiUpload } from "react-icons/fi";
+import { usePanelBusy } from "@/components/route-drawer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, toast } from "@heroui/react";
+import { AlertDialog, Button, toast } from "@heroui/react";
 import { StatusBadge, PageHeader, ErrorState } from "@agrocloud/ui";
 import { saveOffer } from "../api";
-import { stateLabels, kindLabels, linkClass, listKey, offerTone } from "../labels";
+import { stateLabels, kindLabels, listKey, offerTone } from "../labels";
 import { money } from "../schema";
 
 export function OfferSummary({ offer, reload }: { offer: Offer; reload: () => void }) {
   const cache = useQueryClient();
+  const reportBusy = usePanelBusy();
   const { terms } = offer;
   const update = useMutation({
     mutationFn: (status: "PUBLISHED" | "ARCHIVED") =>
       saveOffer({ ...terms, status, version: offer.version }, offer.key),
+    onMutate: () => reportBusy?.(true),
+    onSettled: () => reportBusy?.(false),
     onSuccess: (result) => {
       cache.setQueryData([...listKey, offer.key], result);
       void cache.invalidateQueries({ queryKey: listKey });
@@ -25,10 +30,8 @@ export function OfferSummary({ offer, reload }: { offer: Offer; reload: () => vo
 
   return (
     <section className="space-y-4">
-      <Link className={linkClass} href="/admin/plans">
-        Volver a ofertas
-      </Link>
       <PageHeader title={terms.name} />
+      <h2 className="text-xl font-semibold">{terms.name}</h2>
       <p>
         {offer.key} · {kindLabels[terms.kind]} ·{" "}
         <StatusBadge tone={offerTone(offer.status)}>{stateLabels[offer.status]}</StatusBadge> ·
@@ -60,8 +63,11 @@ export function OfferSummary({ offer, reload }: { offer: Offer; reload: () => vo
       </dl>
       {offer.status !== "ARCHIVED" ? (
         <div className="flex flex-wrap items-center gap-3">
-          <Link className={linkClass} href={"/admin/plans/" + offer.key + "/edit"}>
-            Revisar oferta
+          <Link
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-4 text-sm font-medium text-accent hover:bg-default"
+            href={"/admin/plans/" + offer.key + "/edit"}
+          >
+            <FiEdit3 aria-hidden="true" /> Editar oferta
           </Link>
           {offer.status === "DRAFT" ? (
             <Button
@@ -69,23 +75,46 @@ export function OfferSummary({ offer, reload }: { offer: Offer; reload: () => vo
               variant="primary"
               onPress={() => update.mutate("PUBLISHED")}
             >
-              Publicar
+              <FiUpload aria-hidden="true" /> Publicar
             </Button>
           ) : null}
-          <Button
-            isDisabled={update.isPending}
-            variant="secondary"
-            onPress={() => {
-              if (
-                window.confirm(
-                  "¿Archivar la oferta? Las órdenes existentes conservan sus condiciones.",
-                )
-              )
-                update.mutate("ARCHIVED");
-            }}
-          >
-            Archivar
-          </Button>
+          <AlertDialog>
+            <Button isDisabled={update.isPending} variant="danger-soft">
+              <FiArchive aria-hidden="true" /> Archivar
+            </Button>
+            <AlertDialog.Backdrop>
+              <AlertDialog.Container placement="center" size="sm">
+                <AlertDialog.Dialog>
+                  {({ close }) => (
+                    <>
+                      <AlertDialog.Header>
+                        <AlertDialog.Icon status="warning" />
+                        <AlertDialog.Heading>¿Archivar esta oferta?</AlertDialog.Heading>
+                      </AlertDialog.Header>
+                      <AlertDialog.Body>
+                        Las órdenes existentes conservarán sus condiciones. La oferta dejará de
+                        estar disponible para nuevas compras.
+                      </AlertDialog.Body>
+                      <AlertDialog.Footer>
+                        <Button slot="close" variant="secondary">
+                          Cancelar
+                        </Button>
+                        <Button
+                          variant="danger"
+                          onPress={() => {
+                            close();
+                            update.mutate("ARCHIVED");
+                          }}
+                        >
+                          <FiArchive aria-hidden="true" /> Archivar oferta
+                        </Button>
+                      </AlertDialog.Footer>
+                    </>
+                  )}
+                </AlertDialog.Dialog>
+              </AlertDialog.Container>
+            </AlertDialog.Backdrop>
+          </AlertDialog>
         </div>
       ) : null}
       {update.error ? (

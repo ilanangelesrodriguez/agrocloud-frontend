@@ -8,6 +8,7 @@ import { Providers } from "./providers";
 import { fontMono, fontSans } from "@/config/fonts";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: { default: "AgroCloud AI | Portal", template: "%s | AgroCloud AI" },
   description: "Acceso seguro al portal empresarial de AgroCloud AI.",
   icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },

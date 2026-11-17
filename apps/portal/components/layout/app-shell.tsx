@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { LoadingState } from "@agrocloud/ui";
+import { SessionLoading } from "@/features/auth/components/session-loading";
 
 import { navigationFor } from "@/config/navigation";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  if (!user) return <LoadingState label="Cargando portal" variant="spinner" />;
+  if (!user) return <SessionLoading />;
 
   const sections = navigationFor(user);
 

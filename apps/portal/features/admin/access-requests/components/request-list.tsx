@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { EmptyState, LoadingState, PagePagination, ErrorState } from "@agrocloud/ui";
-import { AdminHeading } from "@/features/admin/components/admin-ui";
+
 import { useAccessRequests } from "../hooks";
+
 import { RequestDetails } from "./request-details";
+
+import { AdminHeading } from "@/features/admin/components/admin-ui";
 
 export function AccessRequests() {
   const [page, setPage] = useState(1);
@@ -30,8 +33,8 @@ export function AccessRequests() {
             ))
           ) : (
             <EmptyState
-              title="No hay solicitudes en esta página"
               description="Las nuevas solicitudes aparecerán aquí cuando se reciban."
+              title="No hay solicitudes en esta página"
             />
           )}
           <PagePagination last={requests.data.last_page} page={page} onChange={setPage} />

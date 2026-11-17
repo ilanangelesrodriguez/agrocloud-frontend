@@ -9,10 +9,6 @@ type PagePaginationProps = {
   label?: string;
 };
 
-/**
- * Paginación para respuestas que incluyen `last_page` pero no `total`.
- * No estima un total de registros inexistente en la API.
- */
 export function PagePagination({
   page,
   last,
@@ -29,8 +25,10 @@ export function PagePagination({
     ),
   ).sort((a, b) => a - b);
 
+  if (pageCount <= 1) return null;
+
   return (
-    <div aria-label={label} role="navigation">
+    <div aria-label={label} className="mt-6 rounded-xl border border-border bg-surface px-4 py-3" role="navigation">
       <Pagination className="flex flex-wrap items-center justify-between gap-3" size="sm">
         <Pagination.Summary>
           Página {current} de {pageCount}

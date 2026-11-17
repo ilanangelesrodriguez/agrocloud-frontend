@@ -175,17 +175,21 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
               <Input maxLength={3000} />
             </TextField>
             <Checkbox isSelected={confirmed} onChange={setConfirmed}>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-              <Checkbox.Content>Confirmo las instrucciones del procedimiento</Checkbox.Content>
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Label>Confirmo las instrucciones del procedimiento</Label>
+              </Checkbox.Content>
             </Checkbox>
             <Checkbox isSelected={workload} onChange={setWorkload}>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
               <Checkbox.Content>
-                Confirmo la carga de trabajo si la muestra supera el umbral del servicio
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Label>
+                  Confirmo la carga de trabajo si la muestra supera el umbral del servicio
+                </Label>
               </Checkbox.Content>
             </Checkbox>
           </fieldset>

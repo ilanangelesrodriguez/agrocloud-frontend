@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@heroui/react";
+import { FiEdit3, FiArrowLeft } from "react-icons/fi";
 import { LoadingState, PageHeader, ErrorState, InlineNotice } from "@agrocloud/ui";
 import type { UserPolicy } from "../policy";
 import { useUserDetail } from "../hooks";
@@ -8,7 +10,9 @@ import { userStatus } from "./user-status";
 import { SharedUserForm } from "./user-form";
 
 export function SharedUserDetails({ id, policy }: { id: string; policy: UserPolicy }) {
-  const { scope, base } = policy;
+  const { scope } = policy;
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const user = useUserDetail(scope, policy.canRead, id);
 
   if (!policy.canRead) {
@@ -25,9 +29,6 @@ export function SharedUserDetails({ id, policy }: { id: string; policy: UserPoli
   return (
     <section className="space-y-4">
       <PageHeader title="Detalle de usuario" />
-      <Link className="text-accent underline" href={base}>
-        Volver a usuarios
-      </Link>
       {user.isPending ? (
         <LoadingState label="Cargando usuario" />
       ) : user.isError ? (
@@ -69,6 +70,12 @@ export function SharedUserDetails({ id, policy }: { id: string; policy: UserPoli
             ) : null}
           </dl>
           {policy.canEdit && record.rol?.codigo !== "SUPERADMIN" ? (
+            <Button isDisabled={saving} variant="secondary" onPress={() => setEditing(!editing)}>
+              {editing ? <FiArrowLeft aria-hidden="true" /> : <FiEdit3 aria-hidden="true" />}
+              {editing ? "Volver al detalle" : "Editar usuario"}
+            </Button>
+          ) : null}
+          {editing && policy.canEdit && record.rol?.codigo !== "SUPERADMIN" ? (
             <SharedUserForm
               key={JSON.stringify([
                 id,
@@ -81,6 +88,8 @@ export function SharedUserDetails({ id, policy }: { id: string; policy: UserPoli
                 record.cargo,
               ])}
               policy={policy}
+              onSaved={() => setEditing(false)}
+              onBusyChange={setSaving}
               user={record}
             />
           ) : null}

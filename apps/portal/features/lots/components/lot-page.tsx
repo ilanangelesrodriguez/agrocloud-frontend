@@ -23,11 +23,9 @@ export function LotPage({ mode, id }: { mode: "list" | "new" | "detail"; id?: st
       canCreate={canCreate}
       allowed={allowed}
       isPending={session.isPending}
+      createForm={(onSaved, onBusyChange) => <LotForm canRead={canRead} canReadProducers={canManageCompany(actor, "productores.ver")} onSaved={onSaved} onBusyChange={onBusyChange} />}
     >
-      {mode === "list" ? <LotList /> : null}
-      {mode === "new" ? (
-        <LotForm canRead={canRead} canReadProducers={canManageCompany(actor, "productores.ver")} />
-      ) : null}
+      {(mode === "list" || mode === "new") && canRead ? <LotList /> : null}
       {id && mode === "detail" ? <LotDetails id={id} /> : null}
     </ResourceShell>
   );

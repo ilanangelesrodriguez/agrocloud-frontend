@@ -1,15 +1,21 @@
 "use client";
 
 import { Calendar, RangeCalendar, Separator } from "@heroui/react";
+import { DateInput } from "@/components/date-input";
 
 import { DemoLabel, DemoSection } from "./demo-section";
 
 export function DatesDemo() {
   return (
     <DemoSection
-      description="Calendar · RangeCalendar · navegación por mes y teclado"
+      description="DatePicker · fecha y hora · Calendar · RangeCalendar"
       title="Selección de fechas"
     >
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DateInput label="Inicio de vigencia" name="demo_valid_from" />
+        <DateInput withTime label="Fecha y hora de recepción" name="demo_received_at" />
+      </div>
+      <Separator />
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="min-w-0 space-y-3">
           <DemoLabel>Calendar · fecha de inspección</DemoLabel>
@@ -48,8 +54,8 @@ export function DatesDemo() {
       </div>
       <Separator />
       <p className="text-xs text-muted">
-        Esta biblioteca muestra los calendarios directamente. Para filtros de tablas reales,
-        conviene exponerlos mediante DatePicker o DateRangePicker y conservar los filtros en la URL.
+        Los formularios usan el mismo DateInput con calendario desplegable. Las horas se
+        introducen en hora local y se convierten a ISO al enviar los datos al servidor.
       </p>
     </DemoSection>
   );

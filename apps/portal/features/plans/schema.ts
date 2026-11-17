@@ -92,6 +92,15 @@ export const orderStatus = z.object({
   currency: z.literal("PEN"),
   kind: z.enum(kinds),
   status: z.string(),
+  payment_state: z.enum([
+    "READY",
+    "DECLINED",
+    "PROCESSING",
+    "RECONCILIATION_REQUIRED",
+    "AWAITING_CONFIRMATION",
+    "CONFIRMED",
+    "UNAVAILABLE",
+  ]),
 });
 export const chargeResponse = z.object({
   reference: z.string(),

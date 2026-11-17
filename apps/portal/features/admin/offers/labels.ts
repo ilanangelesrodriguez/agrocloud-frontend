@@ -8,7 +8,7 @@ export const kindLabels = {
   AI_ADDON: "Análisis IA adicionales",
 };
 export const listKey = ["admin", "billing-offers"];
-export const linkClass = "text-accent underline";
+export const linkClass = "rounded-md font-medium text-accent hover:underline focus-visible:outline-2 focus-visible:outline-accent";
 export function offerTone(status: Offer["status"]): "success" | "warning" | "neutral" {
   if (status === "PUBLISHED") return "success";
   if (status === "DRAFT") return "warning";

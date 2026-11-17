@@ -77,7 +77,11 @@ export function AppBreadcrumbs({ pathname, admin }: { pathname: string; admin: b
   return (
     <Breadcrumbs aria-label="Ruta de navegación" className="min-w-0 text-sm">
       {crumbs.map((crumb, index) => (
-        <Breadcrumbs.Item href={crumb.href} key={index}>
+        <Breadcrumbs.Item
+          className={index < crumbs.length - 1 ? "hidden sm:inline-flex" : "min-w-0"}
+          href={crumb.href}
+          key={index}
+        >
           <span className="block max-w-36 truncate sm:max-w-56">{crumb.label}</span>
         </Breadcrumbs.Item>
       ))}

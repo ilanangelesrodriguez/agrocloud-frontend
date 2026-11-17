@@ -1,5 +1,7 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+
 import { Input, Label, TextField } from "@heroui/react";
 
 export function OfferField({
@@ -17,6 +19,17 @@ export function OfferField({
   required?: boolean;
   step?: string;
 }) {
+  if (type === "date") {
+    return (
+      <DateInput
+        initial={initial == null ? undefined : String(initial)}
+        label={label}
+        name={name}
+        required={required}
+      />
+    );
+  }
+
   return (
     <TextField defaultValue={String(initial ?? "")} isRequired={required} name={name} type={type}>
       <Label>{label}</Label>

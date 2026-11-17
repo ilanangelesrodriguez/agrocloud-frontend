@@ -30,7 +30,7 @@ export function AppSidebar({
       <Link
         aria-label="AgroCloud - inicio"
         className={clsx(
-          "flex h-16 shrink-0 items-center gap-3 border-b border-border px-5 font-semibold",
+          "flex h-18 shrink-0 items-center gap-3 border-b border-border px-5 font-semibold",
           collapsed && "justify-center px-2",
         )}
         href={home}

@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import type { z } from "zod";
+import { FiSave } from "react-icons/fi";
 import { useState } from "react";
 import { Button, Input, Label, TextField, toast } from "@heroui/react";
 import { FormNotice } from "@agrocloud/ui";
@@ -21,14 +22,18 @@ const editableFields = [
 export function CompanyEditor({
   profile,
   close,
+  onBusyChange,
 }: {
   profile: z.infer<typeof companyResponseSchema>["data"];
   close: () => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const cache = useQueryClient();
   const [error, setError] = useState("");
   const update = useMutation({
     mutationFn: (input: z.infer<typeof editCompanySchema>) => updateCompanyProfile(input),
+    onMutate: () => onBusyChange?.(true),
+    onSettled: () => onBusyChange?.(false),
     onSuccess: (result) => {
       cache.setQueryData(["company", "profile"], result);
       toast.success("Datos de la empresa actualizados");
@@ -64,7 +69,7 @@ export function CompanyEditor({
             defaultValue={profile[name] ?? ""}
             isRequired={name === "razon_social" || name === "nombre_comercial"}
             name={name}
-            type={name === "correo" ? "email" : "text"}
+            type={name === "correo" ? "email" : name === "telefono" ? "tel" : "text"}
           >
             <Label>{label}</Label>
             <Input className="w-full" maxLength={max} />
@@ -74,10 +79,7 @@ export function CompanyEditor({
       {error || update.error ? <FormNotice message={error || update.error?.message} /> : null}
       <div className="flex gap-3">
         <Button isDisabled={update.isPending} type="submit" variant="primary">
-          Guardar cambios
-        </Button>
-        <Button isDisabled={update.isPending} type="button" variant="secondary" onPress={close}>
-          Cancelar
+          <FiSave aria-hidden="true" /> {update.isPending ? "Guardando…" : "Guardar cambios"}
         </Button>
       </div>
     </form>

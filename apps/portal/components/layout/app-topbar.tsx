@@ -26,7 +26,7 @@ export function AppTopbar({
   onToggleSidebar: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex min-h-16 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur-xl sm:px-5">
+    <header className="sticky top-0 z-30 flex h-18 shrink-0 items-center gap-3 border-b border-border bg-surface/95 px-4 shadow-sm backdrop-blur-xl sm:px-6">
       <a
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-2"
         href="#main-content"

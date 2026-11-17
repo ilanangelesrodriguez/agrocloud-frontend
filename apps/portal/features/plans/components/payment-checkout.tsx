@@ -1,5 +1,7 @@
 "use client";
 
+import type { z } from "zod";
+
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { Button, toast } from "@heroui/react";
@@ -36,6 +38,16 @@ const publicKey = process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY ?? "";
 
 export const paymentConfigured = /^pk_test_[A-Za-z0-9]+$/.test(publicKey);
 
+const paymentStateLabels: Record<z.infer<typeof orderStatus>["payment_state"], string> = {
+  READY: "Listo para pagar",
+  DECLINED: "Cargo rechazado",
+  PROCESSING: "Pago en procesamiento",
+  RECONCILIATION_REQUIRED: "Requiere conciliación",
+  AWAITING_CONFIRMATION: "Esperando confirmación",
+  CONFIRMED: "Pago confirmado",
+  UNAVAILABLE: "Estado de procesamiento no disponible",
+};
+
 /** Test-only tokenization: card details go exclusively to Culqi, never to AgroCloud. */
 export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDone: () => void }) {
   const { data: actor } = useCurrentUser();
@@ -67,8 +79,27 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
       ),
     onSuccess: () => {
       toast.success("Estamos verificando tu pago.");
+    },
+    onSettled: () => {
       void status.refetch();
     },
+    retry: false,
+  });
+
+  const reconcile = useMutation({
+    mutationFn: () => adminRequest(
+      "subscription/orders/" + order.reference + "/reconcile", orderStatus,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }, "company",
+    ),
+    onSuccess: (result) => {
+      cache.setQueryData(["company", "subscription", "order", order.reference], result);
+      if (result.payment_state === "READY") {
+        submitted.current = false;
+        setAwaitingConfirmation(false);
+        charge.reset();
+      }
+    },
+    onSettled: () => { void status.refetch(); },
     retry: false,
   });
 
@@ -78,7 +109,7 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
       !sdkLoaded ||
       !window.CulqiCheckout ||
       submitted.current ||
-      !pending ||
+      !canPay ||
       status.isError
     )
       return;
@@ -104,7 +135,7 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
       },
     });
 
-    checkout.culqi = () => {
+    checkout.culqi = async () => {
       const token = checkout.token?.id;
 
       if (submitted.current) return;
@@ -112,6 +143,19 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
         submitted.current = true;
         setAwaitingConfirmation(true);
         checkout.close();
+        const current = await status.refetch();
+
+        if (
+          current.isError ||
+          current.data?.status !== "PENDING" ||
+          current.data.payment_state !== "READY"
+        ) {
+          submitted.current = false;
+          setAwaitingConfirmation(false);
+          setSdkError("El pago requiere verificar su estado antes de continuar.");
+
+          return;
+        }
         charge.mutate(token);
       } else {
         setSdkError(checkout.error?.user_message ?? "No se pudo autorizar la tarjeta.");
@@ -132,7 +176,8 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
   }, [status.data?.status, cache]);
 
   const paid = status.data?.status === "PAID";
-  const pending = status.data?.status === "PENDING";
+
+  const canPay = status.data?.status === "PENDING" && status.data?.payment_state === "READY";
 
   return (
     <section
@@ -143,19 +188,41 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
       <p className="text-sm text-muted">
         Orden {order.reference} · {money.format(order.amount_cents / 100)}
       </p>
+      {status.data?.payment_state === "RECONCILIATION_REQUIRED" ||
+        status.data?.payment_state === "AWAITING_CONFIRMATION" ? (
+        <div className="space-y-3">
+          <p className="text-sm">
+            {status.data.payment_state === "RECONCILIATION_REQUIRED"
+              ? "El resultado del intento anterior está por verificar. Comprueba el pago antes de intentar nuevamente. Si continúa pendiente, solicita revisión de esta referencia en Culqi."
+              : "Billing confirmó el cargo. Estamos esperando la actualización de tu suscripción."}
+          </p>
+          <Button isDisabled={reconcile.isPending || charge.isPending} variant="secondary"
+            onPress={() => reconcile.mutate()}>
+            {reconcile.isPending ? "Verificando…" : "Verificar pago"}
+          </Button>
+          {reconcile.error ? <p role="alert">{reconcile.error.message}</p> : null}
+        </div>
+      ) : null}
       <p className="text-sm" role="status">
         Estado del pago:{" "}
         {status.isPending
           ? "Consultando…"
           : status.isError
             ? "No disponible"
-            : paid
-              ? "Confirmado"
-              : awaitingConfirmation
-                ? "Por confirmar"
-                : pending
-                  ? "Pendiente"
-                  : (status.data?.status ?? "Desconocido")}
+            : (status.data?.status ?? "Desconocido")}
+      </p>
+      <p className="text-sm" role="status">
+        Estado de procesamiento:{" "}
+        {status.isPending
+          ? "Consultando…"
+          : status.isError
+            ? "No disponible"
+            : status.data
+              ? paymentStateLabels[status.data.payment_state] +
+                " (" +
+                status.data.payment_state +
+                ")"
+              : "Desconocido"}
       </p>
       {!paymentConfigured ? (
         <p className="text-sm text-muted" role="status">
@@ -170,12 +237,10 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
             onReady={() => setSdkLoaded(true)}
           />
           <Button
-            isDisabled={!sdkLoaded || !pending || status.isError || awaitingConfirmation}
-            type="button"
-            variant="primary"
+            isDisabled={!sdkLoaded || !canPay || charge.isPending || reconcile.isPending || awaitingConfirmation}
             onPress={openCheckout}
           >
-            {charge.isPending ? "Procesando…" : "Pagar " + money.format(order.amount_cents / 100)}
+            Pagar {money.format(order.amount_cents / 100)}
           </Button>
         </>
       )}

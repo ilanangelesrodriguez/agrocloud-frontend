@@ -1,5 +1,6 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
 import type { FormEvent } from "react";
 import type { Lot } from "@/features/lots/schema";
 import { useState } from "react";
@@ -92,10 +93,7 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
           <Label>Peso recibido (kg)</Label>
           <Input max={99999999.99} min={0.01} step="0.01" />
         </TextField>
-        <TextField isRequired name="recibido_en" type="datetime-local">
-          <Label>Fecha y hora de recepción (hora local)</Label>
-          <Input />
-        </TextField>
+        <DateInput required withTime disabled={save.isPending} name="recibido_en" label="Fecha y hora de recepción (hora local)" />
         <p className="text-xs text-muted sm:col-span-2">
           Si el peso recibido difiere del peso registrado en el lote, explica el motivo en
           observaciones.

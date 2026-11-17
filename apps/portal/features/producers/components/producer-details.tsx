@@ -1,5 +1,7 @@
 "use client";
 
+import { FiEdit3 } from "react-icons/fi";
+
 import Link from "next/link";
 import { LoadingState, ErrorState } from "@agrocloud/ui";
 
@@ -48,8 +50,11 @@ export function ProducerDetails({
         ))}
       </dl>
       {canEdit ? (
-        <Link className="font-semibold text-accent underline" href={"/producers/" + id + "/edit"}>
-          Editar productor
+        <Link
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-4 text-sm font-semibold text-accent hover:bg-default"
+          href={"/producers/" + id + "/edit"}
+        >
+          <FiEdit3 aria-hidden="true" /> Editar productor
         </Link>
       ) : null}
     </div>

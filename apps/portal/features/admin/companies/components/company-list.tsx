@@ -1,5 +1,7 @@
 "use client";
 
+import { FiBriefcase } from "react-icons/fi";
+
 import { useState } from "react";
 import Link from "next/link";
 import { EmptyState, LoadingState, StatusBadge, ErrorState, PagePagination } from "@agrocloud/ui";
@@ -26,14 +28,20 @@ export function Companies() {
       ) : (
         <>
           {companies.data.data.length ? (
-            <ul className="divide-y divide-border rounded-card border border-border bg-surface">
+            <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
               {companies.data.data.map((company) => (
-                <li key={company.id_empresa} className="p-4">
+                <li
+                  key={company.id_empresa}
+                  className="space-y-2 p-5 transition-colors hover:bg-default/40"
+                >
                   <Link
-                    className="font-semibold text-accent underline"
+                    className="rounded-md font-semibold text-foreground hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
                     href={"/admin/companies/" + company.id_empresa}
                   >
-                    {company.razon_social}
+                    <span className="inline-flex items-center gap-2">
+                      <FiBriefcase aria-hidden="true" className="shrink-0 text-accent" />
+                      {company.razon_social}
+                    </span>
                   </Link>
                   <p className="text-sm text-muted">
                     {company.ruc} ·{" "}

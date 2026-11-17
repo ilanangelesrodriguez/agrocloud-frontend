@@ -1,5 +1,7 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+
 import { TextField, Label, Input, FieldError } from "@heroui/react";
 
 export function RecordField({
@@ -21,6 +23,19 @@ export function RecordField({
   step?: string;
   error?: string;
 }) {
+  if (type === "datetime-local") {
+    return (
+      <DateInput
+        withTime
+        error={error}
+        initial={initial}
+        label={label}
+        name={name}
+        required={required}
+      />
+    );
+  }
+
   return (
     <TextField
       defaultValue={initial ?? ""}

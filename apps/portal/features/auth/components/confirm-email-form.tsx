@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@heroui/react";
+import { Button, toast } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { postAuth } from "../request";
@@ -26,11 +26,14 @@ export function ConfirmEmailForm() {
     setError(null);
     try {
       await postAuth("/api/auth/confirm-email", { user_id: Number(userId), token });
+      toast.success("Correo confirmado. Inicia sesión con tu nueva dirección.");
       queryClient.clear();
       router.replace("/login?email-confirmed=1");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo confirmar el cambio de correo.");
+      const message = e instanceof Error ? e.message : "No se pudo confirmar el cambio de correo.";
+      setError(message);
+      toast.danger(message);
     } finally {
       setBusy(false);
     }

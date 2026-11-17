@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import { ErrorState, PageHeader, PagePagination } from "@agrocloud/ui";
 
 /**
@@ -24,9 +22,6 @@ export function AdminPagination({
 export function AdminHeading({ title }: { title: string }) {
   return (
     <div className="space-y-2">
-      <Link className="text-sm font-medium text-accent underline" href="/admin">
-        Panel de plataforma
-      </Link>
       <PageHeader title={title} />
     </div>
   );

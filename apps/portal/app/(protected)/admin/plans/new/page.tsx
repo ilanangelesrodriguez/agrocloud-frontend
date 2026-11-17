@@ -1,4 +1,5 @@
-import { OfferForm } from "@/features/admin/offers/components/offer-form";
+import { OfferList } from "@/features/admin/offers/components/offer-list";
+
 export default function Page() {
-  return <OfferForm />;
+  return <OfferList initialCreate />;
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Form } from "@heroui/react";
+import { Form, toast } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ import { AuthCard } from "./auth-card";
 import { FormFeedback } from "./form-feedback";
 import { SubmitButton } from "./submit-button";
 
-import { loginSchema, safeNext } from "@/lib/auth/schemas";
+import { identityUserSchema, loginSchema, safeNext } from "@/lib/auth/schemas";
 import { offerKey } from "@/features/plans/schema";
 
 export function LoginForm() {
@@ -44,7 +44,12 @@ export function LoginForm() {
         user: { rol: { codigo: string } | null };
       };
 
+      const account = identityUserSchema.safeParse(result.user);
+      if (!account.success)
+        throw new Error("No se pudo validar la información de tu cuenta. Intenta nuevamente.");
       queryClient.clear();
+      queryClient.setQueryData(["auth", "me"], account.data);
+      toast.success("Sesión iniciada", { description: "Bienvenido a tu espacio de trabajo." });
       const target = safeNext(params.get("next"), result.redirectTo);
       const restricted =
         (target.startsWith("/admin") && result.user.rol?.codigo !== "SUPERADMIN") ||
@@ -64,7 +69,9 @@ export function LoginForm() {
       );
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");
+      const message = e instanceof Error ? e.message : "No se pudo iniciar sesión.";
+      setError(message);
+      toast.danger("No se pudo iniciar sesión", { description: message });
     } finally {
       setBusy(false);
     }
@@ -72,21 +79,20 @@ export function LoginForm() {
 
   return (
     <AuthCard
+      variant="split"
       description="Ingresa con el correo y la contraseña de tu cuenta empresarial."
       footer={
-        process.env.NEXT_PUBLIC_MARKETING_URL ? (
-          <>
-            ¿Tu organización aún no tiene acceso?{" "}
-            <a
-              className="font-semibold text-accent underline"
-              href={process.env.NEXT_PUBLIC_MARKETING_URL}
-            >
-              Solicitar acceso
-            </a>
-          </>
-        ) : undefined
+        <>
+          ¿Tu organización aún no tiene acceso?{" "}
+          <Link
+            className="inline-flex font-semibold text-accent hover:underline"
+            href="/solicitar-acceso"
+          >
+            Solicitar acceso
+          </Link>
+        </>
       }
-      title="Bienvenido a AgroCloud"
+      title="Inicia sesión"
     >
       <Form className="space-y-5" validationBehavior="aria" onSubmit={submit}>
         <AuthField

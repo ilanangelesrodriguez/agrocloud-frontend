@@ -4,8 +4,9 @@ import type { ReactNode } from "react";
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ErrorState, LoadingState } from "@agrocloud/ui";
+import { ErrorState } from "@agrocloud/ui";
 
+import { SessionLoading } from "./session-loading";
 import { AuthRequestError } from "../request";
 import { useCurrentUser } from "../hooks/use-current-user";
 
@@ -24,16 +25,12 @@ export function AuthGate({ children, signedOut }: { children: ReactNode; signedO
   }, [path, router, signedOut, unauthorized]);
 
   if (session.isPending || (signedOut !== undefined && session.isFetching)) {
-    return (
-      <LoadingState
-        className="mx-auto max-w-md py-16"
-        label="Verificando sesión"
-        variant="spinner"
-      />
-    );
+    return <SessionLoading />;
   }
 
   if (unauthorized && signedOut !== undefined) return <>{signedOut}</>;
+
+  if (unauthorized) return <SessionLoading label="Abriendo el inicio de sesión" />;
 
   if (session.isError) {
     return (

@@ -1,11 +1,14 @@
 "use client";
 
+import { FiSave } from "react-icons/fi";
+
 import type { FormEvent } from "react";
 import type { Producer } from "../schema";
 import { useState } from "react";
+import { usePanelBusy } from "@/components/route-drawer";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@heroui/react";
+import { toast, Button } from "@heroui/react";
 import { FormNotice } from "@agrocloud/ui";
 import { RecordField } from "@/features/agricultural/shared/record-field";
 import { producerInput } from "../schema";
@@ -22,16 +25,35 @@ const producerFields = [
   ["ubigeo", "Ubigeo", 6],
 ] as const;
 
-export function ProducerForm({ producer, canRead }: { producer?: Producer; canRead: boolean }) {
+export function ProducerForm({
+  producer,
+  canRead,
+  onSaved,
+  onBusyChange,
+}: {
+  producer?: Producer;
+  canRead: boolean;
+  onSaved?: () => void;
+  onBusyChange?: (busy: boolean) => void;
+}) {
   const router = useRouter();
+  const panelBusy = usePanelBusy();
+  const reportBusy = (busy: boolean) => {
+    onBusyChange?.(busy);
+    if (panelBusy !== onBusyChange) panelBusy?.(busy);
+  };
   const cache = useQueryClient();
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const save = useMutation({
     mutationFn: (input: object) => saveProducer(producer?.id_productor, input),
+    onMutate: () => reportBusy?.(true),
+    onSettled: () => reportBusy?.(false),
     onSuccess: ({ data }) => {
+      toast.success("Productor guardado");
       void cache.invalidateQueries({ queryKey: ["agricultural", "producers"] });
-      router.push(canRead ? "/producers/" + data.id_productor : "/dashboard");
+      if (onSaved) onSaved();
+      else router.push(canRead ? "/producers/" + data.id_productor : "/dashboard");
     },
     retry: false,
   });
@@ -61,7 +83,7 @@ export function ProducerForm({ producer, canRead }: { producer?: Producer; canRe
     <form className="space-y-4 rounded-card border border-border bg-surface p-5" onSubmit={submit}>
       <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
         <legend className="mb-3 font-semibold">
-          {producer ? "Editar productor" : "Registrar productor"}
+          {onSaved ? "Datos del productor" : producer ? "Editar productor" : "Registrar productor"}
         </legend>
         {producerFields.map(([name, label, max]) => (
           <RecordField
@@ -77,6 +99,7 @@ export function ProducerForm({ producer, canRead }: { producer?: Producer; canRe
       </fieldset>
       {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
       <Button isDisabled={save.isPending} type="submit" variant="primary">
+        <FiSave aria-hidden="true" />
         {save.isPending ? "Guardando…" : "Guardar productor"}
       </Button>
     </form>

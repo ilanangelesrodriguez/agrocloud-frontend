@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Form } from "@heroui/react";
+import { Form, toast } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,9 +38,12 @@ export function ActivateForm() {
     setError(null);
     try {
       await postAuth("/api/auth/activate", { ...fields, user_id: Number(userId), token });
+      toast.success("Cuenta activada. Ya puedes iniciar sesión.");
       router.replace("/login?activated=1");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo activar la cuenta.");
+      const message = e instanceof Error ? e.message : "No se pudo activar la cuenta.";
+      setError(message);
+      toast.danger(message);
     } finally {
       setBusy(false);
     }

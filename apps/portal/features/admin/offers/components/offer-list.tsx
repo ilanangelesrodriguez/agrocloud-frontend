@@ -1,20 +1,50 @@
 "use client";
 
+import { FiPackage, FiPlus } from "react-icons/fi";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@heroui/react";
+import { CreationDrawer } from "@/components/creation-drawer";
+import { OfferForm } from "./offer-form";
 import { EmptyState, LoadingState, PageHeader, StatusBadge, ErrorState } from "@agrocloud/ui";
 import { useOffers } from "../hooks";
 import { stateLabels, kindLabels, linkClass, offerTone } from "../labels";
 import { money } from "../schema";
 
-export function OfferList() {
+export function OfferList({ initialCreate = false }: { initialCreate?: boolean }) {
+  const router = useRouter();
+  const [creating, setCreating] = useState(initialCreate);
+  const [saving, setSaving] = useState(false);
+  function setOpen(open: boolean) {
+    setCreating(open);
+    if (!open && initialCreate) router.replace("/admin/plans");
+  }
   const query = useOffers();
 
   return (
     <section className="space-y-4">
-      <PageHeader title="Ofertas comerciales" />
-      <Link className={linkClass} href="/admin/plans/new">
-        Crear borrador
-      </Link>
+      <PageHeader
+        title="Ofertas comerciales"
+        description="Administra planes, vigencias y complementos disponibles."
+        actions={
+          <CreationDrawer
+            open={creating}
+            onOpenChange={setOpen}
+            busy={saving}
+            title="Crear oferta"
+            description="Define el precio, las condiciones y la vigencia. La oferta se guardará como borrador."
+            trigger={
+              <Button variant="primary" onPress={() => setOpen(true)}>
+                <FiPlus aria-hidden="true" /> Crear borrador
+              </Button>
+            }
+          >
+            <OfferForm onSaved={() => setOpen(false)} onBusyChange={setSaving} />
+          </CreationDrawer>
+        }
+      />
       {query.isPending ? (
         <LoadingState label="Cargando ofertas" />
       ) : query.isError ? (
@@ -25,13 +55,22 @@ export function OfferList() {
           }}
         />
       ) : query.data.data.length ? (
-        <ul className="divide-y divide-border rounded-card border border-border bg-surface">
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {query.data.data.map((offer) => (
-            <li key={offer.key} className="p-4">
-              <Link className={linkClass} href={"/admin/plans/" + offer.key}>
-                {offer.terms.name}
+            <li
+              key={offer.key}
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <Link
+                className={`${linkClass} text-lg font-semibold`}
+                href={"/admin/plans/" + offer.key}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FiPackage aria-hidden="true" className="shrink-0 text-accent" />
+                  {offer.terms.name}
+                </span>
               </Link>
-              <p>
+              <p className="text-sm text-muted">
                 {kindLabels[offer.terms.kind]} ·{" "}
                 <StatusBadge tone={offerTone(offer.status)}>
                   {stateLabels[offer.status]}

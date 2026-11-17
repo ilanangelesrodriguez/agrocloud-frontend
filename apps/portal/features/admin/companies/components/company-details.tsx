@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ErrorState, LoadingState } from "@agrocloud/ui";
 import { AdminHeading } from "@/features/admin/components/admin-ui";
 import { useCompanyDetails } from "../hooks";
@@ -24,9 +23,7 @@ export function CompanyDetails({ id }: { id: string }) {
   return (
     <section className="space-y-4">
       <AdminHeading title={data?.razon_social ?? "Detalle de empresa"} />
-      <Link className="inline-block text-accent underline" href="/admin/companies">
-        Volver a empresas
-      </Link>
+      {data ? <h2 className="text-xl font-semibold">{data.razon_social}</h2> : null}
       {company.isPending ? (
         <LoadingState label="Cargando empresa" />
       ) : company.isError ? (

@@ -1,8 +1,11 @@
 "use client";
 
+import { FiSave } from "react-icons/fi";
+
 import type { FormEvent } from "react";
 import type { CompanyUser } from "@/features/company/users/schema";
 import { useState } from "react";
+import { usePanelBusy } from "@/components/route-drawer";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Checkbox, Label, ListBox, Select, toast } from "@heroui/react";
@@ -13,8 +16,23 @@ import { useAdminCompanyOptions, useUserRoleOptions } from "../hooks";
 import { saveUserOperation } from "../api";
 import { UserField } from "./user-field";
 
-export function SharedUserForm({ user, policy }: { user?: CompanyUser; policy: UserPolicy }) {
+export function SharedUserForm({
+  user,
+  policy,
+  onSaved,
+  onBusyChange,
+}: {
+  user?: CompanyUser;
+  policy: UserPolicy;
+  onSaved?: () => void;
+  onBusyChange?: (busy: boolean) => void;
+}) {
   const router = useRouter();
+  const panelBusy = usePanelBusy();
+  const reportBusy = (busy: boolean) => {
+    onBusyChange?.(busy);
+    if (panelBusy !== onBusyChange) panelBusy?.(busy);
+  };
   const cache = useQueryClient();
   const { scope, base } = policy;
   const [role, setRole] = useState(user?.rol?.id_rol ?? null);
@@ -38,12 +56,15 @@ export function SharedUserForm({ user, policy }: { user?: CompanyUser; policy: U
   const mutation = useMutation({
     mutationFn: (operation: { kind: "save" | "resend"; body: object }) =>
       saveUserOperation(scope, user?.id_usuario, operation),
+    onMutate: () => reportBusy?.(true),
+    onSettled: () => reportBusy?.(false),
     onSuccess: (_, operation) => {
       toast.success(
         operation.kind === "resend" || !user ? "Invitación en cola" : "Usuario actualizado",
       );
       void cache.invalidateQueries({ queryKey: [scope] });
-      if (!user) router.push(base);
+      if (onSaved) onSaved();
+      else if (!user) router.push(base);
     },
     retry: false,
   });
@@ -244,10 +265,12 @@ export function SharedUserForm({ user, policy }: { user?: CompanyUser; policy: U
         )}
         {canEditStatus ? (
           <Checkbox isSelected={active} onChange={setActive}>
-            <Checkbox.Control>
-              <Checkbox.Indicator />
-            </Checkbox.Control>
-            <Checkbox.Content>Cuenta activa</Checkbox.Content>
+            <Checkbox.Content>
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+              <Label>Cuenta activa</Label>
+            </Checkbox.Content>
           </Checkbox>
         ) : null}
       </fieldset>
@@ -261,6 +284,7 @@ export function SharedUserForm({ user, policy }: { user?: CompanyUser; policy: U
           type="submit"
           variant="primary"
         >
+          <FiSave aria-hidden="true" />
           {mutation.isPending && action === "save"
             ? "Guardando…"
             : user

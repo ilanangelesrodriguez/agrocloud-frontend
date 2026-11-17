@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, Typography } from "@heroui/react";
 
+import { LoginLayout } from "./login-layout";
 import { ThemeSwitch } from "@/components/theme-switch";
 
 export function AuthCard({
@@ -13,12 +14,21 @@ export function AuthCard({
   description,
   children,
   footer,
+  variant = "card",
 }: {
   title: string;
   description: string;
   children: ReactNode;
   footer?: ReactNode;
+  variant?: "card" | "split";
 }) {
+  if (variant === "split")
+    return (
+      <LoginLayout title={title} description={description} footer={footer}>
+        {children}
+      </LoginLayout>
+    );
+
   return (
     <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-5 py-12">
       <div

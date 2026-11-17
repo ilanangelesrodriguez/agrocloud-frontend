@@ -44,6 +44,8 @@ export const identityUserSchema = z
     nombre: z.string(),
     apellido: z.string().nullable(),
     correo: z.string(),
+    telefono: z.string().nullish(),
+    cargo: z.string().nullish(),
     estado: z.boolean(),
     rol: z.object({ codigo: z.string(), nombre: z.string().optional() }).nullable(),
     permissions: z.array(z.string()),

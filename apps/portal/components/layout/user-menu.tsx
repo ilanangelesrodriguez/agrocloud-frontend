@@ -10,9 +10,7 @@ import type { IdentityUser } from "@/lib/auth/schemas";
 
 import { postAuth } from "@/features/auth/request";
 
-const websiteUrl =
-  process.env.NEXT_PUBLIC_WEBSITE_URL ||
-  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : undefined);
+const websiteUrl = "/";
 
 export function UserMenu({ user }: { user: IdentityUser }) {
   const router = useRouter();
@@ -45,7 +43,7 @@ export function UserMenu({ user }: { user: IdentityUser }) {
     <Dropdown>
       <Button
         aria-label="Abrir menú de usuario"
-        className="max-w-52 gap-2 px-2"
+        className="h-11 max-w-60 gap-2 rounded-xl border border-border bg-background px-2 sm:px-3"
         size="sm"
         variant="tertiary"
       >

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Form } from "@heroui/react";
+import { Form, toast } from "@heroui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,9 +38,12 @@ export function ResetForm() {
     setError(null);
     try {
       await postAuth("/api/auth/reset-password", { ...fields, correo, token });
+      toast.success("Contraseña actualizada. Inicia sesión nuevamente.");
       router.replace("/login?password-reset=1");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo cambiar la contraseña.");
+      const message = e instanceof Error ? e.message : "No se pudo cambiar la contraseña.";
+      setError(message);
+      toast.danger(message);
     } finally {
       setBusy(false);
     }

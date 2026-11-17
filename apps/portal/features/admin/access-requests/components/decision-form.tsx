@@ -18,13 +18,21 @@ import { FormNotice } from "@agrocloud/ui";
 import { decisionSchema, requestPageSchema } from "../schema";
 import { submitAccessRequestDecision } from "../api";
 
-export function DecisionForm({ id }: { id: number }) {
+export function DecisionForm({
+  id,
+  onBusyChange,
+}: {
+  id: number;
+  onBusyChange?: (busy: boolean) => void;
+}) {
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState("EN_REVISION");
   const [manual, setManual] = useState(false);
   const [error, setError] = useState("");
   const mutation = useMutation({
     mutationFn: (body: object) => submitAccessRequestDecision(id, body),
+    onMutate: () => onBusyChange?.(true),
+    onSettled: () => onBusyChange?.(false),
     onSuccess: async ({ data }) => {
       toast.success("Decisión registrada");
       queryClient.setQueriesData<ReturnType<typeof requestPageSchema.parse>>(
@@ -90,10 +98,12 @@ export function DecisionForm({ id }: { id: number }) {
               justificar la revisión manual.
             </p>
             <Checkbox isDisabled={mutation.isPending} isSelected={manual} onChange={setManual}>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-              <Checkbox.Content>Confirmo que realicé una revisión manual</Checkbox.Content>
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Label>Confirmo que realicé una revisión manual</Label>
+              </Checkbox.Content>
             </Checkbox>
             {manual ? (
               <TextField isDisabled={mutation.isPending} name="referencia">

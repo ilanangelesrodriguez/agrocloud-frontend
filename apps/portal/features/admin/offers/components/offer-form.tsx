@@ -1,20 +1,36 @@
 "use client";
 
+import { FiSave } from "react-icons/fi";
+
 import type { FormEvent } from "react";
 import type { Offer } from "../schema";
 import { useState } from "react";
+import { usePanelBusy } from "@/components/route-drawer";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Checkbox, Label, ListBox, Select } from "@heroui/react";
+import { toast, Button, Checkbox, Label, ListBox, Select } from "@heroui/react";
 import { FormNotice, PageHeader } from "@agrocloud/ui";
 import { saveOffer } from "../api";
 import { kinds, offerInput } from "../schema";
 import { kindLabels, linkClass, listKey } from "../labels";
 import { OfferField } from "./offer-field";
 
-export function OfferForm({ offer }: { offer?: Offer }) {
+export function OfferForm({
+  offer,
+  onSaved,
+  onBusyChange,
+}: {
+  offer?: Offer;
+  onSaved?: () => void;
+  onBusyChange?: (busy: boolean) => void;
+}) {
   const router = useRouter();
+  const panelBusy = usePanelBusy();
+  const reportBusy = (busy: boolean) => {
+    onBusyChange?.(busy);
+    if (panelBusy !== onBusyChange) panelBusy?.(busy);
+  };
   const cache = useQueryClient();
   const terms = offer?.terms;
   const [kind, setKind] = useState<(typeof kinds)[number]>(terms?.kind ?? "PLAN");
@@ -24,10 +40,14 @@ export function OfferForm({ offer }: { offer?: Offer }) {
   const isPlan = kind === "PLAN" || kind === "RENEWAL";
   const save = useMutation({
     mutationFn: (input: object) => saveOffer(input, offer?.key),
+    onMutate: () => reportBusy?.(true),
+    onSettled: () => reportBusy?.(false),
     onSuccess: (result) => {
+      toast.success("Borrador guardado");
       cache.setQueryData([...listKey, result.data.key], result);
       void cache.invalidateQueries({ queryKey: listKey });
-      router.push("/admin/plans/" + result.data.key);
+      if (onSaved) onSaved();
+      else router.push("/admin/plans/" + result.data.key);
     },
     retry: false,
   });
@@ -72,10 +92,14 @@ export function OfferForm({ offer }: { offer?: Offer }) {
 
   return (
     <section className="space-y-4">
-      <Link className={linkClass} href={offer ? "/admin/plans/" + offer.key : "/admin/plans"}>
-        Cancelar y volver
-      </Link>
-      <PageHeader title={offer ? "Revisar oferta" : "Crear borrador"} />
+      {!onSaved ? (
+        <>
+          <Link className={linkClass} href={offer ? "/admin/plans/" + offer.key : "/admin/plans"}>
+            Cancelar y volver
+          </Link>
+          <PageHeader title={offer ? "Revisar oferta" : "Crear borrador"} />
+        </>
+      ) : null}
       <form className="space-y-4" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
           {offer ? (
@@ -180,15 +204,18 @@ export function OfferForm({ offer }: { offer?: Offer }) {
           />
           {kind === "PLAN" ? (
             <Checkbox isSelected={publicOffer} onChange={setPublic}>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-              <Checkbox.Content>Mostrar en la web al publicar</Checkbox.Content>
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Label>Mostrar en la web al publicar</Label>
+              </Checkbox.Content>
             </Checkbox>
           ) : null}
         </fieldset>
         {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
         <Button isDisabled={save.isPending} type="submit" variant="primary">
+          <FiSave aria-hidden="true" />
           {save.isPending ? "Guardando…" : offer ? "Guardar nueva versión" : "Crear borrador"}
         </Button>
       </form>

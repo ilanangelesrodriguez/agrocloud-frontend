@@ -14,8 +14,8 @@ Next.js 16 · React 19 · TypeScript · HeroUI v3 · Tailwind CSS 4 · **npm Wor
 
 | Ruta | Responsabilidad |
 | --- | --- |
-| `apps/portal` | Operaciones agrícolas y administración autenticada. |
-| `apps/web` | Sitio público y comercial. |
+| `apps/portal` | Aplicación principal con sitio público, autenticación y plataforma agrícola. |
+| `apps/web` | Referencia de la aplicación pública anterior durante la validación de la migración. |
 | `packages/ui` | Componentes y patrones visuales reutilizables. |
 | `packages/api-client` | Cliente HTTP y tipos para el API Gateway. |
 | `packages/config` | Configuración compartida de TypeScript y lint. |
@@ -31,11 +31,29 @@ Next.js 16 · React 19 · TypeScript · HeroUI v3 · Tailwind CSS 4 · **npm Wor
 
 ```bash
 npm ci
-npm run dev           # Portal: http://localhost:3000
-npm run dev:web       # Web: http://localhost:3001
+npm run dev           # Aplicación unificada: http://localhost:3000
 ```
 
 **Importante:** las dependencias se instalan una sola vez desde la raíz, donde está `package-lock.json`. Usa `npm install` si necesitas cambiar dependencias; CI utiliza `npm ci`.
+
+La landing se encuentra en `/`, el inicio de sesión en `/login` y la entrada con
+verificación de sesión en `/portal`. Las rutas públicas pertenecen a
+`app/(marketing)`, las de acceso a `app/(auth)` y las privadas a
+`app/(protected)`. El código público se distribuye por responsabilidad en
+`apps/portal/components/marketing`, `apps/portal/features/marketing`,
+`apps/portal/lib/marketing` y `apps/portal/config/marketing`.
+
+Los formularios del Portal usan `components/date-input.tsx` para fechas y horas
+con HeroUI. La paginación compartida aparece solo cuando hay más de una página.
+Las invitaciones se pueden completar desde el drawer del listado de usuarios;
+los errores de las mutaciones se notifican desde el proveedor de consultas,
+salvo los flujos que presentan su propio toast.
+
+Configura las variables públicas y de privacidad en `apps/portal/.env.local`,
+tomando como referencia `apps/portal/.env.example`. El sitio y el portal comparten
+el mismo origen. Los comandos raíz de desarrollo, lint, tipos y build trabajan con
+la aplicación unificada. `apps/web` permanece como referencia hasta completar la
+validación de navegación, solicitudes, autenticación y operaciones agrícolas.
 
 Verificación:
 

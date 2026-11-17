@@ -7,9 +7,9 @@ import { SharedUserDetails } from "@/features/users/components/user-detail";
 import { SharedUserForm } from "@/features/users/components/user-form";
 
 /** Portal empresarial: solo permisos del tenant, sin administración global. */
-export function CompanyUsersList() {
+export function CompanyUsersList({ initialCreate = false }: { initialCreate?: boolean }) {
   const { data } = useCurrentUser();
-  return <SharedUsersList policy={tenantUserPolicy(data)} />;
+  return <SharedUsersList initialCreate={initialCreate} policy={tenantUserPolicy(data)} />;
 }
 export function CompanyUserDetails({ id }: { id: string }) {
   const { data } = useCurrentUser();

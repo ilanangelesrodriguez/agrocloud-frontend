@@ -30,9 +30,9 @@ export function ProducerPage({
       canCreate={canCreate}
       allowed={allowed}
       isPending={session.isPending}
+      createForm={(onSaved, onBusyChange) => <ProducerForm canRead={canRead} onSaved={onSaved} onBusyChange={onBusyChange} />}
     >
-      {mode === "list" ? <ProducerList /> : null}
-      {mode === "new" ? <ProducerForm canRead={canRead} /> : null}
+      {(mode === "list" || mode === "new") && canRead ? <ProducerList /> : null}
       {id && (mode === "detail" || mode === "edit") ? (
         <ProducerDetails id={id} edit={mode === "edit"} canEdit={canEdit} />
       ) : null}

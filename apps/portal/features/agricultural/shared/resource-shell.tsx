@@ -2,7 +2,12 @@
 
 import type { ReactNode } from "react";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@heroui/react";
+import { FiPlus } from "react-icons/fi";
+import { CreationDrawer } from "@/components/creation-drawer";
 import { InlineNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 
 export function ResourceShell({
@@ -14,6 +19,7 @@ export function ResourceShell({
   allowed,
   isPending,
   children,
+  createForm,
 }: {
   title: string;
   base: "/producers" | "/lots";
@@ -23,7 +29,16 @@ export function ResourceShell({
   allowed: boolean;
   isPending: boolean;
   children: ReactNode;
+  createForm?: (onSaved: () => void, onBusyChange: (busy: boolean) => void) => ReactNode;
 }) {
+  const router = useRouter();
+  const [creating, setCreating] = useState(mode === "new");
+  const [saving, setSaving] = useState(false);
+  function setOpen(open: boolean) {
+    setCreating(open);
+    if (!open && mode === "new") router.replace(base);
+  }
+
   if (isPending) return <LoadingState label="Verificando permisos" variant="spinner" />;
   if (!allowed) {
     return (
@@ -37,22 +52,32 @@ export function ResourceShell({
 
   return (
     <section className="space-y-5">
-      <PageHeader title={title} />
-      <nav aria-label={title} className="flex flex-wrap gap-4">
-        <Link className="font-semibold text-accent underline" href="/dashboard">
+      <PageHeader
+        title={title}
+        description={base === "/lots" ? "Organiza tus lotes y consulta su avance en cada etapa." : "Administra los productores y sus datos de identificación y ubicación."}
+        actions={canCreate && (mode === "list" || mode === "new") && createForm ? (
+          <CreationDrawer
+            open={creating}
+            onOpenChange={setOpen}
+            busy={saving}
+            title={base === "/lots" ? "Registrar lote" : "Registrar productor"}
+            description={base === "/lots" ? "Asocia el productor, completa los datos del producto y programa su llegada." : "Completa la identificación del productor y la ubicación de su operación."}
+            trigger={<Button variant="primary" onPress={() => setOpen(true)}><FiPlus aria-hidden="true" /> Registrar {base === "/lots" ? "lote" : "productor"}</Button>}
+          >
+            {createForm(() => setOpen(false), setSaving)}
+          </CreationDrawer>
+        ) : undefined}
+      />
+      {mode === "detail" || mode === "edit" ? <nav aria-label={title} className="flex flex-wrap gap-4">
+        <Link className="inline-flex min-h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:bg-default hover:text-foreground" href="/dashboard">
           Panel empresarial
         </Link>
-        {canRead && mode !== "list" ? (
-          <Link className="font-semibold text-accent underline" href={base}>
+        {canRead ? (
+          <Link className="inline-flex min-h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:bg-default hover:text-foreground" href={base}>
             Volver al listado
           </Link>
         ) : null}
-        {canCreate && mode === "list" ? (
-          <Link className="font-semibold text-accent underline" href={base + "/new"}>
-            Registrar {base === "/lots" ? "lote" : "productor"}
-          </Link>
-        ) : null}
-      </nav>
+      </nav> : null}
       {children}
     </section>
   );

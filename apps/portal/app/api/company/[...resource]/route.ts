@@ -87,6 +87,17 @@ export async function GET(request: NextRequest, { params }: Context) {
 
 export async function POST(request: NextRequest, { params }: Context) {
   const resource = (await params).resource.join("/");
+  const reconcileMatch = /^subscription\/orders\/(AGRO-[0-9A-HJKMNP-TV-Z]{26})\/reconcile$/.exec(resource);
+
+  if (reconcileMatch) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+
+    return authorizedIdentity(request, (user) => canManageCompany(user, "suscripciones.gestionar")
+      ? "/subscription/orders/" + reconcileMatch[1] + "/reconcile" : null, orderStatus, {
+      body: {}, method: "POST", operation: "company.subscription.reconcile",
+    });
+  }
   const chargeMatch = /^subscription\/orders\/(AGRO-[0-9A-HJKMNP-TV-Z]{26})\/charge$/.exec(
     resource,
   );

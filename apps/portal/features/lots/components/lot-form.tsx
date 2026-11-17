@@ -1,10 +1,12 @@
 "use client";
 
+import { FiSave } from "react-icons/fi";
+
 import type { FormEvent } from "react";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Input, Label, ListBox, Select, TextField } from "@heroui/react";
+import { toast, Button, Input, Label, ListBox, Select, TextField } from "@heroui/react";
 import { FormNotice, LoadingState, ErrorState, PagePagination } from "@agrocloud/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -16,9 +18,13 @@ import { useLotCatalogs, useLotProducers } from "../hooks";
 export function LotForm({
   canRead,
   canReadProducers,
+  onSaved,
+  onBusyChange,
 }: {
   canRead: boolean;
   canReadProducers: boolean;
+  onSaved?: () => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const router = useRouter();
   const cache = useQueryClient();
@@ -38,10 +44,14 @@ export function LotForm({
 
   const save = useMutation({
     mutationFn: createLot,
+    onMutate: () => onBusyChange?.(true),
+    onSettled: () => onBusyChange?.(false),
     onSuccess: ({ data }) => {
+      toast.success("Lote registrado");
       void cache.invalidateQueries({ queryKey: ["agricultural", "lots"] });
       void cache.invalidateQueries({ queryKey: ["company", "subscription"] });
-      router.push(canRead ? "/lots/" + data.id_lote : "/dashboard");
+      if (onSaved) onSaved();
+      else router.push(canRead ? "/lots/" + data.id_lote : "/dashboard");
     },
     retry: false,
   });
@@ -88,7 +98,7 @@ export function LotForm({
   return (
     <form className="space-y-4 rounded-card border border-border bg-surface p-5" onSubmit={submit}>
       <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
-        <legend className="mb-3 font-semibold">Registrar lote</legend>
+        <legend className="mb-3 font-semibold">Datos del lote</legend>
         {canReadProducers ? (
           <div className="space-y-2">
             <Select
@@ -236,6 +246,7 @@ export function LotForm({
         type="submit"
         variant="primary"
       >
+        <FiSave aria-hidden="true" />
         {save.isPending ? "Guardando…" : "Guardar lote"}
       </Button>
     </form>

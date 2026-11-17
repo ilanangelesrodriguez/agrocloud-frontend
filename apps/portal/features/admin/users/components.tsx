@@ -7,9 +7,9 @@ import { SharedUserDetails } from "@/features/users/components/user-detail";
 import { SharedUserForm } from "@/features/users/components/user-form";
 
 /** Administración global: una entrada explícita y su política SUPERADMIN. */
-export function AdminUsersList() {
+export function AdminUsersList({ initialCreate = false }: { initialCreate?: boolean }) {
   const { data } = useCurrentUser();
-  return <SharedUsersList policy={globalUserPolicy(data)} />;
+  return <SharedUsersList initialCreate={initialCreate} policy={globalUserPolicy(data)} />;
 }
 export function AdminUserDetails({ id }: { id: string }) {
   const { data } = useCurrentUser();
