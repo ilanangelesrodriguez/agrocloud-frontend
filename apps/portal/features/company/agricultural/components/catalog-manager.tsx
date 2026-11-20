@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import type { FormEvent } from "react";
 import { useState } from "react";
@@ -55,8 +56,8 @@ export function CatalogOverview() {
 
 export function CatalogManager({ type }: { type: CatalogType }) {
   const { canRead, canWrite } = useAgriculturalSettingsAccess();
-  const query = useMasterCatalog(type, canRead);
-  const products = useMasterCatalog("producto", canRead && type === "variedad");
+  const query = useMasterCatalog(type, canRead, true);
+  const products = useMasterCatalog("producto", canRead && type === "variedad", true);
   const cache = useQueryClient();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -65,7 +66,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
   const [error, setError] = useState("");
 
   const [confirm, setConfirm] = useState<CatalogItem | null>(null);
-  const refresh = () => cache.invalidateQueries({ queryKey: ["agricultural", "catalog"] });
+  const refresh = () => invalidateOperationalQueries(cache);
   const create = useMutation({
     mutationFn: createCatalog,
     retry: false,

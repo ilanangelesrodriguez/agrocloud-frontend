@@ -121,7 +121,7 @@ export function LotOperations({
             reception &&
             actor?.rol?.codigo === "INSPECTOR" &&
             canManageCompany(actor, "muestreos.crear") ? (
-            <SamplingForm lotId={lot.id_lote} product={lot.producto} />
+            <SamplingForm lotId={lot.id_lote} product={lot.producto} productId={lot.producto_id} />
           ) : (
             <InlineNotice
               status="warning"

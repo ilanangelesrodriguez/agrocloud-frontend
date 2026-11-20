@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -48,7 +49,7 @@ export function ProcedureManager({
     mutationFn: (item: Procedure) => toggleProcedure(item.id, !item.activo),
     retry: false,
     onSuccess: async () => {
-      await cache.invalidateQueries({ queryKey: ["agricultural", "sampling-procedures"] });
+      await invalidateOperationalQueries(cache);
       setConfirm(null);
       toast.success("Disponibilidad actualizada");
     },

@@ -4,8 +4,17 @@ import { catalog } from "@/features/agricultural/schema";
 import { catalogCreated, catalogUpdated, procedureCreated, procedureResponse } from "./schema";
 import type { CatalogType, catalogInput, procedureInput } from "./schema";
 
-export function fetchMasterCatalog(type: CatalogType, signal?: AbortSignal) {
-  return bffRequest("catalogs/admin?tipo=" + type, catalog, { signal }, "agricultural");
+export function fetchMasterCatalog(
+  type: CatalogType,
+  signal?: AbortSignal,
+  administrative = false,
+) {
+  return bffRequest(
+    (administrative ? "catalogs/admin?tipo=" : "catalogs?tipo=") + type,
+    catalog,
+    { signal },
+    "agricultural",
+  );
 }
 export function createCatalog(input: z.infer<typeof catalogInput>) {
   return bffRequest("catalogs", catalogCreated, json("POST", input), "agricultural");

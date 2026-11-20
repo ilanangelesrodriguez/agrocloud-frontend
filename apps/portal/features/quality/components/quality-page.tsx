@@ -46,13 +46,26 @@ export function QualityPage({
             rows: result.data.map((item) => ({
               id: item.id_inspeccion,
               title: `Inspección #${item.id_inspeccion}`,
-              detail: item.muestreo?.lote?.codigo_lote ?? `Muestreo #${item.id_muestreo}`,
+              detail: [
+                item.muestreo?.lote?.codigo_lote ?? `Muestreo #${item.id_muestreo}`,
+                item.latest_decision?.categoria,
+                item.latest_decision ? `Supervisor #${item.latest_decision.id_supervisor}` : null,
+                item.latest_decision
+                  ? new Date(item.latest_decision.created_at).toLocaleDateString("es-PE")
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · "),
               status:
                 status === "PENDING"
                   ? "Pendiente de dictamen"
                   : status === "OBSERVED"
                     ? "Corrección pendiente"
-                    : "Dictamen finalizado",
+                    : item.latest_decision?.decision === "APROBADO"
+                      ? "Aprobado"
+                      : item.latest_decision?.decision === "RECHAZADO"
+                        ? "Rechazado"
+                        : "Dictamen finalizado",
               href: `/inspections/${item.id_inspeccion}`,
             })),
           };

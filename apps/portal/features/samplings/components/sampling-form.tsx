@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import type { FormEvent } from "react";
 
@@ -24,7 +25,15 @@ import { samplingInput } from "../schema";
 import { registerSampling } from "../api";
 import { useAllSamplingProcedures } from "../hooks";
 
-export function SamplingForm({ lotId, product }: { lotId: number; product: string }) {
+export function SamplingForm({
+  lotId,
+  product,
+  productId,
+}: {
+  lotId: number;
+  product: string;
+  productId?: number | null;
+}) {
   const cache = useQueryClient();
   const router = useRouter();
   const { data: actor } = useCurrentUser();
@@ -34,6 +43,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
   const [error, setError] = useState("");
   const query = useAllSamplingProcedures(canManageCompany(actor, "muestreos.crear"), {
     producto: product,
+    producto_id: productId ?? undefined,
     activo: true,
   });
   const procedures = query.data?.data ?? [];
@@ -42,7 +52,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
     mutationFn: (input: object) => registerSampling(lotId, input),
     onSuccess: async ({ data }) => {
       toast.success("Muestreo registrado");
-      await cache.invalidateQueries({ queryKey: ["agricultural", "lots"] });
+      await invalidateOperationalQueries(cache, { notifications: true });
       if (canManageCompany(actor, "muestreos.ver")) {
         router.push("/samplings/" + data.id_muestreo);
       }

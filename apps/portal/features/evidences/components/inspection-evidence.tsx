@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import type { FormEvent } from "react";
 import type { z } from "zod";
@@ -46,8 +47,7 @@ export function InspectionEvidence({
   const [error, setError] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const fruits = useEvidenceFruits(sampling, page, canUpload && canReadFruits);
-  const refresh = () =>
-    cache.invalidateQueries({ queryKey: ["agricultural", "inspections", "detail", id] });
+  const refresh = () => invalidateOperationalQueries(cache);
   const upload = useMutation({
     mutationFn: (body: FormData) => uploadEvidence(id, body),
     onSuccess: ({ data }) => {
@@ -63,7 +63,7 @@ export function InspectionEvidence({
     mutationFn: analyzeEvidence,
     onSuccess: () => {
       toast.success("Análisis IA enviado a la cola");
-      return refresh();
+      return invalidateOperationalQueries(cache, { subscription: true });
     },
     retry: false,
   });

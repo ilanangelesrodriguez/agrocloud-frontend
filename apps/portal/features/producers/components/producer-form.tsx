@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import { FiSave } from "react-icons/fi";
 
@@ -51,7 +52,7 @@ export function ProducerForm({
     onSettled: () => reportBusy?.(false),
     onSuccess: ({ data }) => {
       toast.success("Productor guardado");
-      void cache.invalidateQueries({ queryKey: ["agricultural", "producers"] });
+      void invalidateOperationalQueries(cache);
       if (onSaved) onSaved();
       else router.push(canRead ? "/producers/" + data.id_productor : "/dashboard");
     },

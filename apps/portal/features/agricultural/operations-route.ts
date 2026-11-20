@@ -1,3 +1,13 @@
+import { setupSchema } from "@/features/dashboard/schema";
+import { producerList } from "./schema";
+import {
+  companyAiProducers,
+  companyOverview,
+  companyClasses,
+  companyDaily,
+  companyModels,
+  companyValidation,
+} from "@/features/ai/schema";
 import type { z } from "zod";
 import type { NextRequest } from "next/server";
 import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-identity";
@@ -82,6 +92,40 @@ export async function readOperation(request: NextRequest, segments: string[]) {
     path = "/dashboard";
     permission = "";
     schema = dashboardResponse;
+  } else if (segments.length === 1 && resource === "setup") {
+    path = "/setup";
+    permission = "empresa.editar";
+    schema = setupSchema;
+  } else if (segments.length === 2 && resource === "reports" && id === "producers") {
+    path = "/reports/producers";
+    permission = "reportes.operativos";
+    schema = producerList;
+  } else if (
+    segments.length === 3 &&
+    resource === "reports" &&
+    id === "ai" &&
+    action === "producers"
+  ) {
+    path = "/reports/ai/producers";
+    permission = "ia.reportes.ver";
+    schema = companyAiProducers;
+  } else if (
+    segments.length === 3 &&
+    resource === "reports" &&
+    id === "ai" &&
+    ["overview", "classes", "daily", "models", "validation"].includes(action)
+  ) {
+    path = `/reports/ai/${action}`;
+    permission = "ia.reportes.ver";
+    schema = (
+      {
+        overview: companyOverview,
+        classes: companyClasses,
+        daily: companyDaily,
+        models: companyModels,
+        validation: companyValidation,
+      } as Record<string, z.ZodType<object>>
+    )[action];
   } else return null;
   const page = request.nextUrl.searchParams.get("page") ?? "1";
   const status = request.nextUrl.searchParams.get("estado") ?? undefined;
@@ -93,7 +137,7 @@ export async function readOperation(request: NextRequest, segments: string[]) {
   const reportFilter =
     resource === "reports"
       ? Object.fromEntries(
-          ["from", "to", "producto", "variedad", "producer_id"].map((key) => [
+          ["from", "to", "producto", "variedad", "producer_id", "model_id"].map((key) => [
             key,
             request.nextUrl.searchParams.get(key) ?? undefined,
           ]),

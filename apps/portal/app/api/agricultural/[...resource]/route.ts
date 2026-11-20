@@ -157,6 +157,9 @@ export async function GET(request: NextRequest, { params }: Context) {
   if (resource === "sampling-procedures" && !id) {
     const producto = request.nextUrl.searchParams.get("producto")?.trim() || undefined;
     const activo = request.nextUrl.searchParams.get("activo");
+    const productId = request.nextUrl.searchParams.get("producto_id");
+    if (productId !== null && !positiveInteger(productId))
+      return reply({ message: "Producto inválido." }, 422);
     if (
       (producto && producto.length > 150) ||
       (activo !== null && !["true", "false"].includes(activo))
@@ -175,7 +178,11 @@ export async function GET(request: NextRequest, { params }: Context) {
       {
         service: "agricultural",
         page: Number(page),
-        procedureFilter: { producto, activo: activo === null ? undefined : activo === "true" },
+        procedureFilter: {
+          producto,
+          producto_id: productId ? Number(productId) : undefined,
+          activo: activo === null ? undefined : activo === "true",
+        },
       },
     );
   }

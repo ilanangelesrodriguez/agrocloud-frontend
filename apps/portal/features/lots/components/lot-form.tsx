@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import { FiSave } from "react-icons/fi";
 
@@ -37,7 +38,8 @@ export function LotForm({
   const attempts = useRef(new Map<string, string>());
   const [products, varieties, units] = useLotCatalogs();
   const producers = useLotProducers(canReadProducers, producerPage);
-  const productId = products.data?.data.find((item) => item.nombre === product)?.id;
+  const selectedProduct = products.data?.data.find((item) => String(item.id) === product);
+  const productId = selectedProduct?.id;
   const validVarieties = (varieties.data?.data ?? []).filter(
     (item) => item.parent_id === productId,
   );
@@ -48,8 +50,7 @@ export function LotForm({
     onSettled: () => onBusyChange?.(false),
     onSuccess: ({ data }) => {
       toast.success("Lote registrado");
-      void cache.invalidateQueries({ queryKey: ["agricultural", "lots"] });
-      void cache.invalidateQueries({ queryKey: ["company", "subscription"] });
+      void invalidateOperationalQueries(cache, { notifications: true, subscription: true });
       if (onSaved) onSaved();
       else router.push(canRead ? "/lots/" + data.id_lote : "/dashboard");
     },
@@ -64,8 +65,10 @@ export function LotForm({
     const parsed = lotInput.safeParse({
       id_productor: Number(producerId),
       codigo_lote: String(fields.get("codigo_lote") ?? "").trim(),
-      producto: product,
-      variedad: variety || null,
+      producto_id: productId,
+      variedad_id: variety ? Number(variety) : null,
+      producto: selectedProduct?.nombre ?? "",
+      variedad: validVarieties.find((item) => String(item.id) === variety)?.nombre ?? null,
       peso_kg: Number(fields.get("peso_kg")),
       unidad_medida: unit,
       fecha_llegada_prevista: Number.isFinite(date.getTime()) ? date.toISOString() : "",
@@ -179,8 +182,12 @@ export function LotForm({
           <Select.Popover>
             <ListBox aria-label="Productos disponibles">
               {(products.data?.data ?? []).map((item) => (
-                <ListBox.Item key={item.id} id={item.nombre} textValue={item.nombre}>
-                  {item.nombre}
+                <ListBox.Item
+                  key={item.id}
+                  id={String(item.id)}
+                  textValue={`${item.nombre} · ${item.id_empresa ? "Empresa" : "Global"}`}
+                >
+                  {item.nombre} · {item.id_empresa ? "Empresa" : "Global"}
                 </ListBox.Item>
               ))}
             </ListBox>
@@ -205,8 +212,12 @@ export function LotForm({
                 Sin variedad
               </ListBox.Item>
               {validVarieties.map((item) => (
-                <ListBox.Item key={item.id} id={item.nombre} textValue={item.nombre}>
-                  {item.nombre}
+                <ListBox.Item
+                  key={item.id}
+                  id={String(item.id)}
+                  textValue={`${item.nombre} · ${item.id_empresa ? "Empresa" : "Global"}`}
+                >
+                  {item.nombre} · {item.id_empresa ? "Empresa" : "Global"}
                 </ListBox.Item>
               ))}
             </ListBox>
@@ -227,7 +238,7 @@ export function LotForm({
             <ListBox aria-label="Unidades de medida disponibles">
               {(units.data?.data ?? []).map((item) => (
                 <ListBox.Item key={item.id} id={item.nombre} textValue={item.nombre}>
-                  {item.nombre}
+                  {item.nombre} · {item.id_empresa ? "Empresa" : "Global"}
                 </ListBox.Item>
               ))}
             </ListBox>

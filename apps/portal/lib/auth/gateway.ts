@@ -6,17 +6,26 @@ export async function identityRequest(
     body?: unknown;
     accessToken?: string;
     page?: number;
-    service?: "identity" | "agricultural" | "notifications";
+    service?: "identity" | "agricultural" | "notifications" | "ai";
+    aiQuery?: {
+      days?: number;
+      model_id?: string;
+      status?: string;
+      offset?: number;
+      limit?: number;
+      version?: number;
+    };
     notificationQuery?: { limit: number; cursor?: string; unread?: boolean };
     agriculturalStatus?: string;
     decisionStatus?: "PENDING" | "OBSERVED" | "COMPLETED";
-    procedureFilter?: { producto?: string; activo?: boolean };
+    procedureFilter?: { producto?: string; producto_id?: number; activo?: boolean };
     reportFilter?: {
       from?: string;
       to?: string;
       producto?: string;
       variedad?: string;
       producer_id?: string;
+      model_id?: string;
     };
     catalogType?:
       "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
@@ -49,6 +58,8 @@ export async function identityRequest(
   if (options.page !== undefined) url.searchParams.set("page", String(options.page));
   if (options.agriculturalStatus) url.searchParams.set("estado", options.agriculturalStatus);
   if (options.decisionStatus) url.searchParams.set("decision_status", options.decisionStatus);
+  if (options.procedureFilter?.producto_id)
+    url.searchParams.set("producto_id", String(options.procedureFilter.producto_id));
   if (options.procedureFilter?.producto)
     url.searchParams.set("producto", options.procedureFilter.producto);
   if (options.procedureFilter?.activo !== undefined)
@@ -65,12 +76,22 @@ export async function identityRequest(
     if (options.notificationQuery.unread !== undefined)
       url.searchParams.set("unread", String(options.notificationQuery.unread));
   }
+  if (options.aiQuery)
+    for (const [name, value] of Object.entries(options.aiQuery)) {
+      if (value !== undefined && value !== "") url.searchParams.set(name, String(value));
+    }
+  if (
+    options.service === "ai" &&
+    (!process.env.AI_SERVICE_API_KEY || (options.method && options.method !== "GET"))
+  )
+    throw new Error("Configura la integración privada de IA.");
   const multipart = options.body instanceof FormData ? options.body : undefined;
 
   return fetch(url, {
     method: options.method ?? "GET",
     headers: {
       Accept: "application/json",
+      ...(options.service === "ai" ? { "X-API-Key": process.env.AI_SERVICE_API_KEY! } : {}),
       ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
       ...(options.body !== undefined && !multipart ? { "Content-Type": "application/json" } : {}),
       ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),

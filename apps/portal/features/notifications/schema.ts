@@ -2,12 +2,14 @@ import { z } from "zod";
 
 export const optionalKinds = [
   "LOTE_REGISTRADO",
+  "MUESTREO_REGISTRADO",
   "LOTE_RECIBIDO",
   "INSPECCION_ASIGNADA",
   "INSPECCION_VALIDADA",
   "DICTAMEN_APROBADO",
 ] as const;
 export const kindLabels: Record<string, string> = {
+  MUESTREO_REGISTRADO: "Muestreos pendientes de inspección",
   LOTE_REGISTRADO: "Nuevos lotes",
   LOTE_RECIBIDO: "Recepciones completadas",
   INSPECCION_ASIGNADA: "Inspecciones asignadas",
@@ -34,7 +36,10 @@ export const unreadResponse = z.object({ unreadCount: z.number().int().nonnegati
 export const readResponse = z.object({ read: z.literal(true) });
 export const readAllResponse = z.object({ updated: z.number().int().nonnegative() });
 export const preferencesInput = z
-  .object({ mutedKinds: z.array(z.enum(optionalKinds)).max(5), emailEnabled: z.boolean() })
+  .object({
+    mutedKinds: z.array(z.enum(optionalKinds)).max(optionalKinds.length),
+    emailEnabled: z.boolean(),
+  })
   .refine(
     (value) => new Set(value.mutedKinds).size === value.mutedKinds.length,
     "Hay preferencias duplicadas.",

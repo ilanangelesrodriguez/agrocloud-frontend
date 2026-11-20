@@ -3,6 +3,8 @@ import { z } from "zod";
 const id = z.number().int().positive();
 
 export const procedureRecord = z.object({
+  producto_id: id.nullish(),
+  metodo_id: id.nullish(),
   id,
   nombre: z.string(),
   version: z.union([z.string(), z.number()]),

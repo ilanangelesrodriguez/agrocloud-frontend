@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, TextField, Label, Input } from "@heroui/react";
@@ -21,7 +22,7 @@ export function CatalogRename({ id, name }: { id: number; name: string }) {
         "agricultural",
       ),
     onSuccess: async () => {
-      await cache.invalidateQueries({ queryKey: ["agricultural", "catalog"] });
+      await invalidateOperationalQueries(cache);
       setOpen(false);
     },
     retry: false,

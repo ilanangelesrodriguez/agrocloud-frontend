@@ -1,5 +1,8 @@
 "use client";
 import type { FormEvent } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { bffRequest } from "@/lib/api/bff-client";
+import { producerList } from "@/features/agricultural/schema";
 import { useState } from "react";
 import { Button, Input, Label, TextField } from "@heroui/react";
 import { ErrorState, LoadingState, FormNotice } from "@agrocloud/ui";
@@ -22,7 +25,17 @@ function ReportContent() {
   const [filter, setFilter] = useState<ReportFilter>({});
   const [error, setError] = useState("");
   const [producer, setProducer] = useState("");
-  const all = useReport({});
+  const producers = useInfiniteQuery({
+    queryKey: ["agricultural", "report-producers"],
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) =>
+      bffRequest(`reports/producers?page=${pageParam}`, producerList, { signal }, "agricultural"),
+    getNextPageParam: (page) =>
+      page.meta.current_page < page.meta.last_page ? page.meta.current_page + 1 : undefined,
+    staleTime: 60000,
+    retry: false,
+  });
+  const producerOptions = producers.data?.pages.flatMap((page) => page.data) ?? [];
   const query = useReport(filter);
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,9 +64,8 @@ function ReportContent() {
       ["Variedad", filter.variedad ?? "Todas"],
       [
         "Productor",
-        all.data?.quality_by_producer.find(
-          (item) => String(item.id_productor) === filter.producer_id,
-        )?.productor ?? "Todos",
+        producerOptions.find((item) => String(item.id_productor) === filter.producer_id)
+          ?.nombre_razon_social ?? "Todos",
       ],
       ["Lotes con dictamen", data.quality.decided_lots],
       ["Aprobación (%)", data.quality.approval_rate],
@@ -110,12 +122,22 @@ function ReportContent() {
           onChange={setProducer}
           optional
           emptyLabel="Todos los productores"
-          items={Array.from(
-            new Map(
-              (all.data?.quality_by_producer ?? []).map((item) => [item.id_productor, item]),
-            ).values(),
-          ).map((item) => ({ id: String(item.id_productor), name: item.productor }))}
+          items={producerOptions.map((item) => ({
+            id: String(item.id_productor),
+            name: item.nombre_razon_social,
+          }))}
         />
+        {producers.hasNextPage ? (
+          <Button
+            isPending={producers.isFetchingNextPage}
+            onPress={() => void producers.fetchNextPage()}
+          >
+            Cargar más productores
+          </Button>
+        ) : null}
+        {producers.isError ? (
+          <ErrorState error={producers.error} retry={() => producers.refetch()} />
+        ) : null}
         <div className="flex items-end gap-2">
           <Button type="submit" isPending={query.isFetching}>
             Aplicar filtros

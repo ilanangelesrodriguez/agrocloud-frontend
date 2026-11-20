@@ -28,6 +28,8 @@ export function agriculturalErrorMessage(message: unknown): string | undefined {
     "Human validation is required.": "Valida primero la inspección antes de emitir el dictamen.",
     "No se puede renombrar un maestro en uso. Deshabilítalo y registra un valor nuevo para conservar el historial.":
       "No se puede renombrar un maestro en uso. Deshabilítalo y registra un valor nuevo para conservar el historial.",
+    "Reemplaza o desactiva primero los procedimientos activos que dependen de este maestro.":
+      "Reemplaza o desactiva primero los procedimientos activos que dependen de este maestro.",
     "The latest decision changed.":
       "Otro supervisor actualizó el dictamen. Actualiza la vista antes de continuar.",
     "No previous decision exists.":

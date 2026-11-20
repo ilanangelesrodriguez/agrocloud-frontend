@@ -4,9 +4,10 @@ import { procedurePage, samplingDetail, samplingFruits, samplingResponse } from 
 export function fetchSamplingProcedures(
   page: number,
   signal?: AbortSignal,
-  filter?: { producto?: string; activo?: boolean },
+  filter?: { producto?: string; producto_id?: number; activo?: boolean },
 ) {
   const params = new URLSearchParams({ page: String(page) });
+  if (filter?.producto_id) params.set("producto_id", String(filter.producto_id));
   if (filter?.producto) params.set("producto", filter.producto);
   if (filter?.activo !== undefined) params.set("activo", String(filter.activo));
   return bffRequest("sampling-procedures?" + params, procedurePage, { signal }, "agricultural");
@@ -15,7 +16,7 @@ export function fetchSamplingProcedures(
 /** Reunir solo las páginas del conjunto filtrado para el selector. */
 export async function fetchAllSamplingProcedures(
   signal?: AbortSignal,
-  filter?: { producto?: string; activo?: boolean },
+  filter?: { producto?: string; producto_id?: number; activo?: boolean },
 ) {
   const first = await fetchSamplingProcedures(1, signal, filter);
   const data = [...first.data];

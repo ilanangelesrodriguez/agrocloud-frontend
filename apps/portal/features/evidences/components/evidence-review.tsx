@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 import type { z } from "zod";
 import { useState } from "react";
 import { Button, Checkbox, Input, Label, TextArea, TextField, toast } from "@heroui/react";
@@ -55,8 +56,7 @@ export function EvidenceReview({
   const [justification, setJustification] = useState("");
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
-  const refresh = () =>
-    cache.invalidateQueries({ queryKey: ["agricultural", "inspections", "detail", inspectionId] });
+  const refresh = () => invalidateOperationalQueries(cache);
   const update = useMutation({
     mutationFn: ({ action, input }: { action: "review" | "discard" | "cancel"; input: object }) =>
       action === "review"

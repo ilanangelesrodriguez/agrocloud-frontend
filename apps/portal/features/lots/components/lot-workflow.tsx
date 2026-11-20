@@ -19,6 +19,13 @@ export function LotWorkflow({ lot, active }: { lot: Lot; active?: string }) {
   return (
     <section className="space-y-4" aria-label="Continuidad operativa del lote">
       <h2 className="text-lg font-semibold">Flujo de trabajo</h2>
+      {flow.evidenceProgress ? (
+        <p className="text-sm text-muted">
+          Frutos fotografiados: {flow.evidenceProgress.captured_fruits} de{" "}
+          {flow.evidenceProgress.sampled_fruits} · Revisados:{" "}
+          {flow.evidenceProgress.reviewed_fruits} de {flow.evidenceProgress.sampled_fruits}
+        </p>
+      ) : null}
       <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {flow.stages.map((stage, index) => (
           <li
@@ -29,7 +36,13 @@ export function LotWorkflow({ lot, active }: { lot: Lot; active?: string }) {
               {index + 1}. {stage.label}
             </p>
             <StatusBadge tone={stage.done ? "success" : "neutral"}>
-              {stage.done ? "Completado" : "Pendiente"}
+              {stage.status === "manual"
+                ? "Vía manual disponible"
+                : stage.done
+                  ? "Completado"
+                  : stage.status === "in_progress"
+                    ? "En proceso"
+                    : "Pendiente"}
             </StatusBadge>
           </li>
         ))}

@@ -16,10 +16,10 @@ export function useAgriculturalSettingsAccess() {
     canWrite: canRead && actor.data?.rol?.codigo === "ADMIN",
   };
 }
-export function useMasterCatalog(type: CatalogType, enabled: boolean) {
+export function useMasterCatalog(type: CatalogType, enabled: boolean, administrative = false) {
   return useQuery({
-    queryKey: ["agricultural", "catalog", "admin", type],
-    queryFn: ({ signal }) => fetchMasterCatalog(type, signal),
+    queryKey: ["agricultural", "catalog", administrative ? "admin" : "operational", type],
+    queryFn: ({ signal }) => fetchMasterCatalog(type, signal, administrative),
     enabled,
     retry: false,
   });

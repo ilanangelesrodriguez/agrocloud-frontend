@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import type { FormEvent } from "react";
 import { useState } from "react";
@@ -8,8 +9,15 @@ import { ErrorState, FormNotice, InlineNotice, LoadingState } from "@agrocloud/u
 import { createProcedure } from "../api";
 import { useMasterCatalog } from "../hooks";
 import { procedureInput } from "../schema";
-import type { Procedure } from "../schema";
+import type { Procedure, CatalogItem } from "../schema";
 import { CatalogSelect } from "./catalog-select";
+
+function findMaster(items: CatalogItem[] | undefined, key: string) {
+  const matches = key.startsWith("legacy:")
+    ? (items ?? []).filter((item) => item.nombre === key.slice(7))
+    : (items ?? []).filter((item) => String(item.id) === key);
+  return matches.length === 1 ? matches[0] : undefined;
+}
 
 export function ProcedureForm({
   source,
@@ -23,8 +31,16 @@ export function ProcedureForm({
   const cache = useQueryClient();
   const products = useMasterCatalog("producto", true);
   const methods = useMasterCatalog("metodo", true);
-  const [product, setProduct] = useState(source?.producto ?? "");
-  const [method, setMethod] = useState(source?.metodo ?? "");
+  const [product, setProduct] = useState(
+    source?.producto_id
+      ? String(source.producto_id)
+      : source?.producto
+        ? "legacy:" + source.producto
+        : "",
+  );
+  const [method, setMethod] = useState(
+    source?.metodo_id ? String(source.metodo_id) : source?.metodo ? "legacy:" + source.metodo : "",
+  );
   const [population, setPopulation] = useState(source?.requiere_poblacion ?? false);
   const [error, setError] = useState("");
   const create = useMutation({
@@ -33,7 +49,7 @@ export function ProcedureForm({
     onMutate: () => onBusyChange(true),
     onSettled: () => onBusyChange(false),
     onSuccess: async () => {
-      await cache.invalidateQueries({ queryKey: ["agricultural", "sampling-procedures"] });
+      await invalidateOperationalQueries(cache);
       toast.success(source ? "Nueva versión registrada" : "Procedimiento registrado");
       onSaved();
     },
@@ -46,8 +62,10 @@ export function ProcedureForm({
     const parsed = procedureInput.safeParse({
       nombre: fields.get("nombre"),
       version: fields.get("version"),
-      metodo: method,
-      producto: product || null,
+      metodo_id: findMaster(methods.data?.data, method)?.id,
+      producto_id: findMaster(products.data?.data, product)?.id ?? null,
+      metodo: findMaster(methods.data?.data, method)?.nombre ?? "",
+      producto: findMaster(products.data?.data, product)?.nombre ?? null,
       criterio_muestra: fields.get("criterio_muestra"),
       seleccion_frutos: fields.get("seleccion_frutos"),
       max_frutos: Number(fields.get("max_frutos")),
@@ -105,22 +123,27 @@ export function ProcedureForm({
         </TextField>
         <CatalogSelect
           label="Producto"
-          value={product}
+          value={String(findMaster(productItems, product)?.id ?? "")}
           onChange={setProduct}
           optional
           disabled={create.isPending}
-          items={productItems.map((item) => ({ id: item.nombre, name: item.nombre }))}
+          items={productItems.map((item) => ({
+            id: String(item.id),
+            name: `${item.nombre} · ${item.id_empresa ? "Empresa" : "Global"}`,
+          }))}
         />
         <CatalogSelect
           label="Método de muestreo"
-          value={method}
+          value={String(findMaster(methodItems, method)?.id ?? "")}
           onChange={setMethod}
           disabled={create.isPending}
-          items={methodItems.map((item) => ({ id: item.nombre, name: item.nombre }))}
+          items={methodItems.map((item) => ({
+            id: String(item.id),
+            name: `${item.nombre} · ${item.id_empresa ? "Empresa" : "Global"}`,
+          }))}
         />
         {source &&
-        (!methodItems.some((item) => item.nombre === method) ||
-          (product && !productItems.some((item) => item.nombre === product))) ? (
+        (!findMaster(methodItems, method) || (product && !findMaster(productItems, product))) ? (
           <InlineNotice
             status="warning"
             title="Revisa los maestros de la versión anterior"
@@ -173,8 +196,8 @@ export function ProcedureForm({
         variant="primary"
         isDisabled={
           create.isPending ||
-          !methodItems.some((item) => item.nombre === method) ||
-          Boolean(product && !productItems.some((item) => item.nombre === product))
+          !findMaster(methodItems, method) ||
+          Boolean(product && !findMaster(productItems, product))
         }
       >
         {create.isPending ? "Guardando…" : source ? "Crear nueva versión" : "Crear procedimiento"}

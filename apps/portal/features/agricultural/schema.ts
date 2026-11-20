@@ -33,6 +33,8 @@ const producer = producerInput
   });
 
 export const lotInput = z.object({
+  producto_id: id.optional(),
+  variedad_id: id.nullish(),
   id_productor: id,
   codigo_lote: z.string().trim().min(1).max(50),
   producto: z.string().min(1).max(150),
@@ -78,6 +80,8 @@ export const traceabilityResponse = z.object({
 });
 const lot = z.object({
   id_lote: id,
+  producto_id: id.nullish(),
+  variedad_id: id.nullish(),
   codigo_lote: z.string(),
   id_productor: id,
   producto: z.string(),
@@ -92,6 +96,17 @@ const lot = z.object({
   workflow: z
     .object({
       currentStage: z.string(),
+      evidenceProgress: z
+        .object({
+          sampled_fruits: z.number(),
+          captured_fruits: z.number(),
+          reviewed_fruits: z.number(),
+          ai_pending: z.number(),
+          ai_completed: z.number(),
+          manual_reviewed: z.number(),
+          complete: z.boolean(),
+        })
+        .nullish(),
       nextAction: z
         .object({
           label: z.string(),
@@ -104,7 +119,14 @@ const lot = z.object({
       samplingId: id.nullable(),
       inspectionId: id.nullable(),
       latestDecision: z.string().nullable(),
-      stages: z.array(z.object({ key: z.string(), label: z.string(), done: z.boolean() })),
+      stages: z.array(
+        z.object({
+          key: z.string(),
+          label: z.string(),
+          done: z.boolean(),
+          status: z.enum(["manual", "completed", "in_progress", "pending"]).optional(),
+        }),
+      ),
     })
     .optional(),
 });

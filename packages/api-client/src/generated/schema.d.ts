@@ -1375,6 +1375,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/agricultural/reports/ai/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar overview de IA por empresa
+         * @description Datos exclusivamente de la empresa autenticada. Requiere ia.reportes.ver.
+         */
+        get: operations["agricultural_get_reports_ai_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/reports/ai/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar classes de IA por empresa
+         * @description Datos exclusivamente de la empresa autenticada. Requiere ia.reportes.ver.
+         */
+        get: operations["agricultural_get_reports_ai_classes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/reports/ai/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar daily de IA por empresa
+         * @description Datos exclusivamente de la empresa autenticada. Requiere ia.reportes.ver.
+         */
+        get: operations["agricultural_get_reports_ai_daily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/reports/ai/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar models de IA por empresa
+         * @description Datos exclusivamente de la empresa autenticada. Requiere ia.reportes.ver.
+         */
+        get: operations["agricultural_get_reports_ai_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/reports/ai/validation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar validation de IA por empresa
+         * @description Datos exclusivamente de la empresa autenticada. Requiere ia.reportes.ver.
+         */
+        get: operations["agricultural_get_reports_ai_validation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/reports/producers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar productores autorizados para filtros de reportes
+         * @description Datos exclusivamente de la empresa autenticada. Requiere reportes.operativos.
+         */
+        get: operations["agricultural_get_reports_producers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar preparación agrícola inicial
+         * @description Requiere empresa.editar. Las verificaciones son de preparación agrícola, no validación de información legal o usuarios.
+         */
+        get: operations["agricultural_get_setup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/reports/ai/producers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar productores autorizados para filtros de reportes
+         * @description Solo nombres e identificadores del catálogo empresarial para filtrar resultados IA. Requiere ia.reportes.ver.
+         */
+        get: operations["agricultural_get_reports_ai_producers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/health": {
         parameters: {
             query?: never;
@@ -1557,6 +1717,226 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ai_ai_ready"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar configuración efectiva y asociación de la evaluación
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_model"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/model/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar versiones con evaluación verificada
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_model_versions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/model/evaluation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar snapshot científico de una versión
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_model_evaluation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/model/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar rendimiento por clase de Test; null significa no evaluable
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_model_classes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/model/confusion-matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar matriz histórica con ejes y umbral explícitos
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_model_confusion_matrix"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/stats/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar volumen, procesamiento y latencias por modelo
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_stats_overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/stats/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar frecuencia de predicciones, no precisión científica
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_stats_classes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/stats/errors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar errores agregados por modelo
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_stats_errors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/stats/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar actividad diaria UTC por modelo
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_stats_daily"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/inferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar historial técnico global paginado
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_inferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/inferences/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar resultado técnico de una inferencia completada
+         * @description Datos técnicos globales. El portal consulta desde un BFF con sesión y permisos, sin exponer la clave privada.
+         */
+        get: operations["ai_ai_inferences_request_id"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3467,6 +3847,8 @@ export interface operations {
                     unidad_medida: string;
                     /** Format: date-time */
                     fecha_llegada_prevista: string;
+                    producto_id?: number | null;
+                    variedad_id?: number | null;
                 };
             };
         };
@@ -3560,8 +3942,23 @@ export interface operations {
                                     key: string;
                                     label: string;
                                     done: boolean;
+                                    /** @enum {string} */
+                                    status?: "manual" | "completed" | "in_progress" | "pending";
                                 }[];
+                                evidenceProgress?: {
+                                    sampled_fruits: number;
+                                    captured_fruits: number;
+                                    reviewed_fruits: number;
+                                    relevant_photos: number;
+                                    reviewed_photos: number;
+                                    ai_pending: number;
+                                    ai_completed: number;
+                                    manual_reviewed: number;
+                                    complete: boolean;
+                                } | null;
                             };
+                            producto_id?: number | null;
+                            variedad_id?: number | null;
                         };
                     };
                 };
@@ -4076,6 +4473,14 @@ export interface operations {
                                     fecha_llegada_prevista: string;
                                 };
                             };
+                            latest_decision?: {
+                                id_dictamen: number;
+                                id_supervisor: number;
+                                decision: string;
+                                categoria: string | null;
+                                /** Format: date-time */
+                                created_at: string;
+                            } | null;
                         }[];
                         meta: {
                             current_page: number;
@@ -5330,6 +5735,7 @@ export interface operations {
                 page?: number;
                 producto?: string;
                 activo?: boolean;
+                producto_id?: number;
             };
             header?: never;
             path?: never;
@@ -5420,6 +5826,8 @@ export interface operations {
                     max_frutos: number;
                     tamano_recomendado?: number;
                     requiere_poblacion?: boolean;
+                    producto_id?: number | null;
+                    metodo_id?: number | null;
                 };
             };
         };
@@ -6193,6 +6601,463 @@ export interface operations {
             };
         };
     };
+    agricultural_get_reports_ai_overview: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                model_id?: string;
+                producto?: string;
+                variedad?: string;
+                producer_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        scope: "company";
+                        /** @enum {string} */
+                        timezone: "UTC";
+                        data: {
+                            evidences: number | string;
+                            analyzed: number | string;
+                            processing: number | string;
+                            failed: number | string;
+                            detections: number | string;
+                            confirmed: number | string;
+                            discarded: number | string;
+                            pending: number | string;
+                        };
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_reports_ai_classes: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                model_id?: string;
+                producto?: string;
+                variedad?: string;
+                producer_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        scope: "company";
+                        /** @enum {string} */
+                        timezone: "UTC";
+                        data: {
+                            class_name: string;
+                            detections: number | string;
+                            mean_confidence: (number | string) | null;
+                            confirmed: number | string;
+                            discarded: number | string;
+                            pending: number | string;
+                        }[];
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_reports_ai_daily: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                model_id?: string;
+                producto?: string;
+                variedad?: string;
+                producer_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        scope: "company";
+                        /** @enum {string} */
+                        timezone: "UTC";
+                        data: {
+                            /** Format: date */
+                            day: string;
+                            evidences: number | string;
+                            analyzed: number | string;
+                            failed: number | string;
+                        }[];
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_reports_ai_models: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                model_id?: string;
+                producto?: string;
+                variedad?: string;
+                producer_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        scope: "company";
+                        /** @enum {string} */
+                        timezone: "UTC";
+                        data: {
+                            model_id: string;
+                            evidences: number | string;
+                        }[];
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_reports_ai_validation: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+                model_id?: string;
+                producto?: string;
+                variedad?: string;
+                producer_id?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        scope: "company";
+                        /** @enum {string} */
+                        timezone: "UTC";
+                        data: {
+                            confirmed: number | string;
+                            discarded: number | string;
+                            pending: number | string;
+                        };
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_reports_producers: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id_productor: number;
+                            ruc: string;
+                            nombre_razon_social: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_setup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        checks: {
+                            key: string;
+                            label: string;
+                            done: boolean;
+                            href: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_reports_ai_producers: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id_productor: number;
+                            nombre_razon_social: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     notifications_get_health: {
         parameters: {
             query?: never;
@@ -6694,7 +7559,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    mutedKinds: ("LOTE_REGISTRADO" | "LOTE_RECIBIDO" | "INSPECCION_ASIGNADA" | "INSPECCION_VALIDADA" | "DICTAMEN_APROBADO")[];
+                    mutedKinds: ("LOTE_REGISTRADO" | "LOTE_RECIBIDO" | "INSPECCION_ASIGNADA" | "INSPECCION_VALIDADA" | "DICTAMEN_APROBADO" | "MUESTREO_REGISTRADO")[];
                     emailEnabled: boolean;
                 };
             };
@@ -6844,14 +7709,645 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Dependencias disponibles */
+            /** @description Configuración, esquema y base disponibles; no comprueba una inferencia externa. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        ready: boolean;
+                        configuration: boolean;
+                        database: boolean;
+                        schema: boolean;
+                        live_inference_checked: boolean;
+                    };
+                };
+            };
+            /** @description Dependencias no disponibles */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Dependencias no disponibles */
+        };
+    };
+    ai_ai_model: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        family: string | null;
+                        task: string;
+                        inference_model_id: string;
+                        training_model_id: string;
+                        dataset_version: number | null;
+                        provider: string;
+                        mode: string;
+                        threshold: number;
+                        high_confidence: number;
+                        classes: string[];
+                        evaluation_id: string | null;
+                        evaluation_matches_configured: boolean;
+                        requires_human_review: boolean;
+                        max_image_bytes: number;
+                        max_image_pixels: number;
+                        max_batch_size: number;
+                        max_concurrent_inferences: number;
+                        provider_timeout_seconds: number;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_model_versions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        versions: {
+                            version: number;
+                            metadata: {
+                                [key: string]: unknown;
+                            };
+                            metrics: {
+                                [key: string]: unknown;
+                            };
+                            is_configured: boolean;
+                        }[];
+                        configured_model_id: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_model_evaluation: {
+        parameters: {
+            query?: {
+                version?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        metadata: {
+                            [key: string]: unknown;
+                        };
+                        dataset: {
+                            [key: string]: unknown;
+                        };
+                        test_metrics: {
+                            [key: string]: unknown;
+                        };
+                        validation_metrics: {
+                            [key: string]: unknown;
+                        };
+                        per_class_test: {
+                            [key: string]: unknown;
+                        }[];
+                        per_class_validation: {
+                            [key: string]: unknown;
+                        }[];
+                        warnings: string[];
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_model_classes: {
+        parameters: {
+            query?: {
+                version?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        split: string;
+                        evaluation_id: string;
+                        classes: {
+                            [key: string]: unknown;
+                        }[];
+                        warning: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_model_confusion_matrix: {
+        parameters: {
+            query?: {
+                version?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        evaluation_id: string;
+                        split: string;
+                        confidence_threshold: number;
+                        classes: string[];
+                        matrix: number[][];
+                        axis_description: string;
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_stats_overview: {
+        parameters: {
+            query?: {
+                days?: number;
+                model_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        total: number;
+                        completed: number;
+                        failed: number;
+                        processing: number;
+                        success_rate_percent: number | null;
+                        mean_total_ms: number | null;
+                        p50_total_ms: number | null;
+                        p95_total_ms: number | null;
+                        mean_provider_ms: number | null;
+                        mean_detections: number | null;
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_stats_classes: {
+        parameters: {
+            query?: {
+                days?: number;
+                model_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        days: number;
+                        classes: {
+                            class_name: string;
+                            count: number;
+                            mean_confidence: number;
+                        }[];
+                        note: string;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_stats_errors: {
+        parameters: {
+            query?: {
+                days?: number;
+                model_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        days: number;
+                        errors: {
+                            error_type: string | null;
+                            count: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_stats_daily: {
+        parameters: {
+            query?: {
+                days?: number;
+                model_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        timezone: string;
+                        days: number;
+                        items: {
+                            /** Format: date */
+                            day: string;
+                            completed: number;
+                            failed: number;
+                            processing: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_inferences: {
+        parameters: {
+            query?: {
+                days?: number;
+                model_id?: string;
+                offset?: number;
+                limit?: number;
+                status?: "processing" | "completed" | "failed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        total: number;
+                        offset: number;
+                        limit: number;
+                        items: {
+                            /** Format: uuid */
+                            request_id: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            model_id: string;
+                            /** @enum {string} */
+                            status: "processing" | "completed" | "failed";
+                            threshold: number | null;
+                            detection_count: number;
+                            total_ms: number | null;
+                            error_type: string | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ai_ai_inferences_request_id: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: uuid */
+                        request_id: string;
+                        /** @enum {string} */
+                        status: "completed";
+                        model_id: string;
+                        trained_model_id: string;
+                        dataset_version: number | null;
+                        model_family: string | null;
+                        threshold: number;
+                        image_sha256: string;
+                        /** Format: date-time */
+                        created_at: string;
+                        quality: {
+                            [key: string]: unknown;
+                        };
+                        detections: {
+                            [key: string]: unknown;
+                        }[];
+                        summary: {
+                            [key: string]: unknown;
+                        };
+                        timings: {
+                            [key: string]: unknown;
+                        };
+                        annotated_image_url: string | null;
+                        requires_human_review: boolean;
+                    };
+                };
+            };
+            /** @description Private service key required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid filters */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service unavailable */
             503: {
                 headers: {
                     [name: string]: unknown;

@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import type { Lot } from "@/features/lots/schema";
 
@@ -20,7 +21,7 @@ export function useReceptionMutation(lot: Lot) {
             : previous,
       );
       toast.success("Recepción registrada");
-      void cache.invalidateQueries({ queryKey: ["agricultural", "lots"] });
+      void invalidateOperationalQueries(cache, { notifications: true });
     },
     retry: false,
   });

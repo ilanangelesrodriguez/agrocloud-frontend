@@ -31,6 +31,7 @@ const adminItems: NavigationItem[] = [
   { href: "/admin/access-requests", label: "Solicitudes", icon: "requests" },
   { href: "/admin/companies", label: "Empresas", icon: "companies" },
   { href: "/admin/users", label: "Usuarios", icon: "users" },
+  { href: "/admin/ai", label: "Inteligencia artificial", icon: "dashboard" },
   { href: "/admin/plans", label: "Planes y ofertas", icon: "plans" },
 ];
 
@@ -53,6 +54,12 @@ const companyItems: (NavigationItem & { permission?: string })[] = [
     permission: "incidencias.ver",
   },
   { href: "/reports", label: "Reportes", icon: "dashboard", permission: "reportes.operativos" },
+  {
+    href: "/reports/ai",
+    label: "IA de mi empresa",
+    icon: "dashboard",
+    permission: "ia.reportes.ver",
+  },
   { href: "/production", label: "Producción", icon: "lots", permission: "produccion.ver" },
 ];
 
@@ -106,7 +113,12 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
  * Los módulos conservan su estado activo en subrutas como /lots/12.
  */
 export function isActiveRoute(pathname: string, href: string): boolean {
-  if (href === "/admin" || href === "/dashboard" || href === "/settings/profile") {
+  if (
+    href === "/admin" ||
+    href === "/dashboard" ||
+    href === "/settings/profile" ||
+    href === "/reports"
+  ) {
     return pathname === href;
   }
 

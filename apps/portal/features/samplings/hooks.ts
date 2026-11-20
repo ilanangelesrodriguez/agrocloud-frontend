@@ -10,7 +10,7 @@ import {
 
 export function useAllSamplingProcedures(
   enabled = true,
-  filter?: { producto?: string; activo?: boolean },
+  filter?: { producto?: string; producto_id?: number; activo?: boolean },
 ) {
   return useQuery({
     queryKey: ["agricultural", "sampling-procedures", "all", filter ?? {}],

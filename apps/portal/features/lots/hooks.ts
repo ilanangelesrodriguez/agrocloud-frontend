@@ -16,6 +16,8 @@ export function useLotDetails(id: string) {
     queryKey: ["agricultural", "lots", "detail", id],
     // Preservar el shape del caché usado al registrar la recepción.
     queryFn: async ({ signal }) => ({ producer: null, lot: (await fetchLot(id, signal)).data }),
+    refetchInterval: ({ state }) =>
+      (state.data?.lot.workflow?.evidenceProgress?.ai_pending ?? 0) > 0 ? 5000 : false,
     retry: false,
   });
 }

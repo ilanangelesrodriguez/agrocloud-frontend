@@ -1,4 +1,5 @@
 "use client";
+import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 import type { z } from "zod";
 import type { IdentityUser } from "@/lib/auth/schemas";
 import type { inspectionDetail } from "@/features/agricultural/inspection";
@@ -45,13 +46,7 @@ export function InspectionClosure({
     actor?.rol?.codigo === "SUPERVISOR" &&
     canManageCompany(actor, "calidad.clasificar") &&
     inspection.id_inspector !== actor?.id_usuario;
-  const refresh = () =>
-    Promise.all([
-      cache.invalidateQueries({ queryKey: ["agricultural", "inspections"] }),
-      cache.invalidateQueries({ queryKey: ["agricultural", "samplings"] }),
-      cache.invalidateQueries({ queryKey: ["agricultural", "lots"] }),
-      cache.invalidateQueries({ queryKey: ["notifications"] }),
-    ]);
+  const refresh = () => invalidateOperationalQueries(cache, { notifications: true });
   const validate = useMutation({
     mutationFn: () =>
       validateInspection(String(inspection.id_inspeccion), { observaciones: notes.trim() || null }),

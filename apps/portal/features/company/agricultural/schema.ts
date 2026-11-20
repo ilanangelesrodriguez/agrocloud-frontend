@@ -29,6 +29,8 @@ export const catalogInput = z
   );
 export const procedureInput = z
   .object({
+    producto_id: z.number().int().positive().nullish(),
+    metodo_id: z.number().int().positive().optional(),
     nombre: z.string().trim().min(1, "Ingresa un nombre.").max(150),
     version: z.string().trim().min(1, "Ingresa la versión.").max(30),
     metodo: z.string().trim().min(1, "Selecciona un método.").max(80),

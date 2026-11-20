@@ -22,6 +22,15 @@ export const inspectionsPage = z.object({
       id_inspeccion: id,
       id_muestreo: id,
       estado: z.string(),
+      latest_decision: z
+        .object({
+          id_dictamen: id,
+          id_supervisor: id,
+          decision: z.string(),
+          categoria: z.string().nullish(),
+          created_at: z.string(),
+        })
+        .nullish(),
       muestreo: z.object({ id_lote: id, lote: lot.optional() }).optional(),
     }),
   ),
