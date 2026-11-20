@@ -14,18 +14,14 @@
   "scripts": {
     "dev": "turbo run dev --filter=@agrocloud/portal",
     "dev:portal": "turbo run dev --filter=@agrocloud/portal",
-    "dev:web": "turbo run dev --filter=@agrocloud/portal",
-    "dev:all": "turbo run dev --filter=@agrocloud/portal",
-    "build": "turbo run build --filter=!@agrocloud/web",
-    "lint": "turbo run lint --filter=!@agrocloud/web",
-    "typecheck": "turbo run typecheck --filter=!@agrocloud/web",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
     "check": "npm run lint && npm run typecheck && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:portal": "prettier --write \"apps/portal/**/*.{ts,tsx,js,mjs,json,css,md}\"",
-    "format:portal:check": "prettier --check \"apps/portal/**/*.{ts,tsx,js,mjs,json,css,md}\"",
-    "cleanup:portal:check": "node scripts/phase1-cleanup.mjs",
-    "cleanup:portal:apply": "node scripts/phase1-cleanup.mjs --apply"
+    "format:portal:check": "prettier --check \"apps/portal/**/*.{ts,tsx,js,mjs,json,css,md}\""
   },
   "devDependencies": {
     "turbo": "2.11.11",

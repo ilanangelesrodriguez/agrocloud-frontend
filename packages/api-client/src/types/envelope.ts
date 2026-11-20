@@ -1,4 +1,3 @@
-/** Formato objetivo del API Gateway; algunos endpoints heredados pueden diferir. */
 export interface ApiEnvelope<T> {
   success: true;
   data: T;
