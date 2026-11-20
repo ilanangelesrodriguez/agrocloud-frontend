@@ -43,6 +43,12 @@ const companyItems: (NavigationItem & { permission?: string })[] = [
     permission: "productores.ver",
   },
   { href: "/lots", label: "Lotes", icon: "lots", permission: "lotes.ver" },
+  { href: "/samplings", label: "Muestreos", icon: "requests", permission: "muestreos.ver" },
+  { href: "/inspections", label: "Inspecciones", icon: "requests", permission: "inspecciones.ver" },
+  { href: "/quality", label: "Calidad", icon: "roles", permission: "calidad.clasificar" },
+  { href: "/incidents", label: "Incidencias", icon: "notifications", permission: "lotes.ver" },
+  { href: "/reports", label: "Reportes", icon: "dashboard", permission: "reportes.operativos" },
+  { href: "/production", label: "Producción", icon: "lots", permission: "lotes.ver" },
 ];
 
 const settingsIcons: Record<(typeof settingsLinks)[number]["href"], NavigationIcon> = {

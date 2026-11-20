@@ -8,6 +8,7 @@ export async function identityRequest(
     page?: number;
     service?: "identity" | "agricultural" | "notifications";
     notificationQuery?: { limit: number; cursor?: string; unread?: boolean };
+    agriculturalStatus?: string;
     catalogType?:
       "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
     idempotencyKey?: string;
@@ -37,6 +38,7 @@ export async function identityRequest(
   const url = new URL(`/api/v1/${options.service ?? "identity"}${path}`, base.origin);
 
   if (options.page !== undefined) url.searchParams.set("page", String(options.page));
+  if (options.agriculturalStatus) url.searchParams.set("estado", options.agriculturalStatus);
   if (options.catalogType) url.searchParams.set("tipo", options.catalogType);
   if (options.notificationQuery) {
     url.searchParams.set("limit", String(options.notificationQuery.limit));

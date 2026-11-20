@@ -20,6 +20,7 @@ import { catalogInput, catalogLabels } from "../schema";
 import type { CatalogItem, CatalogType } from "../schema";
 import { createCatalog, toggleCatalog } from "../api";
 import { useAgriculturalSettingsAccess, useMasterCatalog } from "../hooks";
+import { CatalogRename } from "./catalog-rename";
 import { CatalogSelect } from "./catalog-select";
 
 export function CatalogOverview() {
@@ -62,7 +63,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
   const [page, setPage] = useState(1);
   const [parent, setParent] = useState("");
   const [error, setError] = useState("");
-  const [disabled, setDisabled] = useState<CatalogItem[]>([]);
+
   const [confirm, setConfirm] = useState<CatalogItem | null>(null);
   const refresh = () => cache.invalidateQueries({ queryKey: ["agricultural", "catalog"] });
   const create = useMutation({
@@ -78,22 +79,13 @@ export function CatalogManager({ type }: { type: CatalogType }) {
     mutationFn: ({ item, active }: { item: CatalogItem; active: boolean }) =>
       toggleCatalog(item.id, active),
     retry: false,
-    onSuccess: async (_, { item, active }) => {
-      setDisabled((previous) =>
-        active
-          ? previous.filter((entry) => entry.id !== item.id)
-          : [...previous.filter((entry) => entry.id !== item.id), item],
-      );
+    onSuccess: async (_, { active }) => {
       await refresh();
       setConfirm(null);
       toast.success(active ? "Valor habilitado" : "Valor deshabilitado para tu empresa");
     },
   });
-  const active = query.data?.data ?? [];
-  const rows = [
-    ...active,
-    ...disabled.filter((item) => !active.some((entry) => entry.id === item.id)),
-  ].filter((item) =>
+  const rows = (query.data?.data ?? []).filter((item) =>
     item.nombre.toLocaleLowerCase("es").includes(search.trim().toLocaleLowerCase("es")),
   );
   const last = Math.max(1, Math.ceil(rows.length / 12));
@@ -154,10 +146,12 @@ export function CatalogManager({ type }: { type: CatalogType }) {
                         value={parent}
                         onChange={setParent}
                         disabled={create.isPending}
-                        items={(products.data?.data ?? []).map((item) => ({
-                          id: String(item.id),
-                          name: item.nombre,
-                        }))}
+                        items={(products.data?.data ?? [])
+                          .filter((item) => item.habilitado !== false)
+                          .map((item) => ({
+                            id: String(item.id),
+                            name: item.nombre,
+                          }))}
                       />
                       {!products.data?.data.length ? (
                         <InlineNotice
@@ -217,7 +211,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
         <>
           <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
             {rows.slice((current - 1) * 12, current * 12).map((item) => {
-              const enabled = active.some((entry) => entry.id === item.id);
+              const enabled = item.habilitado !== false;
               const product = products.data?.data.find((entry) => entry.id === item.parent_id);
               return (
                 <div
@@ -231,7 +225,10 @@ export function CatalogManager({ type }: { type: CatalogType }) {
                       {product ? " · " + product.nombre : ""}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {canWrite && item.id_empresa && type !== "unidad" ? (
+                      <CatalogRename id={item.id} name={item.nombre} />
+                    ) : null}
                     <Chip size="sm" color={enabled ? "success" : "default"} variant="soft">
                       {enabled ? "Habilitado" : "Deshabilitado"}
                     </Chip>

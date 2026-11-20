@@ -76,8 +76,8 @@ export function ProcedureForm({
         retry={() => void Promise.all([products.refetch(), methods.refetch()])}
       />
     );
-  const methodItems = methods.data?.data ?? [];
-  const productItems = products.data?.data ?? [];
+  const methodItems = (methods.data?.data ?? []).filter((item) => item.habilitado !== false);
+  const productItems = (products.data?.data ?? []).filter((item) => item.habilitado !== false);
   return (
     <form onSubmit={submit} className="space-y-5">
       {source ? (

@@ -30,6 +30,7 @@ import {
 } from "@agrocloud/ui";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
+import { OperationalSummary } from "@/features/agricultural/components/operational-summary";
 import { useOperationalDashboard } from "../hooks";
 import { DashboardLink, dashboardLinkClass } from "./dashboard-link";
 
@@ -138,6 +139,7 @@ export function OperationalDashboard() {
   ].filter((module) => canManageCompany(user, module.permission));
   return (
     <section className="min-w-0 space-y-8">
+      {canManageCompany(user, "reportes.operativos") ? <OperationalSummary /> : null}
       <PageHeader
         title="Panel principal"
         description="Organiza las tareas de tu empresa y da seguimiento a la operación agrícola."

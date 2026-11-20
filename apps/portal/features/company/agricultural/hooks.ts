@@ -18,7 +18,7 @@ export function useAgriculturalSettingsAccess() {
 }
 export function useMasterCatalog(type: CatalogType, enabled: boolean) {
   return useQuery({
-    queryKey: ["agricultural", "catalog", type],
+    queryKey: ["agricultural", "catalog", "admin", type],
     queryFn: ({ signal }) => fetchMasterCatalog(type, signal),
     enabled,
     retry: false,

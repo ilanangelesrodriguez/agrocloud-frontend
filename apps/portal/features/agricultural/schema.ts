@@ -88,7 +88,13 @@ export const producerDetail = z.object({ data: producer });
 export const lotDetail = z.object({ data: lot });
 export const catalog = z.object({
   data: z.array(
-    z.object({ id, nombre: z.string(), parent_id: id.nullish(), id_empresa: id.nullish() }),
+    z.object({
+      id,
+      nombre: z.string(),
+      parent_id: id.nullish(),
+      id_empresa: id.nullish(),
+      habilitado: z.boolean().optional(),
+    }),
   ),
 });
 export const catalogType = z.enum([

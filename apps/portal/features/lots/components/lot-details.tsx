@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LoadingState, ErrorState, PageHeader, StatusBadge } from "@agrocloud/ui";
 
 import { useLotDetails } from "../hooks";
+import { LotManagement } from "@/features/agricultural/components/lot-management";
 import { LotOperations } from "./lot-operations";
 import { LotWorkflow } from "./lot-workflow";
 
@@ -105,6 +106,7 @@ export function LotDetails({
         </>
       ) : null}
       <LotOperations lot={lot} stage={stage} />
+      {stage === "overview" ? <LotManagement lot={lot} /> : null}
     </div>
   );
 }

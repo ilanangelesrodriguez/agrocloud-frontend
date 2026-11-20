@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { NextRequest } from "next/server";
 
 import { procedurePage, samplingInput, samplingResponse } from "@/features/agricultural/sampling";
@@ -40,10 +41,14 @@ import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-ident
 import { isAllowedOrigin, parseJson, reply } from "@/lib/auth/route-utils";
 import { saveInspectionAction } from "@/features/inspections/review-route";
 
+import { readOperation, saveOperation } from "@/features/agricultural/operations-route";
+
 type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
   const evidencePath = (await params).resource;
+  const operation = await readOperation(request, evidencePath);
+  if (operation) return operation;
 
   if (
     evidencePath.length === 3 &&
@@ -62,6 +67,19 @@ export async function GET(request: NextRequest, { params }: Context) {
     );
   }
   const [resource, id, ...rest] = (await params).resource;
+  if (resource === "catalogs" && id === "admin" && !rest.length) {
+    const type = catalogType.safeParse(request.nextUrl.searchParams.get("tipo"));
+    if (!type.success) return reply({ message: "Catálogo inválido." }, 422);
+    return authorizedIdentity(
+      request,
+      (user) =>
+        user.rol?.codigo === "ADMIN" && canManageCompany(user, "empresa.editar")
+          ? "/catalogs/admin"
+          : null,
+      catalog,
+      { service: "agricultural", catalogType: type.data },
+    );
+  }
 
   if (
     resource === "samplings" &&
@@ -193,6 +211,10 @@ export async function GET(request: NextRequest, { params }: Context) {
     {
       service: "agricultural",
       page: id ? undefined : Number(page),
+      agriculturalStatus:
+        resource === "lots" && request.nextUrl.searchParams.get("estado") === "CLASIFICADO"
+          ? "CLASIFICADO"
+          : undefined,
       operation: "agricultural.read",
     },
   );
@@ -241,6 +263,8 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 }
 
 export async function POST(request: NextRequest, context: Context) {
+  const operation = await saveOperation(request, (await context.params).resource, "POST");
+  if (operation) return operation;
   const reviewed = await saveInspectionAction(request, (await context.params).resource, "POST");
   if (reviewed) return reviewed;
   const [resource, id, action, ...rest] = (await context.params).resource;
@@ -411,7 +435,24 @@ export async function POST(request: NextRequest, context: Context) {
   return save(request, context, "POST");
 }
 
-export function PUT(request: NextRequest, context: Context) {
+export async function PUT(request: NextRequest, context: Context) {
+  const [resource, id, ...rest] = (await context.params).resource;
+  if (resource === "catalogs" && id && positiveInteger(id) && !rest.length) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const input = z.object({ nombre: z.string().trim().min(1).max(150) }).safeParse(json.body);
+    if (!input.success)
+      return reply({ message: "Ingresa un nombre de hasta 150 caracteres." }, 422);
+    return authorizedIdentity(
+      request,
+      (user) =>
+        user.rol?.codigo === "ADMIN" && canManageCompany(user, "empresa.editar")
+          ? `/catalogs/${id}`
+          : null,
+      catalogUpdated,
+      { service: "agricultural", method: "PUT", body: input.data },
+    );
+  }
   return save(request, context, "PUT");
 }
 
@@ -465,6 +506,8 @@ async function saveConfiguration(
 }
 
 export async function PATCH(request: NextRequest, context: Context) {
+  const operation = await saveOperation(request, (await context.params).resource, "PATCH");
+  if (operation) return operation;
   const reviewed = await saveInspectionAction(request, (await context.params).resource, "PATCH");
   if (reviewed) return reviewed;
   return saveConfiguration(request, context, "PATCH");
