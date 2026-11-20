@@ -26,6 +26,16 @@ import {
   traceabilityResponse,
 } from "@/features/agricultural/schema";
 import { canManageCompany } from "@/features/company/navigation";
+import {
+  catalogInput,
+  catalogCreated,
+  catalogToggle,
+  catalogUpdated,
+  procedureInput,
+  procedureCreated,
+  procedureResponse,
+  procedureToggle,
+} from "@/features/company/agricultural/schema";
 import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-identity";
 import { isAllowedOrigin, parseJson, reply } from "@/lib/auth/route-utils";
 
@@ -128,7 +138,13 @@ export async function GET(request: NextRequest, { params }: Context) {
   if (resource === "sampling-procedures" && !id) {
     return authorizedIdentity(
       request,
-      (user) => (canManageCompany(user, "muestreos.crear") ? "/sampling-procedures" : null),
+      (user) =>
+        canManageCompany(user) &&
+        ["empresa.editar", "muestreos.crear", "muestreos.ver"].some((permission) =>
+          user.permissions.includes(permission),
+        )
+          ? "/sampling-procedures"
+          : null,
       procedurePage,
       { service: "agricultural", page: Number(page) },
     );
@@ -143,7 +159,9 @@ export async function GET(request: NextRequest, { params }: Context) {
       request,
       (user) =>
         canManageCompany(user) &&
-        ["lotes.ver", "lotes.crear"].some((permission) => user.permissions.includes(permission))
+        ["empresa.editar", "muestreos.crear", "lotes.ver", "lotes.crear"].some((permission) =>
+          user.permissions.includes(permission),
+        )
           ? "/catalogs"
           : null,
       catalog,
@@ -218,6 +236,10 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 
 export async function POST(request: NextRequest, context: Context) {
   const [resource, id, action, ...rest] = (await context.params).resource;
+
+  if (["catalogs", "sampling-procedures"].includes(resource) && !id) {
+    return saveConfiguration(request, context, "POST");
+  }
 
   if (
     resource === "inspections" &&
@@ -383,4 +405,57 @@ export async function POST(request: NextRequest, context: Context) {
 
 export function PUT(request: NextRequest, context: Context) {
   return save(request, context, "PUT");
+}
+
+async function saveConfiguration(
+  request: NextRequest,
+  { params }: Context,
+  method: "POST" | "PATCH",
+) {
+  const [resource, id, ...rest] = (await params).resource;
+  if (
+    !["catalogs", "sampling-procedures"].includes(resource) ||
+    rest.length ||
+    (method === "POST" ? id !== undefined : !id || !positiveInteger(id))
+  ) {
+    return reply({ message: "Recurso no encontrado." }, 404);
+  }
+  const json = await parseJson(request);
+  if (!json.ok) return json.response;
+  const isCatalog = resource === "catalogs";
+  const schema =
+    method === "PATCH"
+      ? isCatalog
+        ? catalogToggle
+        : procedureToggle
+      : isCatalog
+        ? catalogInput
+        : procedureInput;
+  const input = schema.safeParse(json.body);
+  if (!input.success)
+    return reply({ message: input.error.issues[0]?.message ?? "Revisa los datos." }, 422);
+  return authorizedIdentity(
+    request,
+    (user) =>
+      user.rol?.codigo === "ADMIN" && canManageCompany(user, "empresa.editar")
+        ? "/" + resource + (id ? "/" + id : "")
+        : null,
+    isCatalog
+      ? method === "POST"
+        ? catalogCreated
+        : catalogUpdated
+      : method === "POST"
+        ? procedureCreated
+        : procedureResponse,
+    {
+      service: "agricultural",
+      method,
+      body: input.data,
+      operation: "agricultural.configuration.save",
+    },
+  );
+}
+
+export function PATCH(request: NextRequest, context: Context) {
+  return saveConfiguration(request, context, "PATCH");
 }

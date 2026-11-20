@@ -1,6 +1,6 @@
 import type { IdentityUser } from "@/lib/auth/schemas";
 
-import { canManageCompany, settingsLinks } from "@/features/company/navigation";
+import { canAccessSetting, canManageCompany, settingsLinks } from "@/features/company/navigation";
 
 export type NavigationIcon =
   | "dashboard"
@@ -48,6 +48,8 @@ const settingsIcons: Record<(typeof settingsLinks)[number]["href"], NavigationIc
   "/settings/company": "companies",
   "/settings/users": "users",
   "/settings/roles": "roles",
+  "/settings/catalogs": "lots",
+  "/settings/sampling-procedures": "requests",
   "/settings/subscription": "subscription",
 };
 
@@ -67,7 +69,7 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
     .map(({ href, label, icon }) => ({ href, label, icon }));
 
   const settings: NavigationItem[] = settingsLinks
-    .filter(({ permission }) => canManageCompany(user, permission))
+    .filter((setting) => canAccessSetting(user, setting))
     .map(({ href, label }) => ({ href, label, icon: settingsIcons[href] }));
 
   const sections: NavigationSection[] = [

@@ -87,9 +87,19 @@ export const lotList = z.object({ data: z.array(lot), meta });
 export const producerDetail = z.object({ data: producer });
 export const lotDetail = z.object({ data: lot });
 export const catalog = z.object({
-  data: z.array(z.object({ id, nombre: z.string(), parent_id: id.nullish() })),
+  data: z.array(
+    z.object({ id, nombre: z.string(), parent_id: id.nullish(), id_empresa: id.nullish() }),
+  ),
 });
-export const catalogType = z.enum(["producto", "variedad", "unidad"]);
+export const catalogType = z.enum([
+  "producto",
+  "variedad",
+  "unidad",
+  "metodo",
+  "defecto",
+  "categoria",
+  "motivo",
+]);
 export const operationKey = z.uuid();
 export type Producer = z.infer<typeof producer>;
 export type Lot = z.infer<typeof lot>;

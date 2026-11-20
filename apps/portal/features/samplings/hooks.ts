@@ -1,7 +1,21 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchSamplingDetail, fetchSamplingFruits, fetchSamplingProcedures } from "./api";
+import {
+  fetchSamplingDetail,
+  fetchSamplingFruits,
+  fetchSamplingProcedures,
+  fetchAllSamplingProcedures,
+} from "./api";
+
+export function useAllSamplingProcedures(enabled = true) {
+  return useQuery({
+    queryKey: ["agricultural", "sampling-procedures", "all"],
+    queryFn: ({ signal }) => fetchAllSamplingProcedures(signal),
+    enabled,
+    retry: false,
+  });
+}
 
 export function useSamplingProcedures(page: number) {
   return useQuery({

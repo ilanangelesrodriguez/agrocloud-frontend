@@ -7,11 +7,22 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 import { InspectionEvidence } from "@/features/evidences/components/inspection-evidence";
 import { useInspectionDetails } from "../hooks";
+import { OperationNavigation } from "@/features/agricultural/shared/operation-navigation";
 
-export function InspectionDetails({ id }: { id: string }) {
-  const { data: actor } = useCurrentUser();
+export function InspectionDetails({
+  id,
+  view = "overview",
+}: {
+  id: string;
+  view?: "overview" | "evidences";
+}) {
+  const session = useCurrentUser();
+  const actor = session.data;
   const inspection = useInspectionDetails(id, canManageCompany(actor, "inspecciones.ver"));
   const value = inspection.data?.data;
+
+  if (session.isPending) return <LoadingState label="Verificando acceso a la inspección" />;
+  if (session.isError) return <ErrorState error={session.error} retry={() => session.refetch()} />;
 
   if (actor && !canManageCompany(actor, "inspecciones.ver")) {
     return (
@@ -25,28 +36,54 @@ export function InspectionDetails({ id }: { id: string }) {
 
   return (
     <section className="space-y-5">
-      <PageHeader title={`Inspección #${id}`} />
+      <PageHeader
+        title={view === "evidences" ? `Evidencias de inspección #${id}` : `Inspección #${id}`}
+        description={
+          view === "evidences"
+            ? "Captura fotografías por fruto, consulta las evidencias y solicita su análisis."
+            : "Revisa el estado de la inspección y continúa con las evidencias de la muestra."
+        }
+        actions={
+          <Link
+            href={
+              view === "evidences"
+                ? `/inspections/${id}`
+                : value && canManageCompany(actor, "muestreos.ver")
+                  ? `/samplings/${value.id_muestreo}`
+                  : "/lots"
+            }
+            className="inline-flex min-h-10 items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium"
+          >
+            {view === "evidences"
+              ? "Volver a la inspección"
+              : value && canManageCompany(actor, "muestreos.ver")
+                ? "Volver al muestreo"
+                : "Volver a lotes"}
+          </Link>
+        }
+      />
       {inspection.isPending ? (
         <LoadingState label="Cargando inspección" />
       ) : inspection.isError ? (
-        <ErrorState
-          error={inspection.error}
-          retry={() => {
-            void inspection.refetch();
-          }}
-        />
+        <ErrorState error={inspection.error} retry={() => inspection.refetch()} />
       ) : value ? (
         <>
-          <p>
+          <OperationNavigation
+            lotId={value.muestreo?.id_lote}
+            samplingId={value.id_muestreo}
+            inspectionId={id}
+            current={view === "evidences" ? "evidence" : "inspection"}
+            canReadLot={canManageCompany(actor, "lotes.ver")}
+            canReadSampling={canManageCompany(actor, "muestreos.ver")}
+            canReadInspection={canManageCompany(actor, "inspecciones.ver")}
+          />
+          <p className="rounded-2xl border border-border bg-surface p-5">
             Estado:{" "}
             <StatusBadge tone={value.estado === "EN_CAPTURA" ? "info" : "neutral"}>
               {value.estado.replaceAll("_", " ")}
             </StatusBadge>{" "}
             · Inspector #{value.id_inspector ?? "sin asignar"}
           </p>
-          <Link className="text-accent underline" href={"/samplings/" + value.id_muestreo}>
-            Volver al muestreo
-          </Link>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-card border border-border bg-surface p-5">
               <h2 className="font-semibold">Evidencias</h2>
@@ -68,25 +105,41 @@ export function InspectionDetails({ id }: { id: string }) {
               description="Adjunta una fotografía de un fruto para iniciar el análisis IA si tu rol lo permite."
             />
           ) : null}
-          <InspectionEvidence
-            key={id}
-            canAnalyze={
-              value.estado === "EN_CAPTURA" &&
-              (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
-              actor?.rol?.codigo === "INSPECTOR" &&
-              canManageCompany(actor, "inspecciones.analizar")
-            }
-            canReadFruits={canManageCompany(actor, "muestreos.ver")}
-            canUpload={
-              value.estado === "EN_CAPTURA" &&
-              (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
-              actor?.rol?.codigo === "INSPECTOR" &&
-              canManageCompany(actor, "inspecciones.capturar")
-            }
-            id={id}
-            photos={value.evidencias ?? []}
-            sampling={value.id_muestreo}
-          />
+          {view === "overview" ? (
+            <section className="space-y-4 rounded-2xl border border-border bg-surface p-6">
+              <h2 className="text-xl font-semibold">Evidencias de la inspección</h2>
+              <p className="max-w-2xl text-sm leading-relaxed text-muted">
+                Trabaja con las fotografías de cada fruto en una vista dedicada. Podrás consultar
+                las capturas, adjuntar nuevas imágenes y solicitar el análisis según tus permisos.
+              </p>
+              <Link
+                href={`/inspections/${id}/evidences`}
+                className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground"
+              >
+                Gestionar evidencias
+              </Link>
+            </section>
+          ) : (
+            <InspectionEvidence
+              key={id}
+              canAnalyze={
+                value.estado === "EN_CAPTURA" &&
+                (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
+                actor?.rol?.codigo === "INSPECTOR" &&
+                canManageCompany(actor, "inspecciones.analizar")
+              }
+              canReadFruits={canManageCompany(actor, "muestreos.ver")}
+              canUpload={
+                value.estado === "EN_CAPTURA" &&
+                (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
+                actor?.rol?.codigo === "INSPECTOR" &&
+                canManageCompany(actor, "inspecciones.capturar")
+              }
+              id={id}
+              photos={value.evidencias ?? []}
+              sampling={value.id_muestreo}
+            />
+          )}
         </>
       ) : null}
     </section>

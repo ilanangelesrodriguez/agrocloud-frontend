@@ -6,29 +6,39 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
-import { Button, Checkbox, Input, Label, ListBox, Select, TextField, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  TextArea,
+  TextField,
+  toast,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { EmptyState, ErrorState, FormNotice, LoadingState, PagePagination } from "@agrocloud/ui";
+import { EmptyState, ErrorState, FormNotice, LoadingState } from "@agrocloud/ui";
 
 import { samplingInput } from "../schema";
 import { registerSampling } from "../api";
-import { useSamplingProcedures } from "../hooks";
-
-import { AdminError, AdminPagination } from "@/features/admin/components/admin-ui";
+import { useAllSamplingProcedures } from "../hooks";
 
 export function SamplingForm({ lotId, product }: { lotId: number; product: string }) {
   const cache = useQueryClient();
   const router = useRouter();
   const { data: actor } = useCurrentUser();
-  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [workload, setWorkload] = useState(false);
   const [error, setError] = useState("");
-  const query = useSamplingProcedures(page);
+  const query = useAllSamplingProcedures(canManageCompany(actor, "muestreos.crear"));
   const procedures =
     query.data?.data.filter(
-      (item) => item.activo && (!item.producto || item.producto === product),
+      (item) =>
+        item.activo &&
+        (!item.producto ||
+          item.producto.trim().toLocaleLowerCase("es") === product.trim().toLocaleLowerCase("es")),
     ) ?? [];
   const procedure = procedures.find((item) => String(item.id) === selected);
   const save = useMutation({
@@ -104,7 +114,7 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
     );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6 pt-3">
       <Select
         isDisabled={save.isPending || !procedures.length}
         placeholder="Selecciona un procedimiento"
@@ -129,22 +139,40 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
       {procedures.length ? null : (
         <EmptyState
           title="No hay procedimientos activos"
-          description="No se encontraron procedimientos aplicables a este producto en la página actual."
+          description="No hay un procedimiento activo para este producto. Solicita al administrador de tu empresa que lo registre en Configuración / Procedimientos."
         />
       )}
-      <PagePagination
-        last={query.data.meta.last_page}
-        page={page}
-        onChange={(next) => {
-          choose("");
-          setPage(next);
-        }}
-      />
       {procedure ? (
-        <form key={procedure.id} className="space-y-4" onSubmit={submit}>
-          <fieldset className="grid gap-3" disabled={save.isPending}>
-            <p>{procedure.criterio_muestra}</p>
-            <p>{procedure.seleccion_frutos}</p>
+        <form key={procedure.id} className="space-y-6" onSubmit={submit}>
+          <fieldset className="grid gap-5 sm:grid-cols-2" disabled={save.isPending}>
+            <div className="space-y-4 rounded-2xl border border-accent/20 bg-accent/5 p-5 sm:col-span-2">
+              <div>
+                <h3 className="font-semibold">Instrucciones del procedimiento</h3>
+                <p className="mt-1 text-sm text-muted">
+                  {procedure.nombre} · v{procedure.version} · {procedure.metodo}
+                </p>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div>
+                  <h4 className="text-sm font-semibold">Criterio de muestra</h4>
+                  <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                    {procedure.criterio_muestra}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold">Selección de frutos</h4>
+                  <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                    {procedure.seleccion_frutos}
+                  </p>
+                </div>
+              </div>
+              {procedure.tamano_recomendado ? (
+                <p className="text-sm text-muted">
+                  Tamaño recomendado: {procedure.tamano_recomendado} frutos. Justifica cualquier
+                  diferencia antes de registrar la muestra.
+                </p>
+              ) : null}
+            </div>
             <TextField
               isRequired
               defaultValue={String(procedure.tamano_recomendado ?? "")}
@@ -166,15 +194,20 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
               <Label>Fuente de la estimación</Label>
               <Input maxLength={500} />
             </TextField>
-            <TextField name="motivo_desviacion">
+            <TextField className="sm:col-span-2" name="motivo_desviacion">
               <Label>Motivo si difiere del tamaño recomendado</Label>
-              <Input maxLength={1500} />
+              <TextArea rows={2} maxLength={1500} />
             </TextField>
-            <TextField name="observaciones">
+            <TextField className="sm:col-span-2" name="observaciones">
               <Label>Observaciones</Label>
-              <Input maxLength={3000} />
+              <TextArea rows={3} maxLength={3000} />
             </TextField>
-            <Checkbox isSelected={confirmed} onChange={setConfirmed}>
+            <Checkbox
+              className="sm:col-span-2"
+              isDisabled={save.isPending}
+              isSelected={confirmed}
+              onChange={setConfirmed}
+            >
               <Checkbox.Content>
                 <Checkbox.Control>
                   <Checkbox.Indicator />
@@ -182,7 +215,12 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
                 <Label>Confirmo las instrucciones del procedimiento</Label>
               </Checkbox.Content>
             </Checkbox>
-            <Checkbox isSelected={workload} onChange={setWorkload}>
+            <Checkbox
+              className="sm:col-span-2"
+              isDisabled={save.isPending}
+              isSelected={workload}
+              onChange={setWorkload}
+            >
               <Checkbox.Content>
                 <Checkbox.Control>
                   <Checkbox.Indicator />

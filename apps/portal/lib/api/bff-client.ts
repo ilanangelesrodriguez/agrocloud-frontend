@@ -2,6 +2,16 @@ import type { z } from "zod";
 
 export type BffScope = "admin" | "company" | "agricultural";
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 /** Cliente único BFF: valida la respuesta y propaga el error del servicio. */
 export async function bffRequest<T>(
   path: string,
@@ -15,8 +25,9 @@ export async function bffRequest<T>(
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(
+    throw new ApiError(
       typeof payload?.message === "string" ? payload.message : "No se pudo completar la operación.",
+      response.status,
     );
   }
   const parsed = schema.safeParse(payload);

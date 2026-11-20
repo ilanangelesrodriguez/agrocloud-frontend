@@ -7,7 +7,8 @@ export async function identityRequest(
     accessToken?: string;
     page?: number;
     service?: "identity" | "agricultural";
-    catalogType?: "producto" | "variedad" | "unidad";
+    catalogType?:
+      "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
     idempotencyKey?: string;
   } = {},
 ): Promise<Response> {

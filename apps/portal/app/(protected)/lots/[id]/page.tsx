@@ -1,5 +1,3 @@
-import { RouteDrawer } from "@/components/route-drawer";
-
 import { notFound } from "next/navigation";
 
 import { LotPage } from "@/features/lots/components/lot-page";
@@ -10,14 +8,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   if (!positiveInteger(id)) notFound();
 
-  return (
-    <RouteDrawer
-      title="Detalle de lote"
-      description="Consulta la información y completa las acciones disponibles sin salir del listado."
-      back="/lots"
-      background={<LotPage mode="list" />}
-    >
-      <LotPage id={id} mode="detail" />
-    </RouteDrawer>
-  );
+  return <LotPage id={id} mode="detail" />;
 }

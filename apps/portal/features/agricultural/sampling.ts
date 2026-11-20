@@ -2,21 +2,21 @@ import { z } from "zod";
 
 const id = z.number().int().positive();
 
+export const procedureRecord = z.object({
+  id,
+  nombre: z.string(),
+  version: z.union([z.string(), z.number()]),
+  metodo: z.string(),
+  producto: z.string().nullish(),
+  activo: z.boolean(),
+  requiere_poblacion: z.boolean(),
+  max_frutos: id,
+  tamano_recomendado: id.nullish(),
+  criterio_muestra: z.string(),
+  seleccion_frutos: z.string(),
+});
 export const procedurePage = z.object({
-  data: z.array(
-    z.object({
-      id,
-      nombre: z.string(),
-      version: z.union([z.string(), z.number()]),
-      producto: z.string().nullish(),
-      activo: z.boolean(),
-      requiere_poblacion: z.boolean(),
-      max_frutos: id,
-      tamano_recomendado: id.nullish(),
-      criterio_muestra: z.string(),
-      seleccion_frutos: z.string(),
-    }),
-  ),
+  data: z.array(procedureRecord),
   meta: z.object({ last_page: id }),
 });
 export const samplingInput = z.object({

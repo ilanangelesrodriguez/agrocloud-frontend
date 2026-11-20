@@ -1,6 +1,7 @@
 export { PageHeader } from "./components/page-header";
 export { EmptyState } from "./components/empty-state";
 export { ErrorState } from "./components/error-state";
+export type { ErrorStateProps } from "./components/error-state";
 export { FormNotice } from "./components/form-notice";
 export { StatusBadge } from "./components/status-badge";
 export type { StatusTone } from "./components/status-badge";

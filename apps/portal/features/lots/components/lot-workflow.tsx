@@ -6,7 +6,7 @@ import { InlineNotice, StatusBadge } from "@agrocloud/ui";
 import type { Lot } from "../schema";
 
 /** No deduce inspecciones ni resultados IA del estado del lote: faltan esos datos en la respuesta. */
-export function LotWorkflow({ lot }: { lot: Lot }) {
+export function LotWorkflow({ lot, active }: { lot: Lot; active?: string }) {
   const received = Boolean(lot.recepcion);
   const sampled = Boolean(lot.muestreos?.length);
   const firstSample = lot.muestreos?.[0];
@@ -15,28 +15,32 @@ export function LotWorkflow({ lot }: { lot: Lot }) {
       name: "Recepción",
       done: received,
       description: "Registrar documento y peso recibido",
-      href: "#lot-reception",
+      href: `/lots/${lot.id_lote}/reception`,
+      key: "reception",
       known: true,
     },
     {
       name: "Muestreo",
       done: sampled,
       description: "Aplicar el procedimiento autorizado",
-      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : "#lot-sampling",
+      href: `/lots/${lot.id_lote}/sampling`,
+      key: "sampling",
       known: true,
     },
     {
       name: "Inspección",
       done: false,
       description: "Consultar o iniciar desde el detalle del muestreo",
-      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : "#lot-sampling",
+      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : `/lots/${lot.id_lote}/sampling`,
+      key: "inspection",
       known: false,
     },
     {
       name: "Evidencias",
       done: false,
       description: "Capturar fotografías desde la inspección",
-      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : "#lot-sampling",
+      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : `/lots/${lot.id_lote}/sampling`,
+      key: "evidence",
       known: false,
     },
   ] as const;
@@ -46,7 +50,10 @@ export function LotWorkflow({ lot }: { lot: Lot }) {
       <h2 className="text-lg font-semibold">Flujo de trabajo</h2>
       <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stages.map((stage, index) => (
-          <li key={stage.name} className="rounded-card border border-border bg-surface p-4">
+          <li
+            key={stage.name}
+            className={`rounded-2xl border bg-surface p-4 ${active === stage.key ? "border-accent ring-1 ring-accent/20" : "border-border"}`}
+          >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-semibold">
                 {index + 1}. {stage.name}

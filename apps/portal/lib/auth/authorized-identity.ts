@@ -60,7 +60,9 @@ export async function authorizedIdentity(
                 ? "Esta oferta fue modificada por otro administrador. Actualiza la información antes de guardar."
                 : path === "/subscription/orders"
                   ? "Ya existe una orden pendiente o la oferta dejó de aplicar a tu suscripción."
-                  : "El registro cambió. Actualiza la página antes de continuar.",
+                  : options.service === "agricultural" && path === "/sampling-procedures"
+                    ? "Ya existe un procedimiento con ese nombre y versión. Ingresa una versión diferente."
+                    : "El registro cambió. Actualiza la página antes de continuar.",
             },
             409,
           ),

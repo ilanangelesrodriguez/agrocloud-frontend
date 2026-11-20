@@ -18,6 +18,29 @@ Las plantillas actuales ya importan correctamente en `styles/globals.css`:
 - Respetar navegación por teclado, contraste suficiente y responsive.
 - Usar la API de componentes **v3**, no copiar ejemplos de HeroUI v2.
 
+## Vistas del flujo agrícola
+
+El flujo operativo usa páginas completas: listado y alta de lotes, detalle del lote,
+recepción (`/lots/[id]/reception`), registro de muestreo (`/lots/[id]/sampling`),
+detalle de muestra (`/samplings/[id]`), inspección (`/inspections/[id]`) y evidencias
+(`/inspections/[id]/evidences`). Los drawers quedan para operaciones breves fuera
+de este flujo. Cada vista mantiene un encabezado, contexto del registro, navegación
+de regreso, permisos y estados de carga, error y ausencia de datos.
+
+`OperationNavigation` comparte la navegación entre muestra, inspección y evidencias.
+Solo enlaza relaciones conocidas y acciones consultables por la cuenta actual.
+El resumen del lote no deduce inspecciones ni evidencias de su estado: se accede a
+ellas a través del muestreo correspondiente.
+
+`ErrorState`, exportado por `@agrocloud/ui`, es el patrón genérico para errores de
+API, conexión, carga de imágenes y otros fallos. Acepta `error: unknown`, título y
+descripción opcionales, `retry`, acciones adicionales y `size="page" | "compact"`.
+La variante de página reserva al menos 24 rem, igual que el skeleton compartido;
+la compacta reserva 12 rem. Los reintentos asíncronos muestran estado ocupado.
+El BFF conserva el estado HTTP mediante `ApiError` para distinguir sesión, permisos,
+registro inexistente y exceso de solicitudes. Las rutas operativas cuentan además
+con un límite de error de React que permite reintentar o volver a los lotes.
+
 ## Identidad visual
 
 En pantallas pequeñas la barra muestra el emblema de AgroCloud. Desde el breakpoint `md` usa el logotipo completo con la variante del tema activo. El favicon y el icono de iOS proceden del AgroCloud original.
