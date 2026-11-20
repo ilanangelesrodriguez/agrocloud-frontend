@@ -1,94 +1,77 @@
 "use client";
-
 import Link from "next/link";
 import { InlineNotice, StatusBadge } from "@agrocloud/ui";
-
+import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { canManageCompany } from "@/features/company/navigation";
 import type { Lot } from "../schema";
-
-/** No deduce inspecciones ni resultados IA del estado del lote: faltan esos datos en la respuesta. */
 export function LotWorkflow({ lot, active }: { lot: Lot; active?: string }) {
-  const received = Boolean(lot.recepcion);
-  const sampled = Boolean(lot.muestreos?.length);
-  const firstSample = lot.muestreos?.[0];
-  const stages = [
-    {
-      name: "Recepción",
-      done: received,
-      description: "Registrar documento y peso recibido",
-      href: `/lots/${lot.id_lote}/reception`,
-      key: "reception",
-      known: true,
-    },
-    {
-      name: "Muestreo",
-      done: sampled,
-      description: "Aplicar el procedimiento autorizado",
-      href: `/lots/${lot.id_lote}/sampling`,
-      key: "sampling",
-      known: true,
-    },
-    {
-      name: "Inspección",
-      done: false,
-      description: "Consultar o iniciar desde el detalle del muestreo",
-      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : `/lots/${lot.id_lote}/sampling`,
-      key: "inspection",
-      known: false,
-    },
-    {
-      name: "Evidencias",
-      done: false,
-      description: "Capturar fotografías desde la inspección",
-      href: firstSample ? `/samplings/${firstSample.id_muestreo}` : `/lots/${lot.id_lote}/sampling`,
-      key: "evidence",
-      known: false,
-    },
-  ] as const;
-
+  const { data: actor } = useCurrentUser();
+  const flow = lot.workflow;
+  if (!flow)
+    return (
+      <InlineNotice
+        status="warning"
+        title="Resumen operativo no disponible"
+        description="Actualiza el expediente cuando el servicio agrícola esté disponible."
+      />
+    );
+  const action = flow.nextAction;
   return (
-    <section className="space-y-3" aria-label="Continuidad operativa del lote">
+    <section className="space-y-4" aria-label="Continuidad operativa del lote">
       <h2 className="text-lg font-semibold">Flujo de trabajo</h2>
-      <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {stages.map((stage, index) => (
+      <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {flow.stages.map((stage, index) => (
           <li
-            key={stage.name}
-            className={`rounded-2xl border bg-surface p-4 ${active === stage.key ? "border-accent ring-1 ring-accent/20" : "border-border"}`}
+            key={stage.key}
+            className={`rounded-2xl border bg-surface p-4 ${active === stage.key || flow.currentStage === stage.key ? "border-accent" : "border-border"}`}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold">
-                {index + 1}. {stage.name}
-              </p>
-              <StatusBadge tone={stage.done ? "success" : "neutral"}>
-                {stage.done ? "Registrado" : stage.known ? "Pendiente" : "Consultar"}
-              </StatusBadge>
-            </div>
-            <p className="mt-2 text-sm text-muted">{stage.description}</p>
-            <Link
-              className="mt-3 inline-block text-sm font-medium text-accent underline"
-              href={stage.href}
-            >
-              {stage.done ? "Ver detalle" : "Ir al paso"}
-            </Link>
+            <p className="mb-2 font-semibold">
+              {index + 1}. {stage.label}
+            </p>
+            <StatusBadge tone={stage.done ? "success" : "neutral"}>
+              {stage.done ? "Completado" : "Pendiente"}
+            </StatusBadge>
           </li>
         ))}
       </ol>
-      <InlineNotice
-        status="accent"
-        title={
-          received
-            ? sampled
-              ? "Continuar la inspección"
-              : "El lote está listo para muestreo"
-            : "El lote requiere recepción"
-        }
-        description={
-          received
-            ? sampled
-              ? "Abre el muestreo asociado para continuar la inspección y gestionar las evidencias."
-              : "El personal con permiso de muestreo puede registrar el siguiente paso."
-            : "Una cuenta autorizada de recepción debe confirmar el ingreso antes del muestreo."
-        }
-      />
+      {flow.blockingReasons.map((reason) => (
+        <InlineNotice
+          key={reason}
+          status="warning"
+          title="Atención requerida"
+          description={reason}
+        />
+      ))}
+      {action ? (
+        <div className="space-y-3 rounded-card border border-border bg-surface p-5">
+          <h3 className="font-semibold">Siguiente actividad</h3>
+          <p>{action.label}</p>
+          {(action.canExecute ?? canManageCompany(actor, action.permission)) ? (
+            <Link
+              href={action.href}
+              className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 font-medium text-accent-foreground"
+            >
+              Continuar
+            </Link>
+          ) : (
+            <p className="text-sm text-muted">
+              Esta actividad corresponde al equipo autorizado para realizarla.
+            </p>
+          )}
+        </div>
+      ) : (
+        <InlineNotice
+          status={flow.currentStage === "completed" ? "success" : "warning"}
+          title={
+            flow.currentStage === "completed"
+              ? "Flujo completado"
+              : flow.currentStage === "rejected"
+                ? "Lote rechazado"
+                : "Lote anulado"
+          }
+          description="Consulta el dictamen y la trazabilidad para revisar el resultado."
+        />
+      )}
     </section>
   );
 }

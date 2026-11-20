@@ -1,7 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@heroui/react";
+import { Button, TextField, Label, Input } from "@heroui/react";
 import { FormNotice } from "@agrocloud/ui";
 import { bffRequest } from "@/lib/api/bff-client";
 import { catalogUpdated } from "../schema";
@@ -34,17 +34,10 @@ export function CatalogRename({ id, name }: { id: number; name: string }) {
   }
   return open ? (
     <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
-      <label>
-        Nombre
-        <input
-          name="nombre"
-          defaultValue={name}
-          required
-          maxLength={150}
-          disabled={save.isPending}
-          className="ml-2 min-h-10 rounded-xl border border-border bg-surface px-3"
-        />
-      </label>
+      <TextField name="nombre" isRequired isDisabled={save.isPending}>
+        <Label>Nombre</Label>
+        <Input defaultValue={name} maxLength={150} />
+      </TextField>
       <Button type="submit" isPending={save.isPending}>
         Guardar
       </Button>

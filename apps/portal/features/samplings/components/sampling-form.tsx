@@ -32,14 +32,11 @@ export function SamplingForm({ lotId, product }: { lotId: number; product: strin
   const [confirmed, setConfirmed] = useState(false);
   const [workload, setWorkload] = useState(false);
   const [error, setError] = useState("");
-  const query = useAllSamplingProcedures(canManageCompany(actor, "muestreos.crear"));
-  const procedures =
-    query.data?.data.filter(
-      (item) =>
-        item.activo &&
-        (!item.producto ||
-          item.producto.trim().toLocaleLowerCase("es") === product.trim().toLocaleLowerCase("es")),
-    ) ?? [];
+  const query = useAllSamplingProcedures(canManageCompany(actor, "muestreos.crear"), {
+    producto: product,
+    activo: true,
+  });
+  const procedures = query.data?.data ?? [];
   const procedure = procedures.find((item) => String(item.id) === selected);
   const save = useMutation({
     mutationFn: (input: object) => registerSampling(lotId, input),

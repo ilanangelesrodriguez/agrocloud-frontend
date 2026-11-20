@@ -26,6 +26,8 @@ export function agriculturalErrorMessage(message: unknown): string | undefined {
     "Every sampled fruit needs relevant, explicitly reviewed evidence with all detections decided.":
       "Cada fruto necesita evidencia pertinente y revisada. Decide todas las detecciones y guarda la revisión de cada imagen.",
     "Human validation is required.": "Valida primero la inspección antes de emitir el dictamen.",
+    "No se puede renombrar un maestro en uso. Deshabilítalo y registra un valor nuevo para conservar el historial.":
+      "No se puede renombrar un maestro en uso. Deshabilítalo y registra un valor nuevo para conservar el historial.",
     "The latest decision changed.":
       "Otro supervisor actualizó el dictamen. Actualiza la vista antes de continuar.",
     "No previous decision exists.":

@@ -1,17 +1,18 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@heroui/react";
+import { Button, TextField, Label, TextArea } from "@heroui/react";
 import { ErrorState, LoadingState, FormNotice } from "@agrocloud/ui";
 import type { Lot } from "@/features/lots/schema";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 import { bffRequest } from "@/lib/api/bff-client";
 import { incidentsPage, cancelInput, cancelResponse } from "../operations-schema";
+import { incidentLabels } from "@/features/incidents/schema";
 import { IncidentEditor } from "./incident-editor";
 export function LotManagement({ lot }: { lot: Lot }) {
   const { data: actor } = useCurrentUser();
-  const canRead = canManageCompany(actor, "lotes.ver");
+  const canRead = canManageCompany(actor, "incidencias.ver");
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
   const cache = useQueryClient();
@@ -61,16 +62,10 @@ export function LotManagement({ lot }: { lot: Lot }) {
         <details className="rounded-card border border-border bg-surface p-5">
           <summary className="cursor-pointer font-semibold">Anular lote</summary>
           <form className="mt-4 space-y-3" onSubmit={submit}>
-            <label className="block">
-              Motivo de anulación
-              <textarea
-                name="motivo"
-                required
-                maxLength={2000}
-                disabled={cancel.isPending}
-                className="mt-2 w-full rounded-xl border border-border bg-surface p-3"
-              />
-            </label>
+            <TextField name="motivo" isRequired isDisabled={cancel.isPending}>
+              <Label>Motivo de anulación</Label>
+              <TextArea maxLength={2000} />
+            </TextField>
             <p className="text-sm text-muted">
               La anulación cierra este lote e impide continuar su recepción.
             </p>
@@ -105,7 +100,8 @@ export function LotManagement({ lot }: { lot: Lot }) {
                     <h3 className="font-semibold">{item.titulo}</h3>
                     <p>{item.descripcion}</p>
                     <p className="text-sm text-muted">
-                      {item.gravedad} · {item.estado} · Responsable #{item.responsable}
+                      {incidentLabels[item.gravedad]} · {incidentLabels[item.estado]} · Responsable
+                      #{item.responsable}
                     </p>
                     <IncidentEditor incident={item} />
                   </article>

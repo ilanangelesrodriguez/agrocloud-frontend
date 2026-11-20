@@ -155,6 +155,13 @@ export async function GET(request: NextRequest, { params }: Context) {
 
   if (!positiveInteger(page)) return reply({ message: "Página inválida." }, 400);
   if (resource === "sampling-procedures" && !id) {
+    const producto = request.nextUrl.searchParams.get("producto")?.trim() || undefined;
+    const activo = request.nextUrl.searchParams.get("activo");
+    if (
+      (producto && producto.length > 150) ||
+      (activo !== null && !["true", "false"].includes(activo))
+    )
+      return reply({ message: "Filtro de procedimiento inválido." }, 422);
     return authorizedIdentity(
       request,
       (user) =>
@@ -165,7 +172,11 @@ export async function GET(request: NextRequest, { params }: Context) {
           ? "/sampling-procedures"
           : null,
       procedurePage,
-      { service: "agricultural", page: Number(page) },
+      {
+        service: "agricultural",
+        page: Number(page),
+        procedureFilter: { producto, activo: activo === null ? undefined : activo === "true" },
+      },
     );
   }
 

@@ -63,7 +63,17 @@ const reception = receptionInput.extend({
 
 export const receptionResponse = z.object({ data: reception });
 export const traceabilityResponse = z.object({
-  data: z.array(z.object({ id, evento: z.string(), created_at: z.string().nullish() })),
+  data: z.array(
+    z.object({
+      id,
+      evento: z.string(),
+      created_at: z.string().nullish(),
+      id_usuario: id.nullish(),
+      entidad: z.string().optional(),
+      registro: id.optional(),
+      cambios: z.union([z.string(), z.record(z.string(), z.unknown())]).optional(),
+    }),
+  ),
   last_page: id,
 });
 const lot = z.object({
@@ -79,6 +89,24 @@ const lot = z.object({
   productor: producer.nullish(),
   recepcion: reception.nullish(),
   muestreos: z.array(samplingRecord).optional(),
+  workflow: z
+    .object({
+      currentStage: z.string(),
+      nextAction: z
+        .object({
+          label: z.string(),
+          href: z.string(),
+          permission: z.string(),
+          canExecute: z.boolean().optional(),
+        })
+        .nullable(),
+      blockingReasons: z.array(z.string()),
+      samplingId: id.nullable(),
+      inspectionId: id.nullable(),
+      latestDecision: z.string().nullable(),
+      stages: z.array(z.object({ key: z.string(), label: z.string(), done: z.boolean() })),
+    })
+    .optional(),
 });
 const meta = z.object({ current_page: id, last_page: id });
 

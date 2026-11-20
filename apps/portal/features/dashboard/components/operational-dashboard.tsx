@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ import {
 } from "@agrocloud/ui";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
-import { OperationalSummary } from "@/features/agricultural/components/operational-summary";
+import { WorkDashboard } from "./work-dashboard";
 import { useOperationalDashboard } from "../hooks";
 import { DashboardLink, dashboardLinkClass } from "./dashboard-link";
 
@@ -48,6 +49,8 @@ function formatDate(value: string) {
 
 export function OperationalDashboard() {
   const router = useRouter();
+  const cache = useQueryClient();
+  const workFetching = useIsFetching({ queryKey: ["agricultural", "dashboard"] }) > 0;
   const session = useCurrentUser();
   const user = session.data;
   const access = {
@@ -60,6 +63,7 @@ export function OperationalDashboard() {
     if (user?.rol?.codigo === "SUPERADMIN") router.replace("/admin");
   }, [user?.rol?.codigo, router]);
   const refreshing =
+    workFetching ||
     (access.lots && lots.isFetching) ||
     (access.producers && producers.isFetching) ||
     (access.subscription && subscription.isFetching);
@@ -69,7 +73,12 @@ export function OperationalDashboard() {
     if (access.producers) operations.push(producers.refetch());
     if (access.subscription) operations.push(subscription.refetch());
     const results = await Promise.all(operations);
-    if (results.some((result) => result.isError))
+    if (canManageCompany(user))
+      await cache.refetchQueries({ queryKey: ["agricultural", "dashboard"] });
+    if (
+      results.some((result) => result.isError) ||
+      cache.getQueryState(["agricultural", "dashboard"])?.status === "error"
+    )
       toast.warning("Actualización incompleta", {
         description:
           "Algunos datos no pudieron actualizarse. Reintenta en la sección correspondiente.",
@@ -139,7 +148,6 @@ export function OperationalDashboard() {
   ].filter((module) => canManageCompany(user, module.permission));
   return (
     <section className="min-w-0 space-y-8">
-      {canManageCompany(user, "reportes.operativos") ? <OperationalSummary /> : null}
       <PageHeader
         title="Panel principal"
         description="Organiza las tareas de tu empresa y da seguimiento a la operación agrícola."
@@ -155,6 +163,7 @@ export function OperationalDashboard() {
           ) : undefined
         }
       />
+      {canManageCompany(user) ? <WorkDashboard /> : null}
       <Card className="rounded-2xl border border-accent/15 bg-accent/5 shadow-none">
         <Card.Content className="flex flex-col justify-between gap-6 p-6 sm:p-8 lg:flex-row lg:items-center">
           <div className="min-w-0">

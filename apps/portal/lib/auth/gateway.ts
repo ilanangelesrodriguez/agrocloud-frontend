@@ -9,6 +9,15 @@ export async function identityRequest(
     service?: "identity" | "agricultural" | "notifications";
     notificationQuery?: { limit: number; cursor?: string; unread?: boolean };
     agriculturalStatus?: string;
+    decisionStatus?: "PENDING" | "OBSERVED" | "COMPLETED";
+    procedureFilter?: { producto?: string; activo?: boolean };
+    reportFilter?: {
+      from?: string;
+      to?: string;
+      producto?: string;
+      variedad?: string;
+      producer_id?: string;
+    };
     catalogType?:
       "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
     idempotencyKey?: string;
@@ -39,6 +48,15 @@ export async function identityRequest(
 
   if (options.page !== undefined) url.searchParams.set("page", String(options.page));
   if (options.agriculturalStatus) url.searchParams.set("estado", options.agriculturalStatus);
+  if (options.decisionStatus) url.searchParams.set("decision_status", options.decisionStatus);
+  if (options.procedureFilter?.producto)
+    url.searchParams.set("producto", options.procedureFilter.producto);
+  if (options.procedureFilter?.activo !== undefined)
+    url.searchParams.set("activo", String(options.procedureFilter.activo));
+  if (options.reportFilter)
+    for (const [key, value] of Object.entries(options.reportFilter)) {
+      if (value) url.searchParams.set(key, value);
+    }
   if (options.catalogType) url.searchParams.set("tipo", options.catalogType);
   if (options.notificationQuery) {
     url.searchParams.set("limit", String(options.notificationQuery.limit));

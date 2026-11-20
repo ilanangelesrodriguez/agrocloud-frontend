@@ -62,5 +62,60 @@ export const reportSummary = z.object({
   lots_by_status: z.array(count),
   inspections_by_status: z.array(count),
   open_critical_incidents: z.number().int().nonnegative(),
+  quality: z.object({
+    decided_lots: z.number(),
+    approval_rate: z.number(),
+    rejection_rate: z.number(),
+    observed_rate: z.number(),
+    reception_to_decision_hours: z.number().nullable(),
+    inspection_hours: z.number().nullable(),
+  }),
+  frequent_defects: z.array(z.object({ clase: z.string(), total: z.coerce.number() })),
+  incidents_by_product: z.array(z.object({ producto: z.string(), total: z.coerce.number() })),
+  quality_by_producer: z.array(
+    z.object({
+      id_productor: id,
+      productor: z.string(),
+      decision: z.string(),
+      total: z.coerce.number(),
+    }),
+  ),
+  ai_review: z.object({
+    confirmed: z.number(),
+    discarded: z.number(),
+    requested_evidences: z.number(),
+  }),
+});
+export const responsiblePage = z.object({
+  data: z.array(z.object({ id, name: z.string() })),
+  meta,
+});
+export const incidentEvidences = z.object({
+  data: z.array(
+    z.object({
+      id_evidencia: id,
+      id_inspeccion: id,
+      fruto: z.object({ numero: id, codigo: z.string().nullish() }).nullish(),
+    }),
+  ),
+  meta,
+});
+export const incidentHistory = z.object({
+  data: z.array(
+    z.object({
+      id,
+      evento: z.string(),
+      created_at: z.string(),
+      cambios: z.union([z.string(), z.record(z.string(), z.unknown())]),
+    }),
+  ),
+  current_page: id,
+  last_page: id,
+});
+export const dashboardResponse = z.object({
+  metrics: z.array(
+    z.object({ key: z.string(), label: z.string(), value: z.number(), href: z.string() }),
+  ),
+  tasks: z.array(z.object({ label: z.string(), href: z.string() })),
 });
 export { lotList };

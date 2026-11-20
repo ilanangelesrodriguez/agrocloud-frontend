@@ -1,4 +1,13 @@
-import { OperationsPage } from "@/features/agricultural/components/operations-page";
-export default function Page() {
-  return <OperationsPage mode="quality" />;
+import { QualityPage } from "@/features/quality/components/quality-page";
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const status = (await searchParams).status;
+  return (
+    <QualityPage
+      initialStatus={status === "OBSERVED" || status === "COMPLETED" ? status : "PENDING"}
+    />
+  );
 }

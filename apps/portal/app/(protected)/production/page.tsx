@@ -1,4 +1,4 @@
-import { OperationsPage } from "@/features/agricultural/components/operations-page";
+import { ProductionPage } from "@/features/production/components/production-page";
 export default function Page() {
-  return <OperationsPage mode="production" />;
+  return <ProductionPage />;
 }

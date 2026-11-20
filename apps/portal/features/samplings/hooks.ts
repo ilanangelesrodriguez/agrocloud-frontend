@@ -8,10 +8,13 @@ import {
   fetchAllSamplingProcedures,
 } from "./api";
 
-export function useAllSamplingProcedures(enabled = true) {
+export function useAllSamplingProcedures(
+  enabled = true,
+  filter?: { producto?: string; activo?: boolean },
+) {
   return useQuery({
-    queryKey: ["agricultural", "sampling-procedures", "all"],
-    queryFn: ({ signal }) => fetchAllSamplingProcedures(signal),
+    queryKey: ["agricultural", "sampling-procedures", "all", filter ?? {}],
+    queryFn: ({ signal }) => fetchAllSamplingProcedures(signal, filter),
     enabled,
     retry: false,
   });

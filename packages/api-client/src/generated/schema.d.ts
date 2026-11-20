@@ -563,6 +563,63 @@ export interface paths {
         patch: operations["identity_reviseBillingOffer"];
         trace?: never;
     };
+    "/api/v1/identity/subscription/orders/{reference}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        /** Consultar el estado de una orden propia en Identity */
+        get: operations["identity_getCompanyOrderStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity/subscription/orders/{reference}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verificar un cargo existente y reintentar su notificación a Identity */
+        post: operations["identity_reconcileCompanyOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/identity/subscription/orders/{reference}/charge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cobrar orden mediante token Culqi de prueba */
+        post: operations["identity_chargeCompanyOrderSandbox"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/identity/subscription/offers": {
         parameters: {
             query?: never;
@@ -834,7 +891,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Consultar inspecciones */
+        /**
+         * Consultar inspecciones
+         * @description PENDING: última inspección validada sin dictamen. OBSERVED: última inspección con observación documental o administrativa corregible. COMPLETED: último dictamen de esa inspección aprobado o rechazado. Las reinspecciones sustituidas no entran en pendientes ni observadas.
+         */
         get: operations["agricultural_get_inspections"];
         put?: never;
         post?: never;
@@ -1055,10 +1115,16 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Consultar incidencias */
+        /**
+         * Consultar incidencias
+         * @description Requiere incidencias.ver. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
         get: operations["agricultural_get_lots_lot_incidents"];
         put?: never;
-        /** Registrar incidencias */
+        /**
+         * Registrar incidencias
+         * @description Requiere incidencias.crear. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
         post: operations["agricultural_post_lots_lot_incidents"];
         delete?: never;
         options?: never;
@@ -1079,7 +1145,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Actualizar incidencias */
+        /**
+         * Actualizar incidencias
+         * @description Requiere incidencias.ver. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
         patch: operations["agricultural_patch_incidents_incident"];
         trace?: never;
     };
@@ -1109,7 +1178,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
+        /** Renombrar un maestro empresarial sin referencias en uso */
+        put: operations["agricultural_put_catalogs_catalog"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1143,7 +1213,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Consultar procedimiento autorizado */
+        get: operations["agricultural_get_sampling_procedures_procedure"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1160,8 +1231,142 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Consultar reportes */
+        /**
+         * Consultar reportes
+         * @description Cohorte de lotes por fecha de registro (UTC), producto, variedad y productor. Las tasas usan el último dictamen por lote. Duraciones en horas; hallazgos frecuentes son manuales. requested_evidences mide evidencias con solicitud de IA, no cuotas facturadas.
+         */
         get: operations["agricultural_get_reports_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar incidencias de la empresa
+         * @description Requiere incidencias.ver. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
+        get: operations["agricultural_get_incidents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/catalogs/admin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar maestros activos e inactivos de la empresa */
+        get: operations["agricultural_get_catalogs_admin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/production/lots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar únicamente lotes liberados sin bloqueos */
+        get: operations["agricultural_get_production_lots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/incident-responsibles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Seleccionar responsables activos y autorizados de la empresa
+         * @description Requiere incidencias.crear. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
+        get: operations["agricultural_get_incident_responsibles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/lots/{lot}/incident-evidences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Seleccionar fotografías del lote para el seguimiento
+         * @description Requiere incidencias.ver. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
+        get: operations["agricultural_get_lots_lot_incident_evidences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/incidents/{incident}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar historial de seguimiento de la incidencia
+         * @description Requiere incidencias.ver. El seguimiento exige responsable asignado o supervisor autorizado; cerrar/reabrir exige SUPERVISOR con incidencias.cerrar.
+         */
+        get: operations["agricultural_get_incidents_incident_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/agricultural/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultar trabajo pendiente según permisos y responsabilidad */
+        get: operations["agricultural_get_dashboard"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2592,6 +2797,173 @@ export interface operations {
             };
         };
     };
+    identity_getCompanyOrderStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Estado de Identity y Billing */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reference: string;
+                        offer_key: string;
+                        kind: string;
+                        amount_cents: number;
+                        /** @enum {string} */
+                        currency: "PEN";
+                        status: string;
+                        /** @enum {string} */
+                        payment_state: "READY" | "DECLINED" | "PROCESSING" | "RECONCILIATION_REQUIRED" | "AWAITING_CONFIRMATION" | "CONFIRMED" | "UNAVAILABLE";
+                    };
+                };
+            };
+            /** @description Sin permiso */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Orden inexistente o ajena */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_reconcileCompanyOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Estado después de consultar la conciliación */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        reference: string;
+                        offer_key: string;
+                        kind: string;
+                        amount_cents: number;
+                        /** @enum {string} */
+                        currency: "PEN";
+                        status: string;
+                        /** @enum {string} */
+                        payment_state: "READY" | "DECLINED" | "PROCESSING" | "RECONCILIATION_REQUIRED" | "AWAITING_CONFIRMATION" | "CONFIRMED" | "UNAVAILABLE";
+                    };
+                };
+            };
+            /** @description Sin permiso o checkout de integración deshabilitado */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Orden inexistente o ajena */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Orden no pendiente */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Billing no pudo verificar la operación */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Servicio no disponible */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    identity_chargeCompanyOrderSandbox: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Cargo recibido, pendiente de evento firmado */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sin permiso o sandbox deshabilitado */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Orden inexistente o ajena */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Orden no pendiente o cobro incierto */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Token inválido o cargo rechazado */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     identity_listCompanySubscriptionOffers: {
         parameters: {
             query?: never;
@@ -3002,7 +3374,10 @@ export interface operations {
     };
     agricultural_get_lots: {
         parameters: {
-            query?: never;
+            query?: {
+                page?: number;
+                estado?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3014,7 +3389,26 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        data: {
+                            id_lote: number;
+                            codigo_lote: string;
+                            producto: string;
+                            variedad: string | null;
+                            id_productor: number;
+                            estado: string;
+                            peso_kg: string | number;
+                            unidad_medida: string;
+                            /** Format: date-time */
+                            fecha_llegada_prevista: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
             };
             /** @description Invalid identity */
             401: {
@@ -3137,7 +3531,40 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        data: {
+                            id_lote: number;
+                            codigo_lote: string;
+                            producto: string;
+                            variedad: string | null;
+                            id_productor: number;
+                            estado: string;
+                            peso_kg: string | number;
+                            unidad_medida: string;
+                            /** Format: date-time */
+                            fecha_llegada_prevista: string;
+                            workflow: {
+                                currentStage: string;
+                                nextAction: {
+                                    label: string;
+                                    href: string;
+                                    permission: string;
+                                    canExecute: boolean;
+                                } | null;
+                                blockingReasons: string[];
+                                samplingId: number | null;
+                                inspectionId: number | null;
+                                latestDecision: string | null;
+                                stages: {
+                                    key: string;
+                                    label: string;
+                                    done: boolean;
+                                }[];
+                            };
+                        };
+                    };
+                };
             };
             /** @description Invalid identity */
             401: {
@@ -3612,7 +4039,11 @@ export interface operations {
     };
     agricultural_get_inspections: {
         parameters: {
-            query?: never;
+            query?: {
+                page?: number;
+                estado?: string;
+                decision_status?: "PENDING" | "OBSERVED" | "COMPLETED";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3624,7 +4055,34 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        data: {
+                            id_inspeccion: number;
+                            id_muestreo: number;
+                            estado: string;
+                            muestreo: {
+                                id_lote: number;
+                                lote: {
+                                    id_lote: number;
+                                    codigo_lote: string;
+                                    producto: string;
+                                    variedad: string | null;
+                                    id_productor: number;
+                                    estado: string;
+                                    peso_kg: string | number;
+                                    unidad_medida: string;
+                                    /** Format: date-time */
+                                    fecha_llegada_prevista: string;
+                                };
+                            };
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
             };
             /** @description Invalid identity */
             401: {
@@ -4740,6 +5198,71 @@ export interface operations {
             };
         };
     };
+    agricultural_put_catalogs_catalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                catalog: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    nombre: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        updated: boolean;
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     agricultural_patch_catalogs_catalog: {
         parameters: {
             query?: never;
@@ -4803,7 +5326,11 @@ export interface operations {
     };
     "agricultural_get_sampling-procedures": {
         parameters: {
-            query?: never;
+            query?: {
+                page?: number;
+                producto?: string;
+                activo?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4815,7 +5342,27 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        data: {
+                            id: number;
+                            nombre: string;
+                            version: string;
+                            metodo: string;
+                            producto: string | null;
+                            activo: boolean;
+                            requiere_poblacion: boolean;
+                            max_frutos: number;
+                            tamano_recomendado: number | null;
+                            criterio_muestra: string;
+                            seleccion_frutos: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
             };
             /** @description Invalid identity */
             401: {
@@ -4928,6 +5475,77 @@ export interface operations {
             };
         };
     };
+    agricultural_get_sampling_procedures_procedure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                procedure: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: number;
+                            nombre: string;
+                            version: string;
+                            metodo: string;
+                            producto: string | null;
+                            activo: boolean;
+                            requiere_poblacion: boolean;
+                            max_frutos: number;
+                            tamano_recomendado: number | null;
+                            criterio_muestra: string;
+                            seleccion_frutos: string;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     "agricultural_patch_sampling-procedures_procedure": {
         parameters: {
             query?: never;
@@ -4991,7 +5609,13 @@ export interface operations {
     };
     agricultural_get_reports_summary: {
         parameters: {
-            query?: never;
+            query?: {
+                from?: string;
+                to?: string;
+                producto?: string;
+                variedad?: string;
+                producer_id?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -5003,7 +5627,46 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        lots_by_status: {
+                            estado: string;
+                            total: number | string;
+                        }[];
+                        inspections_by_status: {
+                            estado: string;
+                            total: number | string;
+                        }[];
+                        open_critical_incidents: number;
+                        quality: {
+                            decided_lots: number;
+                            approval_rate: number;
+                            rejection_rate: number;
+                            observed_rate: number;
+                            reception_to_decision_hours: number | null;
+                            inspection_hours: number | null;
+                        };
+                        frequent_defects: {
+                            clase: string;
+                            total: number | string;
+                        }[];
+                        incidents_by_product: {
+                            producto: string;
+                            total: number | string;
+                        }[];
+                        quality_by_producer: {
+                            id_productor: number;
+                            productor: string;
+                            decision: string;
+                            total: number | string;
+                        }[];
+                        ai_review: {
+                            confirmed: number;
+                            discarded: number;
+                            requested_evidences: number;
+                        };
+                    };
+                };
             };
             /** @description Invalid identity */
             401: {
@@ -5035,6 +5698,494 @@ export interface operations {
             };
             /** @description Required service unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_incidents: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: number;
+                            id_lote: number;
+                            titulo: string;
+                            descripcion: string;
+                            /** @enum {string} */
+                            gravedad: "BAJA" | "MEDIA" | "ALTA" | "CRITICA";
+                            /** @enum {string} */
+                            estado: "ABIERTA" | "EN_ATENCION" | "RESUELTA" | "CERRADA";
+                            responsable: number;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_catalogs_admin: {
+        parameters: {
+            query: {
+                tipo: "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: number;
+                            nombre: string;
+                            tipo: string;
+                            id_empresa: number | null;
+                            parent_id: number | null;
+                            habilitado: boolean;
+                        }[];
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_production_lots: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id_lote: number;
+                            codigo_lote: string;
+                            producto: string;
+                            variedad: string | null;
+                            id_productor: number;
+                            estado: string;
+                            peso_kg: string | number;
+                            unidad_medida: string;
+                            /** Format: date-time */
+                            fecha_llegada_prevista: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_incident_responsibles: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: number;
+                            name: string;
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_lots_lot_incident_evidences: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                lot: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id_evidencia: number;
+                            id_inspeccion: number;
+                            fruto: {
+                                numero: number;
+                                codigo: string | null;
+                            };
+                        }[];
+                        meta: {
+                            current_page: number;
+                            last_page: number;
+                        };
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_incidents_incident_history: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                incident: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            id: number;
+                            evento: string;
+                            /** Format: date-time */
+                            created_at: string;
+                            cambios: string | {
+                                [key: string]: unknown;
+                            };
+                        }[];
+                        current_page: number;
+                        last_page: number;
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    agricultural_get_dashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        metrics: {
+                            key: string;
+                            label: string;
+                            value: number;
+                            href: string;
+                        }[];
+                        tasks: {
+                            label: string;
+                            href: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Invalid identity */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Permission or role denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Record not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description State conflict or master value in use */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid input */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

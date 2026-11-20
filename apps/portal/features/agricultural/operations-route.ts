@@ -13,6 +13,11 @@ import {
   cancelInput,
   cancelResponse,
   reportSummary,
+  responsiblePage,
+  incidentEvidences,
+  incidentHistory,
+  dashboardResponse,
+  lotList,
 } from "./operations-schema";
 
 export async function readOperation(request: NextRequest, segments: string[]) {
@@ -27,7 +32,7 @@ export async function readOperation(request: NextRequest, segments: string[]) {
         ? "muestreos.ver"
         : resource === "inspections"
           ? "inspecciones.ver"
-          : "lotes.ver";
+          : "incidencias.ver";
     schema =
       resource === "samplings"
         ? samplingsPage
@@ -41,22 +46,70 @@ export async function readOperation(request: NextRequest, segments: string[]) {
     action === "incidents"
   ) {
     path = `/lots/${id}/incidents`;
-    permission = "lotes.ver";
+    permission = "incidencias.ver";
     schema = incidentsPage;
   } else if (segments.length === 2 && resource === "reports" && id === "summary") {
     path = "/reports/summary";
     permission = "reportes.operativos";
     schema = reportSummary;
+  } else if (segments.length === 1 && resource === "incident-responsibles") {
+    path = "/incident-responsibles";
+    permission = "incidencias.crear";
+    schema = responsiblePage;
+  } else if (
+    segments.length === 3 &&
+    resource === "lots" &&
+    positiveInteger(id) &&
+    action === "incident-evidences"
+  ) {
+    path = `/lots/${id}/incident-evidences`;
+    permission = "incidencias.ver";
+    schema = incidentEvidences;
+  } else if (
+    segments.length === 3 &&
+    resource === "incidents" &&
+    positiveInteger(id) &&
+    action === "history"
+  ) {
+    path = `/incidents/${id}/history`;
+    permission = "incidencias.ver";
+    schema = incidentHistory;
+  } else if (segments.length === 2 && resource === "production" && id === "lots") {
+    path = "/production/lots";
+    permission = "produccion.ver";
+    schema = lotList;
+  } else if (segments.length === 1 && resource === "dashboard") {
+    path = "/dashboard";
+    permission = "";
+    schema = dashboardResponse;
   } else return null;
   const page = request.nextUrl.searchParams.get("page") ?? "1";
   const status = request.nextUrl.searchParams.get("estado") ?? undefined;
   if (!positiveInteger(page) || (status && !["EN_CAPTURA", "VALIDADA"].includes(status)))
     return reply({ message: "Filtro inválido." }, 400);
+  const decision = request.nextUrl.searchParams.get("decision_status") ?? undefined;
+  if (decision && !["PENDING", "OBSERVED", "COMPLETED"].includes(decision))
+    return reply({ message: "Filtro de calidad inválido." }, 422);
+  const reportFilter =
+    resource === "reports"
+      ? Object.fromEntries(
+          ["from", "to", "producto", "variedad", "producer_id"].map((key) => [
+            key,
+            request.nextUrl.searchParams.get(key) ?? undefined,
+          ]),
+        )
+      : undefined;
   return authorizedIdentity(
     request,
     (user) => (canManageCompany(user, permission) ? path : null),
     schema,
-    { service: "agricultural", page: Number(page), agriculturalStatus: status },
+    {
+      service: "agricultural",
+      page: Number(page),
+      agriculturalStatus: status,
+      decisionStatus: decision as "PENDING" | "OBSERVED" | "COMPLETED" | undefined,
+      reportFilter,
+    },
   );
 }
 export async function saveOperation(
@@ -81,7 +134,10 @@ export async function saveOperation(
   return authorizedIdentity(
     request,
     (user) =>
-      canManageCompany(user, cancel ? "lotes.eliminar" : "lotes.ver") &&
+      canManageCompany(
+        user,
+        cancel ? "lotes.eliminar" : create ? "incidencias.crear" : "incidencias.ver",
+      ) &&
       (!create ||
         ["ADMIN", "RECEPCION", "INSPECTOR", "SUPERVISOR"].includes(user.rol?.codigo ?? ""))
         ? "/" + segments.join("/")

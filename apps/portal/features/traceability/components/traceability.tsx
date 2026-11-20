@@ -14,6 +14,34 @@ function displayDate(value: string | null | undefined): string {
     : date.toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" });
 }
 
+function eventDetails(value: string | Record<string, unknown> | undefined) {
+  const labels: Record<string, string> = {
+    motivo: "Motivo",
+    accion: "Acción",
+    comprobacion: "Comprobación",
+    observaciones: "Observaciones",
+    decision: "Dictamen",
+    documento: "Documento",
+    transportista: "Transportista",
+    placa: "Placa",
+    peso_recibido_kg: "Peso recibido",
+    gravedad: "Gravedad",
+    titulo: "Título",
+    estado: "Estado",
+  };
+  try {
+    const changes: Record<string, unknown> =
+      typeof value === "string" ? JSON.parse(value) : (value ?? {});
+    return Object.entries(labels).flatMap(([key, label]) =>
+      typeof changes[key] === "string" || typeof changes[key] === "number"
+        ? [{ label, value: String(changes[key]).replaceAll("_", " ") }]
+        : [],
+    );
+  } catch {
+    return [];
+  }
+}
+
 export function Traceability({ id }: { id: number }) {
   const [page, setPage] = useState(1);
   const query = useLotTraceability(id, page);
@@ -52,6 +80,12 @@ export function Traceability({ id }: { id: number }) {
                     className="absolute -left-[1.7rem] top-1.5 size-2.5 rounded-full bg-accent"
                   />
                   <p className="font-medium">{item.evento.replaceAll("_", " ")}</p>
+                  {eventDetails(item.cambios).map((detail) => (
+                    <p key={detail.label} className="text-sm">
+                      <span className="text-muted">{detail.label}: </span>
+                      {detail.value}
+                    </p>
+                  ))}
                   <time className="text-xs text-muted" dateTime={item.created_at ?? undefined}>
                     {displayDate(item.created_at)}
                   </time>

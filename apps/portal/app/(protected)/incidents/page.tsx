@@ -1,4 +1,4 @@
-import { OperationsPage } from "@/features/agricultural/components/operations-page";
+import { IncidentsPage } from "@/features/incidents/components/incidents-page";
 export default function Page() {
-  return <OperationsPage mode="incidents" />;
+  return <IncidentsPage />;
 }
