@@ -54,8 +54,8 @@ export function DatesDemo() {
       </div>
       <Separator />
       <p className="text-xs text-muted">
-        Los formularios usan el mismo DateInput con calendario desplegable. Las horas se
-        introducen en hora local y se convierten a ISO al enviar los datos al servidor.
+        Los formularios usan el mismo DateInput con calendario desplegable. Las horas se introducen
+        en hora local y se convierten a ISO al enviar los datos al servidor.
       </p>
     </DemoSection>
   );

@@ -39,9 +39,7 @@ export function DateInput({
     >
       <Label>{label}</Label>
       <DateField.Group className="w-full">
-        <DateField.Input>
-          {(segment) => <DateField.Segment segment={segment} />}
-        </DateField.Input>
+        <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
         <DateField.Suffix>
           <DatePicker.Trigger aria-label={`Elegir ${label.toLowerCase()}`}>
             <DatePicker.TriggerIndicator />
@@ -59,9 +57,7 @@ export function DateInput({
             <Calendar.GridHeader>
               {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
             </Calendar.GridHeader>
-            <Calendar.GridBody>
-              {(date) => <Calendar.Cell date={date} />}
-            </Calendar.GridBody>
+            <Calendar.GridBody>{(date) => <Calendar.Cell date={date} />}</Calendar.GridBody>
           </Calendar.Grid>
         </Calendar>
       </DatePicker.Popover>

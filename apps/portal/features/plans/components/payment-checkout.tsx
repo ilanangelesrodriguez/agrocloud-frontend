@@ -87,10 +87,13 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
   });
 
   const reconcile = useMutation({
-    mutationFn: () => adminRequest(
-      "subscription/orders/" + order.reference + "/reconcile", orderStatus,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }, "company",
-    ),
+    mutationFn: () =>
+      adminRequest(
+        "subscription/orders/" + order.reference + "/reconcile",
+        orderStatus,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" },
+        "company",
+      ),
     onSuccess: (result) => {
       cache.setQueryData(["company", "subscription", "order", order.reference], result);
       if (result.payment_state === "READY") {
@@ -99,7 +102,9 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
         charge.reset();
       }
     },
-    onSettled: () => { void status.refetch(); },
+    onSettled: () => {
+      void status.refetch();
+    },
     retry: false,
   });
 
@@ -189,15 +194,18 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
         Orden {order.reference} · {money.format(order.amount_cents / 100)}
       </p>
       {status.data?.payment_state === "RECONCILIATION_REQUIRED" ||
-        status.data?.payment_state === "AWAITING_CONFIRMATION" ? (
+      status.data?.payment_state === "AWAITING_CONFIRMATION" ? (
         <div className="space-y-3">
           <p className="text-sm">
             {status.data.payment_state === "RECONCILIATION_REQUIRED"
               ? "El resultado del intento anterior está por verificar. Comprueba el pago antes de intentar nuevamente. Si continúa pendiente, solicita revisión de esta referencia en Culqi."
               : "Billing confirmó el cargo. Estamos esperando la actualización de tu suscripción."}
           </p>
-          <Button isDisabled={reconcile.isPending || charge.isPending} variant="secondary"
-            onPress={() => reconcile.mutate()}>
+          <Button
+            isDisabled={reconcile.isPending || charge.isPending}
+            variant="secondary"
+            onPress={() => reconcile.mutate()}
+          >
             {reconcile.isPending ? "Verificando…" : "Verificar pago"}
           </Button>
           {reconcile.error ? <p role="alert">{reconcile.error.message}</p> : null}
@@ -237,7 +245,13 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
             onReady={() => setSdkLoaded(true)}
           />
           <Button
-            isDisabled={!sdkLoaded || !canPay || charge.isPending || reconcile.isPending || awaitingConfirmation}
+            isDisabled={
+              !sdkLoaded ||
+              !canPay ||
+              charge.isPending ||
+              reconcile.isPending ||
+              awaitingConfirmation
+            }
             onPress={openCheckout}
           >
             Pagar {money.format(order.amount_cents / 100)}

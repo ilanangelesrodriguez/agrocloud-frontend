@@ -54,30 +54,52 @@ export function ResourceShell({
     <section className="space-y-5">
       <PageHeader
         title={title}
-        description={base === "/lots" ? "Organiza tus lotes y consulta su avance en cada etapa." : "Administra los productores y sus datos de identificación y ubicación."}
-        actions={canCreate && (mode === "list" || mode === "new") && createForm ? (
-          <CreationDrawer
-            open={creating}
-            onOpenChange={setOpen}
-            busy={saving}
-            title={base === "/lots" ? "Registrar lote" : "Registrar productor"}
-            description={base === "/lots" ? "Asocia el productor, completa los datos del producto y programa su llegada." : "Completa la identificación del productor y la ubicación de su operación."}
-            trigger={<Button variant="primary" onPress={() => setOpen(true)}><FiPlus aria-hidden="true" /> Registrar {base === "/lots" ? "lote" : "productor"}</Button>}
-          >
-            {createForm(() => setOpen(false), setSaving)}
-          </CreationDrawer>
-        ) : undefined}
+        description={
+          base === "/lots"
+            ? "Organiza tus lotes y consulta su avance en cada etapa."
+            : "Administra los productores y sus datos de identificación y ubicación."
+        }
+        actions={
+          canCreate && (mode === "list" || mode === "new") && createForm ? (
+            <CreationDrawer
+              open={creating}
+              onOpenChange={setOpen}
+              busy={saving}
+              title={base === "/lots" ? "Registrar lote" : "Registrar productor"}
+              description={
+                base === "/lots"
+                  ? "Asocia el productor, completa los datos del producto y programa su llegada."
+                  : "Completa la identificación del productor y la ubicación de su operación."
+              }
+              trigger={
+                <Button variant="primary" onPress={() => setOpen(true)}>
+                  <FiPlus aria-hidden="true" /> Registrar {base === "/lots" ? "lote" : "productor"}
+                </Button>
+              }
+            >
+              {createForm(() => setOpen(false), setSaving)}
+            </CreationDrawer>
+          ) : undefined
+        }
       />
-      {mode === "detail" || mode === "edit" ? <nav aria-label={title} className="flex flex-wrap gap-4">
-        <Link className="inline-flex min-h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:bg-default hover:text-foreground" href="/dashboard">
-          Panel empresarial
-        </Link>
-        {canRead ? (
-          <Link className="inline-flex min-h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:bg-default hover:text-foreground" href={base}>
-            Volver al listado
+      {mode === "detail" || mode === "edit" ? (
+        <nav aria-label={title} className="flex flex-wrap gap-4">
+          <Link
+            className="inline-flex min-h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:bg-default hover:text-foreground"
+            href="/dashboard"
+          >
+            Panel empresarial
           </Link>
-        ) : null}
-      </nav> : null}
+          {canRead ? (
+            <Link
+              className="inline-flex min-h-10 items-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:bg-default hover:text-foreground"
+              href={base}
+            >
+              Volver al listado
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
       {children}
     </section>
   );

@@ -8,9 +8,17 @@ import { useCompanyPermissions, useCompanyRoles } from "../hooks";
 
 type Permission = { codigo: string; nombre?: string | null };
 const moduleNames: Record<string, string> = {
-  dashboard: "Panel", empresa: "Empresa", usuarios: "Usuarios", productores: "Productores",
-  lotes: "Lotes", muestreos: "Muestreos", inspecciones: "Inspecciones", evidencias: "Evidencias",
-  suscripcion: "Suscripción", roles: "Roles", recepciones: "Recepciones",
+  dashboard: "Panel",
+  empresa: "Empresa",
+  usuarios: "Usuarios",
+  productores: "Productores",
+  lotes: "Lotes",
+  muestreos: "Muestreos",
+  inspecciones: "Inspecciones",
+  evidencias: "Evidencias",
+  suscripcion: "Suscripción",
+  roles: "Roles",
+  recepciones: "Recepciones",
 };
 
 function PermissionGroups({ permissions }: { permissions: Permission[] }) {
@@ -49,14 +57,22 @@ export function CompanyRoles() {
   const matches = (permission: Permission) =>
     [permission.nombre, permission.codigo].join(" ").toLocaleLowerCase("es").includes(term);
   const available = roles.data?.data ?? [];
-  const visible = available.filter((role) => role.nombre.toLocaleLowerCase("es").includes(term) || role.permisos.some(matches));
+  const visible = available.filter(
+    (role) => role.nombre.toLocaleLowerCase("es").includes(term) || role.permisos.some(matches),
+  );
   const ownPermissions = permissions.data?.data ?? [];
 
   return (
     <section className="space-y-6">
-      <PageHeader title="Roles y permisos" description="Consulta los accesos de cada rol y los permisos habilitados para tu cuenta." />
+      <PageHeader
+        title="Roles y permisos"
+        description="Consulta los accesos de cada rol y los permisos habilitados para tu cuenta."
+      />
       {failed ? (
-        <ErrorState error={failed} retry={() => void Promise.all([roles.refetch(), permissions.refetch()])} />
+        <ErrorState
+          error={failed}
+          retry={() => void Promise.all([roles.refetch(), permissions.refetch()])}
+        />
       ) : roles.isPending || permissions.isPending ? (
         <LoadingState label="Cargando roles y permisos" />
       ) : (
@@ -72,7 +88,9 @@ export function CompanyRoles() {
             </div>
           </div>
           <TextField value={search} onChange={setSearch} className="max-w-lg">
-            <Label className="flex items-center gap-2"><FiSearch aria-hidden="true" /> Buscar rol o permiso</Label>
+            <Label className="flex items-center gap-2">
+              <FiSearch aria-hidden="true" /> Buscar rol o permiso
+            </Label>
             <Input className="w-full" placeholder="Ej. recepción, usuarios o lotes" />
           </TextField>
           <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
@@ -87,25 +105,44 @@ export function CompanyRoles() {
                           <FiShield aria-hidden="true" className="size-5 shrink-0 text-accent" />
                           <span className="min-w-0 flex-1 text-left">
                             <span className="block text-sm font-semibold">{role.nombre}</span>
-                            <span className="mt-1 block text-xs font-normal text-muted">{role.permisos.length} permisos asignados</span>
+                            <span className="mt-1 block text-xs font-normal text-muted">
+                              {role.permisos.length} permisos asignados
+                            </span>
                           </span>
                           <Accordion.Indicator />
                         </Accordion.Trigger>
                       </Accordion.Heading>
                       <Accordion.Panel>
                         <Accordion.Body className="border-t border-border px-5 py-5">
-                          {role.permisos.length ? <PermissionGroups permissions={role.permisos} /> : <p className="text-sm text-muted">Este rol no tiene permisos asignados.</p>}
+                          {role.permisos.length ? (
+                            <PermissionGroups permissions={role.permisos} />
+                          ) : (
+                            <p className="text-sm text-muted">
+                              Este rol no tiene permisos asignados.
+                            </p>
+                          )}
                         </Accordion.Body>
                       </Accordion.Panel>
                     </Accordion.Item>
                   ))}
                 </Accordion>
-              ) : <EmptyState title="No se encontraron roles" description="Prueba con otro nombre o permiso." />}
+              ) : (
+                <EmptyState
+                  title="No se encontraron roles"
+                  description="Prueba con otro nombre o permiso."
+                />
+              )}
             </section>
             <section className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
               <h2 className="text-lg font-semibold">Tus permisos efectivos</h2>
-              <p className="mb-6 mt-1 text-sm text-muted">Acciones que puedes realizar con tu sesión actual.</p>
-              {ownPermissions.filter(matches).length ? <PermissionGroups permissions={ownPermissions.filter(matches)} /> : <p className="text-sm text-muted">No hay permisos que coincidan con la búsqueda.</p>}
+              <p className="mb-6 mt-1 text-sm text-muted">
+                Acciones que puedes realizar con tu sesión actual.
+              </p>
+              {ownPermissions.filter(matches).length ? (
+                <PermissionGroups permissions={ownPermissions.filter(matches)} />
+              ) : (
+                <p className="text-sm text-muted">No hay permisos que coincidan con la búsqueda.</p>
+              )}
             </section>
           </div>
         </>

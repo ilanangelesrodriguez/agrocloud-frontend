@@ -93,7 +93,13 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
           <Label>Peso recibido (kg)</Label>
           <Input max={99999999.99} min={0.01} step="0.01" />
         </TextField>
-        <DateInput required withTime disabled={save.isPending} name="recibido_en" label="Fecha y hora de recepción (hora local)" />
+        <DateInput
+          required
+          withTime
+          disabled={save.isPending}
+          name="recibido_en"
+          label="Fecha y hora de recepción (hora local)"
+        />
         <p className="text-xs text-muted sm:col-span-2">
           Si el peso recibido difiere del peso registrado en el lote, explica el motivo en
           observaciones.
