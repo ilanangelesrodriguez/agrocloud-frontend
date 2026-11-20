@@ -16,6 +16,7 @@ function nameFor(segment: string, parent: string): string {
     lots: "Lotes",
     samplings: "Muestreos",
     inspections: "Inspecciones",
+    notifications: "Notificaciones",
     evidences: "Evidencias",
     reception: "Recepción",
     sampling: "Muestreo",

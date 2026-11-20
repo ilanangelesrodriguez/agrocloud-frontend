@@ -38,6 +38,7 @@ import {
 } from "@/features/company/agricultural/schema";
 import { authorizedIdentity, positiveInteger } from "@/lib/auth/authorized-identity";
 import { isAllowedOrigin, parseJson, reply } from "@/lib/auth/route-utils";
+import { saveInspectionAction } from "@/features/inspections/review-route";
 
 type Context = { params: Promise<{ resource: string[] }> };
 
@@ -159,9 +160,14 @@ export async function GET(request: NextRequest, { params }: Context) {
       request,
       (user) =>
         canManageCompany(user) &&
-        ["empresa.editar", "muestreos.crear", "lotes.ver", "lotes.crear"].some((permission) =>
-          user.permissions.includes(permission),
-        )
+        [
+          "empresa.editar",
+          "muestreos.crear",
+          "lotes.ver",
+          "lotes.crear",
+          "inspecciones.validar",
+          "calidad.clasificar",
+        ].some((permission) => user.permissions.includes(permission))
           ? "/catalogs"
           : null,
       catalog,
@@ -235,6 +241,8 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 }
 
 export async function POST(request: NextRequest, context: Context) {
+  const reviewed = await saveInspectionAction(request, (await context.params).resource, "POST");
+  if (reviewed) return reviewed;
   const [resource, id, action, ...rest] = (await context.params).resource;
 
   if (["catalogs", "sampling-procedures"].includes(resource) && !id) {
@@ -456,6 +464,8 @@ async function saveConfiguration(
   );
 }
 
-export function PATCH(request: NextRequest, context: Context) {
+export async function PATCH(request: NextRequest, context: Context) {
+  const reviewed = await saveInspectionAction(request, (await context.params).resource, "PATCH");
+  if (reviewed) return reviewed;
   return saveConfiguration(request, context, "PATCH");
 }

@@ -71,7 +71,7 @@ export function safeNext(value: string | null | undefined, fallback: string): st
     return fallback;
   }
   if (
-    /^\/(?:dashboard|admin|producers|lots|samplings|inspections|settings\/(?:profile|company|users|roles|catalogs|sampling-procedures|subscription))(?:\/.*)?$/.test(
+    /^\/(?:dashboard|admin|producers|lots|samplings|inspections|notifications|settings\/(?:profile|company|users|roles|catalogs|sampling-procedures|subscription|notifications))(?:\/.*)?$/.test(
       value,
     )
   )

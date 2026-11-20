@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dropdown, Button, Label, Separator, Avatar, Tooltip, toast } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { FiArrowUpRight, FiGlobe, FiLogOut, FiUser } from "react-icons/fi";
+import { FiArrowUpRight, FiBell, FiChevronDown, FiGlobe, FiLogOut, FiUser } from "react-icons/fi";
 
 import type { IdentityUser } from "@/lib/auth/schemas";
 
 import { postAuth } from "@/features/auth/request";
+import { canManageCompany } from "@/features/company/navigation";
 
 const websiteUrl = "/";
 
@@ -45,14 +46,25 @@ export function UserMenu({ user }: { user: IdentityUser }) {
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <Tooltip delay={400} isDisabled={isOpen}>
         <Button
-          isIconOnly
           aria-label={`Abrir menú de ${fullName || user.correo}`}
-          className="size-11 shrink-0 rounded-full border border-accent/20 bg-accent/5 p-1 transition-colors hover:border-accent/50 hover:bg-accent/10 aria-expanded:border-accent/50 aria-expanded:bg-accent/10"
+          className="size-11 min-w-11 shrink-0 gap-0 rounded-full border border-border bg-surface p-1 text-left transition-colors hover:border-accent/40 hover:bg-accent/5 aria-expanded:border-accent/50 md:h-12 md:w-auto md:min-w-0 md:max-w-[19rem] md:shrink md:gap-2 md:rounded-xl md:px-3"
           variant="tertiary"
         >
-          <Avatar className="pointer-events-none size-8 bg-accent/15 text-accent">
+          <Avatar className="pointer-events-none size-8 shrink-0 bg-accent/15 text-accent">
             <Avatar.Fallback className="text-sm font-semibold">{initials || "AC"}</Avatar.Fallback>
           </Avatar>
+          <span className="hidden min-w-0 flex-1 md:block">
+            <span className="block truncate text-sm font-semibold leading-5">
+              {fullName || "Mi cuenta"}
+            </span>
+            <span className="block truncate text-xs font-normal leading-4 text-muted">
+              {user.correo}
+            </span>
+          </span>
+          <FiChevronDown
+            aria-hidden="true"
+            className={`hidden size-3.5 shrink-0 text-muted transition-transform md:block ${isOpen ? "rotate-180" : ""}`}
+          />
         </Button>
         <Tooltip.Content placement="bottom end" className="text-xs">
           Mi cuenta
@@ -87,19 +99,45 @@ export function UserMenu({ user }: { user: IdentityUser }) {
             if (key === "logout") void signOut();
           }}
         >
-          <Dropdown.Item id="profile" className="gap-3 rounded-xl px-3 py-2.5" textValue="Mi perfil">
+          <Dropdown.Item
+            id="profile"
+            className="gap-3 rounded-xl px-3 py-2.5"
+            textValue="Mi perfil"
+          >
             <FiUser aria-hidden="true" className="size-4 shrink-0 text-muted" />
             <Label>Mi perfil</Label>
           </Dropdown.Item>
+          {canManageCompany(user) ? (
+            <Dropdown.Item
+              id="notifications"
+              href="/notifications"
+              className="gap-3 rounded-xl px-3 py-2.5 md:hidden"
+              textValue="Notificaciones"
+            >
+              <FiBell aria-hidden="true" className="size-4 shrink-0 text-muted" />
+              <Label>Notificaciones</Label>
+            </Dropdown.Item>
+          ) : null}
           {websiteUrl ? (
-            <Dropdown.Item id="website" href={websiteUrl} className="gap-3 rounded-xl px-3 py-2.5" textValue="Volver al sitio web">
+            <Dropdown.Item
+              id="website"
+              href={websiteUrl}
+              className="gap-3 rounded-xl px-3 py-2.5"
+              textValue="Volver al sitio web"
+            >
               <FiGlobe aria-hidden="true" className="size-4 shrink-0 text-muted" />
               <Label>Volver al sitio web</Label>
               <FiArrowUpRight aria-hidden="true" className="ml-auto size-3.5 shrink-0 text-muted" />
             </Dropdown.Item>
           ) : null}
           <Separator className="my-1" />
-          <Dropdown.Item id="logout" variant="danger" className="gap-3 rounded-xl px-3 py-2.5" isDisabled={busy} textValue="Cerrar sesión">
+          <Dropdown.Item
+            id="logout"
+            variant="danger"
+            className="gap-3 rounded-xl px-3 py-2.5"
+            isDisabled={busy}
+            textValue="Cerrar sesión"
+          >
             <FiLogOut aria-hidden="true" className="size-4 shrink-0" />
             <Label>{busy ? "Cerrando sesión…" : "Cerrar sesión"}</Label>
           </Dropdown.Item>

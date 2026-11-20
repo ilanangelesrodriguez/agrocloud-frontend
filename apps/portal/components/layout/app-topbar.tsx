@@ -11,6 +11,8 @@ import { ThemeSwitch } from "@/components/theme-switch";
 import { AppBreadcrumbs } from "./breadcrumbs";
 import { MobileNavigation } from "./mobile-navigation";
 import { UserMenu } from "./user-menu";
+import { NotificationBell } from "@/features/notifications/components/notification-bell";
+import { canManageCompany } from "@/features/company/navigation";
 
 export function AppTopbar({
   sections,
@@ -49,11 +51,16 @@ export function AppTopbar({
           <FiChevronsLeft aria-hidden="true" className="size-5" />
         )}
       </Button>
-      <div className="min-w-0 flex-1 overflow-hidden">
+      <div className="hidden min-w-0 flex-1 overflow-hidden md:block">
         <AppBreadcrumbs admin={user.rol?.codigo === "SUPERADMIN"} pathname={pathname} />
       </div>
-      <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+      <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2 md:flex-none">
         <ThemeSwitch />
+        {canManageCompany(user) ? (
+          <div className="hidden md:block">
+            <NotificationBell />
+          </div>
+        ) : null}
         <UserMenu user={user} />
       </div>
     </header>

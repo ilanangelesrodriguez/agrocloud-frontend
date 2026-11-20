@@ -4,6 +4,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import {
   FiBriefcase,
+  FiBell,
   FiClipboard,
   FiCreditCard,
   FiGrid,
@@ -29,6 +30,7 @@ const iconMap = {
   profile: FiSettings,
   roles: FiShield,
   subscription: FiLayers,
+  notifications: FiBell,
 } satisfies Record<NavigationIcon, typeof FiGrid>;
 
 export function SidebarItem({

@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-export type BffScope = "admin" | "company" | "agricultural";
+export type BffScope = "admin" | "company" | "agricultural" | "notifications";
 
 export class ApiError extends Error {
   constructor(

@@ -12,7 +12,8 @@ export type NavigationIcon =
   | "plans"
   | "profile"
   | "roles"
-  | "subscription";
+  | "subscription"
+  | "notifications";
 
 export type NavigationItem = {
   href: string;
@@ -51,6 +52,7 @@ const settingsIcons: Record<(typeof settingsLinks)[number]["href"], NavigationIc
   "/settings/catalogs": "lots",
   "/settings/sampling-procedures": "requests",
   "/settings/subscription": "subscription",
+  "/settings/notifications": "notifications",
 };
 
 export function navigationFor(user: IdentityUser): NavigationSection[] {
@@ -69,6 +71,7 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
     .map(({ href, label, icon }) => ({ href, label, icon }));
 
   const settings: NavigationItem[] = settingsLinks
+    .filter(({ href }) => href !== "/settings/notifications")
     .filter((setting) => canAccessSetting(user, setting))
     .map(({ href, label }) => ({ href, label, icon: settingsIcons[href] }));
 
@@ -76,7 +79,11 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
     { title: "Operaciones", items: agricultural },
     {
       title: "Cuenta y empresa",
-      items: [{ href: "/settings/profile", label: "Mi perfil", icon: "profile" }, ...settings],
+      items: [
+        { href: "/settings/profile", label: "Mi perfil", icon: "profile" },
+        { href: "/notifications", label: "Notificaciones", icon: "notifications" },
+        ...settings,
+      ],
     },
   ];
 

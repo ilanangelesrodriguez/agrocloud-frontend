@@ -54,3 +54,35 @@ Límites del contrato actual, sin cambios al backend:
   únicamente procedimientos activos del producto o sin producto específico.
 - El límite de frutos configurado en el servicio sigue siendo la autoridad; sus
   validaciones se muestran en el formulario. No se crean datos iniciales automáticamente.
+
+## Notificaciones empresariales
+
+`/notifications` ofrece la bandeja paginada por cursor, filtros de lectura y marcado
+individual o completo. La campana del navbar consulta el contador cada 30 segundos,
+sin polling en segundo plano. `/settings/notifications` permite guardar preferencias
+de avisos opcionales y correo; los avisos críticos y de seguridad no se silencian.
+El BFF `/api/notifications/[[...resource]]` utiliza la misma sesión renovable y el
+Gateway, con una lista cerrada de operaciones, UUID y paginación validados.
+
+Los destinos históricos `/lotes/{id}`, `/notificaciones` y `/suscripcion` se adaptan
+a rutas del portal al abrir el aviso. Solo se aceptan destinos internos conocidos.
+No se exponen endpoints internos de eventos ni credenciales de SMTP o de servicios.
+La emisión de eventos, los workers y la entrega SMTP siguen dependiendo de la
+configuración existente del backend; esta integración no los cambia ni genera avisos ficticios.
+
+## Revisión humana, IA y dictamen
+
+La vista de evidencias conserva resultados IA, regiones de detección, confianza,
+validaciones humanas y hallazgos manuales. Integra las acciones de decidir detecciones,
+guardar revisión, descartar evidencia y cancelar análisis pendientes con justificación.
+Las regiones se dibujan sobre la fotografía original; el listado permite recorrer
+todas las detecciones conservando su índice original.
+
+El inspector asignado con `inspecciones.validar` puede registrar hallazgos de maestros,
+revisar las imágenes y validar la inspección. Se muestra cobertura de frutos y revisión
+de evidencias; el backend verifica el cierre y la vigencia de cada revisión.
+El supervisor independiente con `calidad.clasificar` puede emitir el dictamen desde
+el resumen de la inspección: aprobar, rechazar u observar, con protocolo y fundamento.
+Las correcciones documentales referencian el último dictamen. La reinspección creada
+por el backend se continúa desde el muestreo; los dictámenes finales no se sobrescriben.
+Las mutaciones invalidan las consultas afectadas para reflejar estados y revisiones.

@@ -7,6 +7,7 @@ export const settingsLinks = [
   { href: "/settings/catalogs", label: "Maestros", permission: "empresa.editar" },
   { href: "/settings/sampling-procedures", label: "Procedimientos", permission: "empresa.editar" },
   { href: "/settings/subscription", label: "Suscripción", permission: "suscripciones.ver" },
+  { href: "/settings/notifications", label: "Notificaciones", permission: "" },
 ] as const;
 
 export function canManageCompany(user: IdentityUser | undefined, permission?: string) {
@@ -30,7 +31,9 @@ export function canAccessSetting(
   user: IdentityUser | undefined,
   setting: (typeof settingsLinks)[number],
 ) {
-  return setting.href === "/settings/sampling-procedures"
-    ? canReadProcedures(user)
-    : canManageCompany(user, setting.permission);
+  return setting.href === "/settings/notifications"
+    ? canManageCompany(user)
+    : setting.href === "/settings/sampling-procedures"
+      ? canReadProcedures(user)
+      : canManageCompany(user, setting.permission);
 }

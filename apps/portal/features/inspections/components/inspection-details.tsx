@@ -8,6 +8,7 @@ import { canManageCompany } from "@/features/company/navigation";
 import { InspectionEvidence } from "@/features/evidences/components/inspection-evidence";
 import { useInspectionDetails } from "../hooks";
 import { OperationNavigation } from "@/features/agricultural/shared/operation-navigation";
+import { InspectionClosure } from "./inspection-closure";
 
 export function InspectionDetails({
   id,
@@ -129,6 +130,13 @@ export function InspectionDetails({
                 canManageCompany(actor, "inspecciones.analizar")
               }
               canReadFruits={canManageCompany(actor, "muestreos.ver")}
+              canReview={
+                value.estado === "EN_CAPTURA" &&
+                (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
+                actor?.rol?.codigo === "INSPECTOR" &&
+                canManageCompany(actor, "inspecciones.validar")
+              }
+              findings={value.hallazgos ?? []}
               canUpload={
                 value.estado === "EN_CAPTURA" &&
                 (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
@@ -139,6 +147,16 @@ export function InspectionDetails({
               photos={value.evidencias ?? []}
               sampling={value.id_muestreo}
             />
+          )}
+          {view === "overview" ? (
+            <InspectionClosure key={id} inspection={value} actor={actor} />
+          ) : (
+            <Link
+              href={`/inspections/${id}`}
+              className="inline-flex min-h-11 items-center rounded-xl border border-border px-4 text-sm font-medium text-accent"
+            >
+              Continuar a validación y dictamen
+            </Link>
           )}
         </>
       ) : null}

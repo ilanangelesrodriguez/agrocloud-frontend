@@ -6,7 +6,8 @@ export async function identityRequest(
     body?: unknown;
     accessToken?: string;
     page?: number;
-    service?: "identity" | "agricultural";
+    service?: "identity" | "agricultural" | "notifications";
+    notificationQuery?: { limit: number; cursor?: string; unread?: boolean };
     catalogType?:
       "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
     idempotencyKey?: string;
@@ -26,13 +27,24 @@ export async function identityRequest(
   ) {
     throw new Error("AGROCLOUD_GATEWAY_URL es inválida.");
   }
-  if (!/^\/[a-zA-Z0-9/-]+$/.test(path) || path.includes("//") || path.includes("..")) {
+  if (
+    (path !== "/" && !/^\/[a-zA-Z0-9/-]+$/.test(path)) ||
+    path.includes("//") ||
+    path.includes("..")
+  ) {
     throw new Error("Ruta de Identity no autorizada.");
   }
   const url = new URL(`/api/v1/${options.service ?? "identity"}${path}`, base.origin);
 
   if (options.page !== undefined) url.searchParams.set("page", String(options.page));
   if (options.catalogType) url.searchParams.set("tipo", options.catalogType);
+  if (options.notificationQuery) {
+    url.searchParams.set("limit", String(options.notificationQuery.limit));
+    if (options.notificationQuery.cursor)
+      url.searchParams.set("cursor", options.notificationQuery.cursor);
+    if (options.notificationQuery.unread !== undefined)
+      url.searchParams.set("unread", String(options.notificationQuery.unread));
+  }
   const multipart = options.body instanceof FormData ? options.body : undefined;
 
   return fetch(url, {

@@ -7,6 +7,7 @@ import { attachSession, sessionFromRequest } from "./cookie-session";
 import { identityRequest } from "./gateway";
 import { remoteError, reply } from "./route-utils";
 import { ensureAccess, fetchIdentityUser } from "./session-service";
+import { agriculturalErrorMessage } from "@/features/agricultural/errors";
 
 export function positiveInteger(value: string) {
   return /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value));
@@ -53,16 +54,21 @@ export async function authorizedIdentity(
       if (upstream.status === 404)
         return finish(reply({ message: "Registro no encontrado." }, 404));
       if (upstream.status === 409) {
+        const payload =
+          options.service === "agricultural" ? await upstream.json().catch(() => null) : null;
+        const agriculturalMessage = agriculturalErrorMessage(payload?.message);
         return finish(
           reply(
             {
-              message: path.startsWith("/billing-offers")
-                ? "Esta oferta fue modificada por otro administrador. Actualiza la información antes de guardar."
-                : path === "/subscription/orders"
-                  ? "Ya existe una orden pendiente o la oferta dejó de aplicar a tu suscripción."
-                  : options.service === "agricultural" && path === "/sampling-procedures"
-                    ? "Ya existe un procedimiento con ese nombre y versión. Ingresa una versión diferente."
-                    : "El registro cambió. Actualiza la página antes de continuar.",
+              message:
+                agriculturalMessage ??
+                (path.startsWith("/billing-offers")
+                  ? "Esta oferta fue modificada por otro administrador. Actualiza la información antes de guardar."
+                  : path === "/subscription/orders"
+                    ? "Ya existe una orden pendiente o la oferta dejó de aplicar a tu suscripción."
+                    : options.service === "agricultural" && path === "/sampling-procedures"
+                      ? "Ya existe un procedimiento con ese nombre y versión. Ingresa una versión diferente."
+                      : "El registro cambió. Actualiza la página antes de continuar."),
             },
             409,
           ),
@@ -82,14 +88,19 @@ export async function authorizedIdentity(
           payload?.message === "Producer RUC already exists in this company."
             ? "Ya existe un productor con este RUC en tu empresa."
             : undefined;
+        const agriculturalMessage =
+          options.service === "agricultural"
+            ? agriculturalErrorMessage(payload?.message)
+            : undefined;
 
         return finish(
           reply(
             {
               message:
                 firstError ??
+                agriculturalMessage ??
                 message ??
-                "Identity no permite completar esta operación con los datos o el estado actuales.",
+                "No se permite completar esta operación con los datos o el estado actuales.",
             },
             422,
           ),
@@ -134,7 +145,9 @@ export async function authorizedIdentity(
                 message:
                   options.service === "agricultural"
                     ? "Agricultural devolvió una respuesta inesperada."
-                    : "Identity devolvió una respuesta inesperada.",
+                    : options.service === "notifications"
+                      ? "El servicio de notificaciones devolvió una respuesta inesperada."
+                      : "Identity devolvió una respuesta inesperada.",
               },
               502,
             ),

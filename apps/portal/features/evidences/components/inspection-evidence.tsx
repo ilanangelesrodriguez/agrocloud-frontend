@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import type { z } from "zod";
 
 import { useState } from "react";
-import { Button, Input, Label, ListBox, Select, toast } from "@heroui/react";
+import { Button, Checkbox, Input, Label, ListBox, Select, toast } from "@heroui/react";
 import {
   EmptyState,
   ErrorState,
@@ -18,6 +18,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { evidence, evidenceMaxBytes, evidenceTypes } from "../schema";
 import { uploadEvidence, analyzeEvidence } from "../api";
 import { useEvidenceFruits } from "../hooks";
+import { EvidenceReview } from "./evidence-review";
+import type { aiDetection, manualFinding } from "@/features/agricultural/inspection";
 
 export function InspectionEvidence({
   id,
@@ -26,6 +28,8 @@ export function InspectionEvidence({
   canUpload,
   canAnalyze,
   canReadFruits,
+  canReview,
+  findings,
 }: {
   id: string;
   sampling: number;
@@ -33,6 +37,8 @@ export function InspectionEvidence({
   canUpload: boolean;
   canAnalyze: boolean;
   canReadFruits: boolean;
+  canReview: boolean;
+  findings: z.infer<typeof manualFinding>[];
 }) {
   const cache = useQueryClient();
   const [page, setPage] = useState(1);
@@ -233,11 +239,22 @@ export function InspectionEvidence({
           )}
           {analyze.error ? <FormNotice message={analyze.error.message} /> : null}
           {current ? (
-            <EvidencePreview
-              key={current.id_evidencia}
-              id={current.id_evidencia}
-              fruit={current.id_fruto}
-            />
+            <>
+              <EvidencePreview
+                key={current.id_evidencia}
+                id={current.id_evidencia}
+                fruit={current.id_fruto}
+                detections={current.resultado_ia?.detections ?? []}
+              />
+              <EvidenceReview
+                key={"review-" + current.id_evidencia}
+                inspectionId={id}
+                photo={current}
+                findings={findings}
+                canReview={canReview}
+                canAnalyze={canAnalyze}
+              />
+            </>
           ) : null}
         </div>
       </div>
@@ -245,9 +262,19 @@ export function InspectionEvidence({
   );
 }
 
-function EvidencePreview({ id, fruit }: { id: number; fruit: number }) {
+function EvidencePreview({
+  id,
+  fruit,
+  detections,
+}: {
+  id: number;
+  fruit: number;
+  detections: z.infer<typeof aiDetection>[];
+}) {
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
+  const [showRegions, setShowRegions] = useState(true);
   if (failed)
     return (
       <ErrorState
@@ -261,6 +288,16 @@ function EvidencePreview({ id, fruit }: { id: number; fruit: number }) {
     );
   return (
     <figure className="space-y-3">
+      {detections.length ? (
+        <Checkbox isSelected={showRegions} onChange={setShowRegions}>
+          <Checkbox.Content>
+            <Checkbox.Control>
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+            <Label>Mostrar regiones detectadas por IA</Label>
+          </Checkbox.Content>
+        </Checkbox>
+      ) : null}
       <div className="relative flex min-h-96 items-center justify-center overflow-hidden rounded-xl bg-surface-secondary">
         {loading ? (
           <div className="absolute inset-0">
@@ -277,15 +314,60 @@ function EvidencePreview({ id, fruit }: { id: number; fruit: number }) {
           alt={`Evidencia #${id} del fruto ${fruit}`}
           className="max-h-[36rem] w-full object-contain"
           src={`/api/agricultural/evidences/${id}/image`}
-          onLoad={() => setLoading(false)}
+          onLoad={(event) => {
+            setLoading(false);
+            setDimensions({
+              width: event.currentTarget.naturalWidth,
+              height: event.currentTarget.naturalHeight,
+            });
+          }}
           onError={() => {
             setLoading(false);
             setFailed(true);
           }}
         />
+        {showRegions && dimensions && !loading ? (
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            {detections.slice(0, 100).map((detection, index) => (
+              <g key={detection.id}>
+                <rect
+                  x={detection.box.x1}
+                  y={detection.box.y1}
+                  width={Math.max(0, detection.box.x2 - detection.box.x1)}
+                  height={Math.max(0, detection.box.y2 - detection.box.y1)}
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth={Math.max(2, dimensions.width / 350)}
+                />
+                <text
+                  x={detection.box.x1 + 4}
+                  y={Math.max(dimensions.width / 40, detection.box.y1 + dimensions.width / 40)}
+                  fill="var(--accent)"
+                  stroke="var(--background)"
+                  strokeWidth={1}
+                  paintOrder="stroke"
+                  fontWeight="bold"
+                  fontSize={Math.max(14, dimensions.width / 40)}
+                >
+                  {index + 1}
+                </text>
+              </g>
+            ))}
+          </svg>
+        ) : null}
       </div>
       <figcaption className="text-sm text-muted">
         Evidencia #{id} · Fruto #{fruit}
+        {detections.length > 100
+          ? " · Se muestran las primeras 100 regiones; todas las detecciones están disponibles en el listado de revisión."
+          : detections.length
+            ? " · Los números corresponden al listado de detecciones."
+            : ""}
       </figcaption>
     </figure>
   );
