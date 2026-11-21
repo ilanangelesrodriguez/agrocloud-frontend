@@ -418,6 +418,7 @@ export function PaymentCheckout({ order, onDone }: { order: CheckoutOrder; onDon
       window.Culqi3DS?.reset();
       toast.success("Pago confirmado y suscripción actualizada.");
       void cache.invalidateQueries({ queryKey: ["company", "subscription"] });
+      void cache.invalidateQueries({ queryKey: ["notifications"] });
     }
   }, [status.data?.status, cache]);
 

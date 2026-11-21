@@ -67,7 +67,7 @@ function PreferencesEditor({ initial }: { initial: NotificationPreferences }) {
       <InlineNotice
         status="accent"
         title="Avisos importantes"
-        description="Los avisos críticos y de seguridad permanecen activos. El correo se entrega cuando el servicio de envío está habilitado para tu empresa."
+        description="Los avisos importantes permanecen en tu bandeja. Los correos de seguridad y las confirmaciones de activación o compra se mantienen activos; los demás dependen de tu preferencia. El envío requiere que el servicio de correo esté habilitado."
       />
       <div className="divide-y divide-border rounded-2xl border border-border bg-surface px-5">
         <div className="py-5">

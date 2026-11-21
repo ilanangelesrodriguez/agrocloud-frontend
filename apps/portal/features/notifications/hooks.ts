@@ -21,6 +21,9 @@ export function useNotifications(unread: boolean, enabled: boolean) {
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled,
     retry: false,
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
   });
 }
 export function useReadNotification() {
