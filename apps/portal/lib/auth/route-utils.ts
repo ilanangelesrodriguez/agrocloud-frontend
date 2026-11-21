@@ -66,16 +66,8 @@ export function isAllowedOrigin(request: NextRequest): boolean {
 
   if (!origin) return true;
 
-  const configured = process.env.PORTAL_PUBLIC_ORIGIN;
-
-  if (!configured && process.env.NODE_ENV === "production") {
-    return false;
-  }
-
   try {
-    const expected = configured ? new URL(configured).origin : request.nextUrl.origin;
-
-    return origin === expected;
+    return new URL(origin).origin === request.nextUrl.origin;
   } catch {
     return false;
   }
