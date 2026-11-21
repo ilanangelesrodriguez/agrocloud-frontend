@@ -18,6 +18,7 @@ import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 import { useCompanyProfile } from "../hooks";
 import { CompanyEditor } from "./company-editor";
+import { CompanyLogoEditor } from "./company-logo-editor";
 
 export function CompanyProfile() {
   const { data: actor } = useCurrentUser();
@@ -66,6 +67,7 @@ export function CompanyProfile() {
       ) : profile ? (
         <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-6">
+            <CompanyLogoEditor logoUrl={profile.logo_url} companyName={profile.razon_social} canEdit={canEdit} />
             <section className="min-w-0 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <span className="rounded-2xl bg-accent/10 p-4 text-accent">

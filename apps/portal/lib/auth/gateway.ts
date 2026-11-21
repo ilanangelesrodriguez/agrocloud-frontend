@@ -2,7 +2,7 @@
 export async function identityRequest(
   path: string,
   options: {
-    method?: "GET" | "POST" | "PATCH" | "PUT";
+    method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
     body?: unknown;
     accessToken?: string;
     page?: number;
@@ -27,6 +27,8 @@ export async function identityRequest(
       producer_id?: string;
       model_id?: string;
     };
+    geoQuery?: { level: "departamento" | "provincia" | "distrito"; parent?: string };
+    rucLookup?: string;
     catalogType?:
       "producto" | "variedad" | "unidad" | "metodo" | "defecto" | "categoria" | "motivo";
     idempotencyKey?: string;
@@ -69,6 +71,11 @@ export async function identityRequest(
       if (value) url.searchParams.set(key, value);
     }
   if (options.catalogType) url.searchParams.set("tipo", options.catalogType);
+  if (options.geoQuery) {
+    url.searchParams.set("level", options.geoQuery.level);
+    if (options.geoQuery.parent) url.searchParams.set("parent", options.geoQuery.parent);
+  }
+  if (options.rucLookup) url.searchParams.set("ruc", options.rucLookup);
   if (options.notificationQuery) {
     url.searchParams.set("limit", String(options.notificationQuery.limit));
     if (options.notificationQuery.cursor)

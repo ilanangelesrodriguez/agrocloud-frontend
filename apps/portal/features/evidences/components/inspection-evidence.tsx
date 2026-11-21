@@ -5,7 +5,7 @@ import type { FormEvent } from "react";
 import type { z } from "zod";
 
 import { useEffect, useRef, useState } from "react";
-import { Button, Checkbox, Input, Label, toast } from "@heroui/react";
+import { Button, Checkbox, Input, Label, ListBox, Select, toast } from "@heroui/react";
 import {
   EmptyState,
   ErrorState,
@@ -503,29 +503,23 @@ function MultipleEvidenceUpload({
           <li key={row.key} className="space-y-2 rounded-xl border border-border p-3">
             <PreparedPreview file={row.file} />
             <p className="break-all text-sm">{row.file.name}</p>
-            <label className="grid gap-1 text-sm">
-              Fruto asociado a {row.file.name}
-              <select
-                className="w-full rounded-lg border border-border bg-surface p-2"
-                value={row.fruit}
-                disabled={disabled || !!row.evidenceId}
-                onChange={(event) => {
-                  setConfirmed(false);
-                  setRows((current) =>
-                    current.map((item) =>
-                      item.key === row.key ? { ...item, fruit: event.target.value } : item,
-                    ),
-                  );
-                }}
-              >
-                <option value="">Selecciona un fruto</option>
+            <Select value={row.fruit || null} placeholder="Selecciona un fruto"
+              isDisabled={disabled || !!row.evidenceId}
+              onChange={(value) => {
+                setConfirmed(false);
+                setRows((current) => current.map((item) =>
+                  item.key === row.key ? { ...item, fruit: String(value ?? "") } : item));
+              }}>
+              <Label>Fruto asociado a {row.file.name}</Label>
+              <Select.Trigger className="min-h-11 w-full"><Select.Value /><Select.Indicator /></Select.Trigger>
+              <Select.Popover><ListBox aria-label="Frutos de la muestra">
                 {options.map((item) => (
-                  <option key={item.id} value={String(item.id)}>
+                  <ListBox.Item key={item.id} id={String(item.id)} textValue={item.codigo ?? "Fruto " + item.numero}>
                     {item.codigo ?? "Fruto " + item.numero}
-                  </option>
+                  </ListBox.Item>
                 ))}
-              </select>
-            </label>
+              </ListBox></Select.Popover>
+            </Select>
             <p className="text-sm" role="status">
               {row.status === "uploaded"
                 ? "Registrada como evidencia #" + row.evidenceId

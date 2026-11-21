@@ -25,6 +25,8 @@ import { postAuth } from "../request";
 import { AuthField } from "./auth-field";
 import { FormFeedback } from "./form-feedback";
 import { SubmitButton } from "./submit-button";
+import { ProfileEditor } from "./profile-editor";
+import { PasswordEditor } from "./password-editor";
 
 export function AccountProfile() {
   const { data: user } = useCurrentUser();
@@ -111,6 +113,7 @@ export function AccountProfile() {
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
         <aside className="min-w-0 rounded-2xl border border-border bg-surface p-6 shadow-sm">
           <Avatar className="mb-5 size-20 text-2xl">
+            {user.foto_perfil_url ? <Avatar.Image src={user.foto_perfil_url} alt="Foto de perfil" /> : null}
             <Avatar.Fallback>{initials}</Avatar.Fallback>
           </Avatar>
           <h2 className="break-words text-xl font-semibold [overflow-wrap:anywhere]">
@@ -155,6 +158,8 @@ export function AccountProfile() {
           </dl>
         </aside>
         <div className="min-w-0 space-y-5">
+          <ProfileEditor user={user} />
+          <PasswordEditor />
           <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
             <div className="mb-6 flex items-center gap-3">
               <span className="rounded-xl bg-accent/10 p-3 text-accent">

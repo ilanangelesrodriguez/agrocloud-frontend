@@ -82,6 +82,23 @@ export async function GET(request: NextRequest, { params }: Context) {
     );
   }
   const [resource, id, ...rest] = (await params).resource;
+  if (resource === "geo" && id === undefined) {
+    const level = z.enum(["departamento", "provincia", "distrito"]).safeParse(request.nextUrl.searchParams.get("level"));
+    const parent = request.nextUrl.searchParams.get("parent") ?? undefined;
+    if (!level.success || (parent && !/^\d{2}(\d{2})?$/.test(parent))) return reply({ message: "Ubicación inválida." }, 422);
+    return authorizedIdentity(request, (user) => canManageCompany(user) ? "/geo" : null,
+      z.object({ data: z.array(z.object({ code: z.string(), name: z.string() })) }),
+      { service: "agricultural", geoQuery: { level: level.data, parent }, operation: "agricultural.geo" });
+  }
+  if (resource === "producer-lookup" && id === undefined) {
+    const ruc = request.nextUrl.searchParams.get("ruc") ?? "";
+    if (!/^\d{11}$/.test(ruc)) return reply({ message: "RUC inválido." }, 422);
+    return authorizedIdentity(request, (user) => canManageCompany(user) &&
+      ["productores.ver", "productores.crear", "productores.editar"].some(p => user.permissions.includes(p))
+      ? "/producers/ruc-lookup" : null,
+      z.object({ ruc: z.string(), resultado: z.string(), razon_social: z.string().nullable(), estado: z.string().nullable(), condicion: z.string().nullable() }),
+      { service: "agricultural", rucLookup: ruc, operation: "agricultural.producer.lookup" });
+  }
   if (resource === "catalogs" && id === "admin" && !rest.length) {
     const type = catalogType.safeParse(request.nextUrl.searchParams.get("tipo"));
     if (!type.success) return reply({ message: "Catálogo inválido." }, 422);

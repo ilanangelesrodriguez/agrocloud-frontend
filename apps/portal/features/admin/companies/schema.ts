@@ -12,8 +12,13 @@ export const companySchema = z.object({
   nombre_comercial: nullableText,
   tipo_empresa: nullableText,
   direccion: nullableText,
+  departamento: nullableText,
+  provincia: nullableText,
+  distrito: nullableText,
+  ubigeo: nullableText,
   correo: nullableText,
   telefono: nullableText,
+  logo_url: nullableText,
   estado: z.union([z.string(), z.boolean()]),
   sunat_verificacion: verification,
 });

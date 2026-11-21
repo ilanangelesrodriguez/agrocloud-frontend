@@ -51,6 +51,7 @@ export function UserMenu({ user }: { user: IdentityUser }) {
           variant="tertiary"
         >
           <Avatar className="pointer-events-none size-8 shrink-0 bg-accent/15 text-accent">
+            {user.foto_perfil_url ? <Avatar.Image src={user.foto_perfil_url} alt="" /> : null}
             <Avatar.Fallback className="text-sm font-semibold">{initials || "AC"}</Avatar.Fallback>
           </Avatar>
           <span className="hidden min-w-0 flex-1 md:block">
@@ -77,6 +78,7 @@ export function UserMenu({ user }: { user: IdentityUser }) {
       >
         <div className="flex items-center gap-3 rounded-xl bg-accent/5 px-3 py-4">
           <Avatar className="size-11 shrink-0 bg-accent/15 text-accent">
+            {user.foto_perfil_url ? <Avatar.Image src={user.foto_perfil_url} alt="" /> : null}
             <Avatar.Fallback className="font-semibold">{initials || "AC"}</Avatar.Fallback>
           </Avatar>
           <div className="min-w-0 flex-1">
