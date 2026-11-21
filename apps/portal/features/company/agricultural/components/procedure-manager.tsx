@@ -4,7 +4,7 @@ import { invalidateOperationalQueries } from "@/features/agricultural/shared/inv
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Chip, Input, Label, TextField, toast } from "@heroui/react";
+import { Button, Chip, Input, Label, TextField, toast, FieldError } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FiPlus, FiCopy } from "react-icons/fi";
 import {
@@ -113,6 +113,7 @@ export function ProcedureManager({
           </div>
           <div className="grid items-end gap-4 md:grid-cols-[2fr_1fr_1fr]">
             <TextField
+              variant="secondary"
               value={search}
               onChange={(value) => {
                 setSearch(value);
@@ -120,7 +121,8 @@ export function ProcedureManager({
               }}
             >
               <Label>Buscar procedimiento</Label>
-              <Input placeholder="Nombre, versión, producto o método" />
+              <Input variant="secondary" placeholder="Nombre, versión, producto o método" />
+              <FieldError />
             </TextField>
             <CatalogSelect
               label="Estado"
@@ -166,7 +168,7 @@ export function ProcedureManager({
               }
             />
           ) : (
-            <>
+            <div className="paginated-content">
               <div className="grid gap-4 xl:grid-cols-2">
                 {rows.slice((current - 1) * 12, current * 12).map((item) => (
                   <article
@@ -217,7 +219,7 @@ export function ProcedureManager({
                 ))}
               </div>
               <PagePagination page={current} last={last} onChange={setPage} />
-            </>
+            </div>
           )}
         </>
       )}

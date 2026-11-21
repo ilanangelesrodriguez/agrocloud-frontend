@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Button, Label, Switch, toast } from "@heroui/react";
+import { Button, Label, Switch, toast, Form } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ErrorState, FormNotice, InlineNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -57,7 +57,8 @@ function PreferencesEditor({ initial }: { initial: NotificationPreferences }) {
     },
   });
   return (
-    <form
+    <Form
+      validationBehavior="native"
       className="max-w-3xl space-y-6"
       onSubmit={(event) => {
         event.preventDefault();
@@ -107,6 +108,6 @@ function PreferencesEditor({ initial }: { initial: NotificationPreferences }) {
       <Button type="submit" variant="primary" isDisabled={save.isPending}>
         {save.isPending ? "Guardando…" : "Guardar preferencias"}
       </Button>
-    </form>
+    </Form>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import { fieldErrorsFrom } from "@/lib/form-fields";
 
 import { FiSave } from "react-icons/fi";
 
@@ -8,7 +9,7 @@ import { useState } from "react";
 import { usePanelBusy } from "@/components/route-drawer";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Checkbox, Label, ListBox, Select, toast } from "@heroui/react";
+import { Button, Checkbox, Label, ListBox, Select, toast, Form, FieldError } from "@heroui/react";
 import { EmptyState, FormNotice, InlineNotice, PagePagination } from "@agrocloud/ui";
 import { editUserSchema, inviteUserSchema } from "@/features/company/users/schema";
 import type { UserPolicy } from "../policy";
@@ -38,6 +39,7 @@ export function SharedUserForm({
   const [role, setRole] = useState(user?.rol?.id_rol ?? null);
   const [active, setActive] = useState(user?.estado ?? false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [action, setAction] = useState<"save" | "resend">("save");
   const canEditStatus = Boolean(
     user &&
@@ -105,6 +107,7 @@ export function SharedUserForm({
         });
 
     if (!parsed.success) {
+      setFieldErrors(fieldErrorsFrom(parsed.error.issues));
       setError(parsed.error.issues[0]?.message ?? "Revisa los datos.");
 
       return;
@@ -119,6 +122,7 @@ export function SharedUserForm({
     )
       return;
     setError("");
+    setFieldErrors({});
     setAction("save");
     mutation.mutate({
       kind: "save",
@@ -140,7 +144,13 @@ export function SharedUserForm({
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <Form
+      onInputCapture={() => setFieldErrors({})}
+      validationErrors={fieldErrors}
+      validationBehavior="native"
+      className="grid gap-4"
+      onSubmit={submit}
+    >
       <fieldset className="grid gap-4" disabled={mutation.isPending}>
         <legend className="mb-2 font-semibold">
           {user ? "Editar usuario" : "Datos de la invitación"}
@@ -163,10 +173,16 @@ export function SharedUserForm({
         {policy.requireCompanyForInvitation && !user ? (
           <div className="space-y-2">
             <Select
+              variant="secondary"
               isDisabled={mutation.isPending || companies.isPending}
+              name="id_empresa"
+              isRequired
               placeholder="Selecciona una empresa"
               value={companyId === null ? null : String(companyId)}
-              onChange={(value) => setCompanyId(value ? Number(value) : null)}
+              onChange={(value) => {
+                setFieldErrors({});
+                setCompanyId(value ? Number(value) : null);
+              }}
             >
               <Label>Empresa</Label>
               <Select.Trigger>
@@ -188,6 +204,7 @@ export function SharedUserForm({
                     ))}
                 </ListBox>
               </Select.Popover>
+              <FieldError />
             </Select>
             {companies.isError ? (
               <div className="space-y-2">
@@ -236,10 +253,16 @@ export function SharedUserForm({
           </div>
         ) : (
           <Select
+            variant="secondary"
             isDisabled={roles.isPending || mutation.isPending}
+            name="id_rol"
+            isRequired
             placeholder="Selecciona un rol"
             value={role === null ? null : String(role)}
-            onChange={(value) => setRole(value ? Number(value) : null)}
+            onChange={(value) => {
+              setFieldErrors({});
+              setRole(value ? Number(value) : null);
+            }}
           >
             <Label>Rol</Label>
             <Select.Trigger className="min-h-11 w-full">
@@ -261,6 +284,7 @@ export function SharedUserForm({
                   ))}
               </ListBox>
             </Select.Popover>
+            <FieldError />
           </Select>
         )}
         {canEditStatus ? (
@@ -306,6 +330,6 @@ export function SharedUserForm({
           </Button>
         ) : null}
       </div>
-    </form>
+    </Form>
   );
 }

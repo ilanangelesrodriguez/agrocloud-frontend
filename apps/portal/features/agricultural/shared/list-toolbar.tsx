@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input, Label, ListBox, Select, TextField } from "@heroui/react";
+import { Button, Input, Label, ListBox, Select, TextField, FieldError } from "@heroui/react";
 
 export function ListToolbar({
   search,
@@ -23,13 +23,15 @@ export function ListToolbar({
 }) {
   return (
     <div className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto]">
-      <TextField className="w-full" value={search} onChange={onSearchChange}>
+      <TextField variant="secondary" className="w-full" value={search} onChange={onSearchChange}>
         <Label>Buscar en la página cargada</Label>
-        <Input className="w-full" placeholder={placeholder} />
+        <Input variant="secondary" className="w-full" placeholder={placeholder} />
+        <FieldError />
       </TextField>
       <div className="flex flex-wrap items-end gap-2">
         {onStatusChange ? (
           <Select
+            variant="secondary"
             aria-label="Filtrar por estado"
             className="min-w-44"
             placeholder="Todos los estados"
@@ -53,6 +55,7 @@ export function ListToolbar({
                 ))}
               </ListBox>
             </Select.Popover>
+            <FieldError />
           </Select>
         ) : null}
         <Button isDisabled={refreshing} size="sm" variant="secondary" onPress={onRefresh}>

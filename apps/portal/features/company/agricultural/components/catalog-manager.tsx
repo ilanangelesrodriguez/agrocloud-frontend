@@ -4,7 +4,7 @@ import { invalidateOperationalQueries } from "@/features/agricultural/shared/inv
 import type { FormEvent } from "react";
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Chip, Input, Label, TextField, toast } from "@heroui/react";
+import { Button, Chip, Input, Label, TextField, toast, FieldError, Form } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FiArrowRight, FiPlus } from "react-icons/fi";
 import {
@@ -130,10 +130,16 @@ export function CatalogManager({ type }: { type: CatalogType }) {
                 </Button>
               }
             >
-              <form onSubmit={submit} className="space-y-5">
-                <TextField isRequired name="nombre" isDisabled={create.isPending}>
+              <Form validationBehavior="native" onSubmit={submit} className="space-y-5">
+                <TextField
+                  variant="secondary"
+                  isRequired
+                  name="nombre"
+                  isDisabled={create.isPending}
+                >
                   <Label>Nombre</Label>
-                  <Input maxLength={150} />
+                  <Input placeholder="Ej. María" variant="secondary" maxLength={150} />
+                  <FieldError />
                 </TextField>
                 {type === "variedad" ? (
                   products.isPending ? (
@@ -174,7 +180,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
                 >
                   {create.isPending ? "Guardando…" : "Guardar valor"}
                 </Button>
-              </form>
+              </Form>
             </CreationDrawer>
           ) : undefined
         }
@@ -189,6 +195,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
         }
       />
       <TextField
+        variant="secondary"
         value={search}
         onChange={(value) => {
           setSearch(value);
@@ -196,7 +203,8 @@ export function CatalogManager({ type }: { type: CatalogType }) {
         }}
       >
         <Label>Buscar valor</Label>
-        <Input placeholder="Buscar por nombre" />
+        <Input variant="secondary" placeholder="Buscar por nombre" />
+        <FieldError />
       </TextField>
       {toggle.error && !confirm ? <FormNotice message={toggle.error.message} /> : null}
       {query.isPending ? (
@@ -209,7 +217,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
           description="Prueba otra búsqueda o registra un valor para tu empresa."
         />
       ) : (
-        <>
+        <div className="paginated-content">
           <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
             {rows.slice((current - 1) * 12, current * 12).map((item) => {
               const enabled = item.habilitado !== false;
@@ -253,7 +261,7 @@ export function CatalogManager({ type }: { type: CatalogType }) {
             })}
           </div>
           <PagePagination page={current} last={last} onChange={setPage} />
-        </>
+        </div>
       )}
       <CreationDrawer
         open={Boolean(confirm)}

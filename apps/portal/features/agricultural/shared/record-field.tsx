@@ -1,4 +1,5 @@
 "use client";
+import { fieldPlaceholder } from "@/lib/form-fields";
 
 import { DateInput } from "@/components/date-input";
 
@@ -38,15 +39,22 @@ export function RecordField({
 
   return (
     <TextField
+      variant="secondary"
       defaultValue={initial ?? ""}
       isRequired={required}
-      isInvalid={Boolean(error)}
+      isInvalid={error ? true : undefined}
       name={name}
       type={type}
     >
       <Label>{label}</Label>
-      <Input className="w-full" maxLength={maxLength} step={step} />
-      {error ? <FieldError>{error}</FieldError> : null}
+      <Input
+        placeholder={fieldPlaceholder(name, label)}
+        variant="secondary"
+        className="w-full"
+        maxLength={maxLength}
+        step={step}
+      />
+      <FieldError>{error}</FieldError>
     </TextField>
   );
 }

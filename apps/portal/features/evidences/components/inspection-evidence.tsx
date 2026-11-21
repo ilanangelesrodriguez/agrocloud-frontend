@@ -5,7 +5,17 @@ import type { FormEvent } from "react";
 import type { z } from "zod";
 
 import { useEffect, useRef, useState } from "react";
-import { Button, Checkbox, Input, Label, ListBox, Select, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  toast,
+  Form,
+  FieldError,
+} from "@heroui/react";
 import {
   EmptyState,
   ErrorState,
@@ -457,7 +467,7 @@ function MultipleEvidenceUpload({
     upload.mutate();
   }
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <Form validationBehavior="native" className="grid gap-4" onSubmit={submit}>
       <div
         className="rounded-xl border border-dashed border-border p-4"
         onDragOver={(event) => event.preventDefault()}
@@ -468,6 +478,7 @@ function MultipleEvidenceUpload({
       >
         <label htmlFor="evidence-photos">Arrastra fotografías o selecciona varias</label>
         <Input
+          variant="secondary"
           id="evidence-photos"
           type="file"
           multiple
@@ -503,22 +514,39 @@ function MultipleEvidenceUpload({
           <li key={row.key} className="space-y-2 rounded-xl border border-border p-3">
             <PreparedPreview file={row.file} />
             <p className="break-all text-sm">{row.file.name}</p>
-            <Select value={row.fruit || null} placeholder="Selecciona un fruto"
+            <Select
+              variant="secondary"
+              value={row.fruit || null}
+              placeholder="Selecciona un fruto"
               isDisabled={disabled || !!row.evidenceId}
               onChange={(value) => {
                 setConfirmed(false);
-                setRows((current) => current.map((item) =>
-                  item.key === row.key ? { ...item, fruit: String(value ?? "") } : item));
-              }}>
+                setRows((current) =>
+                  current.map((item) =>
+                    item.key === row.key ? { ...item, fruit: String(value ?? "") } : item,
+                  ),
+                );
+              }}
+            >
               <Label>Fruto asociado a {row.file.name}</Label>
-              <Select.Trigger className="min-h-11 w-full"><Select.Value /><Select.Indicator /></Select.Trigger>
-              <Select.Popover><ListBox aria-label="Frutos de la muestra">
-                {options.map((item) => (
-                  <ListBox.Item key={item.id} id={String(item.id)} textValue={item.codigo ?? "Fruto " + item.numero}>
-                    {item.codigo ?? "Fruto " + item.numero}
-                  </ListBox.Item>
-                ))}
-              </ListBox></Select.Popover>
+              <Select.Trigger className="min-h-11 w-full">
+                <Select.Value />
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox aria-label="Frutos de la muestra">
+                  {options.map((item) => (
+                    <ListBox.Item
+                      key={item.id}
+                      id={String(item.id)}
+                      textValue={item.codigo ?? "Fruto " + item.numero}
+                    >
+                      {item.codigo ?? "Fruto " + item.numero}
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+              <FieldError />
             </Select>
             <p className="text-sm" role="status">
               {row.status === "uploaded"
@@ -580,7 +608,7 @@ function MultipleEvidenceUpload({
             (canAnalyze && automatic ? " y solicitar análisis" : " fotografías")}
       </Button>
       {error || upload.error ? <FormNotice message={error || upload.error?.message} /> : null}
-    </form>
+    </Form>
   );
 }
 

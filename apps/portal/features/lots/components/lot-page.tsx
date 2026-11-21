@@ -2,7 +2,12 @@
 
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@heroui/react";
+import { FiPlus } from "react-icons/fi";
+import { CreationDrawer } from "@/components/creation-drawer";
+import { RouteDrawer } from "@/components/route-drawer";
 import { ErrorState, InlineNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 import { LotList } from "./lot-list";
 import { LotDetails } from "./lot-details";
@@ -18,6 +23,9 @@ export function LotPage({
   stage?: "overview" | "reception" | "sampling";
 }) {
   const session = useCurrentUser();
+  const router = useRouter();
+  const [creating, setCreating] = useState(false);
+  const [busy, setBusy] = useState(false);
   const actor = session.data;
   const canRead = canManageCompany(actor, "lotes.ver");
   const canCreate = canManageCompany(actor, "lotes.crear");
@@ -33,40 +41,52 @@ export function LotPage({
       />
     );
   if (mode === "detail" && id) return <LotDetails id={id} stage={stage} />;
+  if (mode === "new")
+    return (
+      <RouteDrawer
+        title="Registrar lote"
+        description="Identifica el producto, asocia al productor y programa su llegada."
+        back={canRead ? "/lots" : "/dashboard"}
+        background={canRead ? <LotPage mode="list" /> : null}
+      >
+        <LotForm
+          canRead={canRead}
+          canReadProducers={canManageCompany(actor, "productores.ver")}
+          onSaved={() => router.replace(canRead ? "/lots" : "/dashboard")}
+        />
+      </RouteDrawer>
+    );
   return (
     <section className="space-y-6">
       <PageHeader
-        title={mode === "new" ? "Registrar lote" : "Lotes"}
-        description={
-          mode === "new"
-            ? "Identifica el producto, asocia al productor y programa su llegada para iniciar el flujo operativo."
-            : "Organiza tus lotes y continúa la recepción, el muestreo y la inspección."
-        }
+        title="Lotes"
+        description="Organiza tus lotes y continúa la recepción, el muestreo y la inspección."
         actions={
-          mode === "list" && canCreate ? (
-            <Link
-              href="/lots/new"
-              className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground"
+          canCreate ? (
+            <CreationDrawer
+              open={creating}
+              busy={busy}
+              onOpenChange={setCreating}
+              title="Registrar lote"
+              description="Identifica el producto, asocia al productor y programa su llegada."
+              trigger={
+                <Button variant="primary" onPress={() => setCreating(true)}>
+                  <FiPlus aria-hidden="true" />
+                  Registrar lote
+                </Button>
+              }
             >
-              Registrar lote
-            </Link>
-          ) : canRead && mode === "new" ? (
-            <Link href="/lots" className="text-sm font-medium text-accent">
-              Volver a lotes
-            </Link>
+              <LotForm
+                canRead={canRead}
+                canReadProducers={canManageCompany(actor, "productores.ver")}
+                onSaved={() => setCreating(false)}
+                onBusyChange={setBusy}
+              />
+            </CreationDrawer>
           ) : undefined
         }
       />
-      {mode === "list" ? (
-        <LotList />
-      ) : (
-        <div className="max-w-4xl rounded-2xl border border-border bg-surface p-5 sm:p-8">
-          <LotForm
-            canRead={canRead}
-            canReadProducers={canManageCompany(actor, "productores.ver")}
-          />
-        </div>
-      )}
+      <LotList />
     </section>
   );
 }

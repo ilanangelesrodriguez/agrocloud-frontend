@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ErrorState, InlineNotice, LoadingState } from "@agrocloud/ui";
-import { Input, Label, TextField } from "@heroui/react";
+import { Input, Label, TextField, FieldError } from "@heroui/react";
 import { CatalogSelect } from "@/features/company/agricultural/components/catalog-select";
 import { useAi, useDebouncedModel } from "../hooks";
 import {
@@ -31,9 +31,14 @@ export function MonitoringPanel() {
           onChange={setDays}
           items={[7, 30, 90, 365].map((day) => ({ id: String(day), name: `${day} días` }))}
         />
-        <TextField value={model} onChange={setModel}>
+        <TextField variant="secondary" value={model} onChange={setModel}>
           <Label>Modelo (identificador exacto, opcional)</Label>
-          <Input maxLength={200} />
+          <Input
+            placeholder="Ingresa modelo (identificador exacto, opcional)"
+            variant="secondary"
+            maxLength={200}
+          />
+          <FieldError />
         </TextField>
       </div>
       <p className="text-sm text-muted">

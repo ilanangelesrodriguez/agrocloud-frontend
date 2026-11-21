@@ -1,8 +1,19 @@
 "use client";
+import { fieldErrorsFrom } from "@/lib/form-fields";
 import type { z } from "zod";
 import type { qualityDecision } from "@/features/agricultural/inspection";
 import { useState } from "react";
-import { Button, Checkbox, Input, Label, TextArea, TextField, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  TextArea,
+  TextField,
+  toast,
+  FieldError,
+  Form,
+} from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { ErrorState, FormNotice, InlineNotice, LoadingState } from "@agrocloud/ui";
 import { useMasterCatalog } from "@/features/company/agricultural/hooks";
@@ -25,6 +36,7 @@ export function QualityDecisionForm({
   const [reason, setReason] = useState("");
   const [independent, setIndependent] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const categories = useMasterCatalog("categoria", true);
   const reasons = useMasterCatalog("motivo", true);
   const save = useMutation({
@@ -46,7 +58,10 @@ export function QualityDecisionForm({
       />
     );
   return (
-    <form
+    <Form
+      onInputCapture={() => setFieldErrors({})}
+      validationErrors={fieldErrors}
+      validationBehavior="native"
       className="space-y-5 border-t border-border pt-5"
       onSubmit={(event) => {
         event.preventDefault();
@@ -64,6 +79,7 @@ export function QualityDecisionForm({
           revision_independiente: independent,
         });
         setError(parsed.success ? "" : (parsed.error.issues[0]?.message ?? "Revisa el dictamen."));
+        setFieldErrors(parsed.success ? {} : fieldErrorsFrom(parsed.error.issues));
         if (parsed.success) save.mutate(parsed.data);
       }}
     >
@@ -74,9 +90,13 @@ export function QualityDecisionForm({
       />
       <fieldset disabled={save.isPending} className="grid gap-5 sm:grid-cols-2">
         <CatalogSelect
+          name="decision"
           label="Decisión"
           value={decision}
-          onChange={setDecision}
+          onChange={(value) => {
+            setFieldErrors({});
+            setDecision(value);
+          }}
           disabled={save.isPending}
           items={[
             { id: "APROBADO", name: "Aprobado" },
@@ -85,9 +105,13 @@ export function QualityDecisionForm({
           ]}
         />
         <CatalogSelect
+          name="categoria"
           label="Categoría comercial (opcional)"
           value={category}
-          onChange={setCategory}
+          onChange={(value) => {
+            setFieldErrors({});
+            setCategory(value);
+          }}
           optional
           emptyLabel="Sin categoría"
           disabled={save.isPending}
@@ -98,9 +122,13 @@ export function QualityDecisionForm({
         />
         {decision === "OBSERVADO" ? (
           <CatalogSelect
+            name="tipo_observacion"
             label="Tipo de observación"
             value={type}
-            onChange={setType}
+            onChange={(value) => {
+              setFieldErrors({});
+              setType(value);
+            }}
             disabled={save.isPending}
             items={[
               { id: "REINSPECCION", name: "Reinspección" },
@@ -111,9 +139,13 @@ export function QualityDecisionForm({
         ) : null}
         {decision !== "APROBADO" ? (
           <CatalogSelect
+            name="motivo"
             label="Motivo (opcional)"
             value={reason}
-            onChange={setReason}
+            onChange={(value) => {
+              setFieldErrors({});
+              setReason(value);
+            }}
             optional
             emptyLabel="Sin motivo de catálogo"
             disabled={save.isPending}
@@ -123,18 +155,45 @@ export function QualityDecisionForm({
             }))}
           />
         ) : null}
-        <TextField isRequired name="protocolo_calidad" className="sm:col-span-2">
+        <TextField
+          variant="secondary"
+          isRequired
+          name="protocolo_calidad"
+          className="sm:col-span-2"
+        >
           <Label>Protocolo de calidad aplicado</Label>
-          <Input maxLength={200} />
+          <Input
+            placeholder="Ingresa protocolo de calidad aplicado"
+            variant="secondary"
+            maxLength={200}
+          />
+          <FieldError />
         </TextField>
-        <TextField isRequired name="observaciones" className="sm:col-span-2">
+        <TextField variant="secondary" isRequired name="observaciones" className="sm:col-span-2">
           <Label>Fundamento del dictamen</Label>
-          <TextArea rows={4} maxLength={3000} />
+          <TextArea
+            placeholder="Añade los detalles relevantes"
+            variant="secondary"
+            rows={4}
+            maxLength={3000}
+          />
+          <FieldError />
         </TextField>
         {previous ? (
-          <TextField isRequired name="respuesta_observacion" className="sm:col-span-2">
+          <TextField
+            variant="secondary"
+            isRequired
+            name="respuesta_observacion"
+            className="sm:col-span-2"
+          >
             <Label>Respuesta a la observación anterior</Label>
-            <TextArea rows={3} maxLength={3000} />
+            <TextArea
+              placeholder="Ingresa respuesta a la observación anterior"
+              variant="secondary"
+              rows={3}
+              maxLength={3000}
+            />
+            <FieldError />
           </TextField>
         ) : null}
         <Checkbox
@@ -159,6 +218,6 @@ export function QualityDecisionForm({
       >
         {save.isPending ? "Emitiendo…" : "Emitir dictamen"}
       </Button>
-    </form>
+    </Form>
   );
 }

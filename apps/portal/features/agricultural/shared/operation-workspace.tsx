@@ -3,8 +3,14 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@heroui/react";
-import { ErrorState, InlineNotice, LoadingState, PageHeader, StatusBadge } from "@agrocloud/ui";
+import {
+  ErrorState,
+  InlineNotice,
+  LoadingState,
+  PageHeader,
+  StatusBadge,
+  PagePagination,
+} from "@agrocloud/ui";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 export type OperationRow<T = unknown> = {
@@ -66,7 +72,7 @@ export function OperationList<T = unknown>({
   if (query.isPending) return <LoadingState label="Cargando operaciones" />;
   if (query.isError) return <ErrorState error={query.error} retry={() => query.refetch()} />;
   return (
-    <>
+    <div className="paginated-content">
       <ul className="space-y-3">
         {query.data.rows.map((row) => (
           <li key={row.id} className="space-y-3 rounded-card border border-border bg-surface p-5">
@@ -86,23 +92,12 @@ export function OperationList<T = unknown>({
           No hay registros para esta vista.
         </p>
       ) : null}
-      <nav aria-label="Paginación" className="flex items-center gap-4">
-        <Button
-          isDisabled={page <= 1 || query.isFetching}
-          onPress={() => setPage((value) => value - 1)}
-        >
-          Anterior
-        </Button>
-        <span>
-          Página {query.data.meta.current_page} de {query.data.meta.last_page}
-        </span>
-        <Button
-          isDisabled={page >= query.data.meta.last_page || query.isFetching}
-          onPress={() => setPage((value) => value + 1)}
-        >
-          Siguiente
-        </Button>
-      </nav>
-    </>
+      <PagePagination
+        page={page}
+        last={query.data.meta.last_page}
+        isDisabled={query.isFetching}
+        onChange={setPage}
+      />
+    </div>
   );
 }

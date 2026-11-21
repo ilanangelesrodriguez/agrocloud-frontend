@@ -1,6 +1,7 @@
 "use client";
+import { fieldPlaceholder } from "@/lib/form-fields";
 
-import { TextField, Label, Input } from "@heroui/react";
+import { TextField, Label, Input, FieldError } from "@heroui/react";
 
 export function UserField({
   name,
@@ -18,9 +19,21 @@ export function UserField({
   initial?: string | null;
 }) {
   return (
-    <TextField defaultValue={initial ?? ""} isRequired={required} name={name} type={type}>
+    <TextField
+      variant="secondary"
+      defaultValue={initial ?? ""}
+      isRequired={required}
+      name={name}
+      type={type}
+    >
       <Label>{label}</Label>
-      <Input className="w-full" maxLength={maxLength} />
+      <Input
+        placeholder={fieldPlaceholder(name, label)}
+        variant="secondary"
+        className="w-full"
+        maxLength={maxLength}
+      />
+      <FieldError />
     </TextField>
   );
 }

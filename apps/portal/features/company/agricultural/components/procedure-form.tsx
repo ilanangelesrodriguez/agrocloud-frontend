@@ -3,7 +3,17 @@ import { invalidateOperationalQueries } from "@/features/agricultural/shared/inv
 
 import type { FormEvent } from "react";
 import { useState } from "react";
-import { Button, Checkbox, Input, Label, TextArea, TextField, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  TextArea,
+  TextField,
+  toast,
+  FieldError,
+  Form,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ErrorState, FormNotice, InlineNotice, LoadingState } from "@agrocloud/ui";
 import { createProcedure } from "../api";
@@ -97,7 +107,7 @@ export function ProcedureForm({
   const methodItems = (methods.data?.data ?? []).filter((item) => item.habilitado !== false);
   const productItems = (products.data?.data ?? []).filter((item) => item.habilitado !== false);
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <Form validationBehavior="native" onSubmit={submit} className="space-y-5">
       {source ? (
         <InlineNotice
           status="accent"
@@ -113,13 +123,19 @@ export function ProcedureForm({
         />
       ) : null}
       <fieldset disabled={create.isPending} className="grid gap-5">
-        <TextField isRequired name="nombre" defaultValue={source?.nombre ?? ""}>
+        <TextField variant="secondary" isRequired name="nombre" defaultValue={source?.nombre ?? ""}>
           <Label>Nombre del procedimiento</Label>
-          <Input maxLength={150} />
+          <Input placeholder="Ej. María" variant="secondary" maxLength={150} />
+          <FieldError />
         </TextField>
-        <TextField isRequired name="version" defaultValue={source ? "" : "1.0"}>
+        <TextField variant="secondary" isRequired name="version" defaultValue={source ? "" : "1.0"}>
           <Label>Versión</Label>
-          <Input maxLength={30} placeholder={source ? "Nueva versión" : "1.0"} />
+          <Input
+            variant="secondary"
+            maxLength={30}
+            placeholder={source ? "Nueva versión" : "1.0"}
+          />
+          <FieldError />
         </TextField>
         <CatalogSelect
           label="Producto"
@@ -150,35 +166,69 @@ export function ProcedureForm({
             description="Selecciona un producto y un método que sigan habilitados para tu empresa."
           />
         ) : null}
-        <TextField isRequired name="criterio_muestra" defaultValue={source?.criterio_muestra ?? ""}>
+        <TextField
+          variant="secondary"
+          isRequired
+          name="criterio_muestra"
+          defaultValue={source?.criterio_muestra ?? ""}
+        >
           <Label>Criterio de muestra</Label>
           <TextArea
+            variant="secondary"
             rows={4}
             maxLength={1500}
             placeholder="Describe cómo obtener una muestra representativa."
           />
+          <FieldError />
         </TextField>
-        <TextField isRequired name="seleccion_frutos" defaultValue={source?.seleccion_frutos ?? ""}>
+        <TextField
+          variant="secondary"
+          isRequired
+          name="seleccion_frutos"
+          defaultValue={source?.seleccion_frutos ?? ""}
+        >
           <Label>Instrucciones de selección de frutos</Label>
-          <TextArea rows={4} maxLength={1500} />
+          <TextArea
+            placeholder="Ingresa instrucciones de selección de frutos"
+            variant="secondary"
+            rows={4}
+            maxLength={1500}
+          />
+          <FieldError />
         </TextField>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
+            variant="secondary"
             name="tamano_recomendado"
             type="number"
             defaultValue={String(source?.tamano_recomendado ?? "")}
           >
             <Label>Tamaño recomendado</Label>
-            <Input min={1} max={100000} step={1} />
+            <Input
+              placeholder="Ingresa tamaño recomendado"
+              variant="secondary"
+              min={1}
+              max={100000}
+              step={1}
+            />
+            <FieldError />
           </TextField>
           <TextField
+            variant="secondary"
             isRequired
             name="max_frutos"
             type="number"
             defaultValue={String(source?.max_frutos ?? "")}
           >
             <Label>Máximo de frutos</Label>
-            <Input min={1} max={100000} step={1} />
+            <Input
+              placeholder="Ingresa máximo de frutos"
+              variant="secondary"
+              min={1}
+              max={100000}
+              step={1}
+            />
+            <FieldError />
           </TextField>
         </div>
         <Checkbox isSelected={population} onChange={setPopulation} isDisabled={create.isPending}>
@@ -202,6 +252,6 @@ export function ProcedureForm({
       >
         {create.isPending ? "Guardando…" : source ? "Crear nueva versión" : "Crear procedimiento"}
       </Button>
-    </form>
+    </Form>
   );
 }

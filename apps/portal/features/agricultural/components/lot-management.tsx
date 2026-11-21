@@ -1,8 +1,8 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, TextField, Label, TextArea } from "@heroui/react";
-import { ErrorState, LoadingState, FormNotice } from "@agrocloud/ui";
+import { Button, TextField, Label, TextArea, FieldError, Form } from "@heroui/react";
+import { ErrorState, LoadingState, FormNotice, PagePagination } from "@agrocloud/ui";
 import type { Lot } from "@/features/lots/schema";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
@@ -61,10 +61,15 @@ export function LotManagement({ lot }: { lot: Lot }) {
       canManageCompany(actor, "lotes.eliminar") ? (
         <details className="rounded-card border border-border bg-surface p-5">
           <summary className="cursor-pointer font-semibold">Anular lote</summary>
-          <form className="mt-4 space-y-3" onSubmit={submit}>
-            <TextField name="motivo" isRequired isDisabled={cancel.isPending}>
+          <Form validationBehavior="native" className="mt-4 space-y-3" onSubmit={submit}>
+            <TextField variant="secondary" name="motivo" isRequired isDisabled={cancel.isPending}>
               <Label>Motivo de anulación</Label>
-              <TextArea maxLength={2000} />
+              <TextArea
+                placeholder="Describe el motivo de esta acción"
+                variant="secondary"
+                maxLength={2000}
+              />
+              <FieldError />
             </TextField>
             <p className="text-sm text-muted">
               La anulación cierra este lote e impide continuar su recepción.
@@ -80,7 +85,7 @@ export function LotManagement({ lot }: { lot: Lot }) {
             <Button type="submit" isPending={cancel.isPending}>
               Confirmar anulación
             </Button>
-          </form>
+          </Form>
         </details>
       ) : null}
       {canRead ? (
@@ -91,7 +96,7 @@ export function LotManagement({ lot }: { lot: Lot }) {
           ) : incidents.isError ? (
             <ErrorState error={incidents.error} retry={() => incidents.refetch()} />
           ) : (
-            <>
+            <div className="paginated-content paginated-content--compact">
               {incidents.data.data.length === 0 ? (
                 <p className="text-muted">Sin incidencias registradas.</p>
               ) : (
@@ -107,24 +112,14 @@ export function LotManagement({ lot }: { lot: Lot }) {
                   </article>
                 ))
               )}
-              <nav aria-label="Paginación de incidencias" className="flex items-center gap-3">
-                <Button
-                  isDisabled={page <= 1 || incidents.isFetching}
-                  onPress={() => setPage(page - 1)}
-                >
-                  Anterior
-                </Button>
-                <span>
-                  Página {page} de {incidents.data.meta.last_page}
-                </span>
-                <Button
-                  isDisabled={page >= incidents.data.meta.last_page || incidents.isFetching}
-                  onPress={() => setPage(page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </nav>
-            </>
+              <PagePagination
+                label="Paginación de incidencias"
+                page={page}
+                last={incidents.data.meta.last_page}
+                isDisabled={incidents.isFetching}
+                onChange={setPage}
+              />
+            </div>
           )}
           {lot.estado !== "ANULADO" ? <IncidentEditor lotId={lot.id_lote} /> : null}
         </section>

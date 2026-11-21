@@ -1,8 +1,9 @@
 "use client";
 import type { FormEvent } from "react";
+import { DateRangeInput } from "@/components/date-range-input";
 import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Button, Input, Label, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField, Tabs, FieldError, Form } from "@heroui/react";
 import { ErrorState, InlineNotice, LoadingState } from "@agrocloud/ui";
 import { OperationWorkspace } from "@/features/agricultural/shared/operation-workspace";
 import { CatalogSelect } from "@/features/company/agricultural/components/catalog-select";
@@ -29,35 +30,35 @@ export function CompanyAiReport() {
 }
 function CompanyAiContent() {
   const { data: actor } = useCurrentUser();
-  const [view, setView] = useState("results");
+  if (!canReadModel(actor)) return <CompanyResults />;
   return (
-    <section className="space-y-5">
-      {canReadModel(actor) ? (
-        <div role="group" aria-label="Ámbito de IA" className="flex flex-wrap gap-2">
-          {[
-            ["results", "Resultados de mi empresa"],
-            ["model", "Modelo configurado"],
-            ["evaluation", "Evaluación histórica V2"],
-          ].map(([id, label]) => (
-            <Button
-              key={id}
-              variant={view === id ? "primary" : "secondary"}
-              aria-pressed={view === id}
-              onPress={() => setView(id)}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
-      ) : null}
-      {view === "model" ? (
-        <ModelPanel />
-      ) : view === "evaluation" ? (
-        <EvaluationPanel />
-      ) : (
+    <Tabs variant="secondary" defaultSelectedKey="results" className="space-y-5">
+      <Tabs.ListContainer>
+        <Tabs.List aria-label="Análisis de inteligencia artificial">
+          <Tabs.Tab id="results">
+            Resultados de mi empresa
+            <Tabs.Indicator />
+          </Tabs.Tab>
+          <Tabs.Tab id="model">
+            Modelo configurado
+            <Tabs.Indicator />
+          </Tabs.Tab>
+          <Tabs.Tab id="evaluation">
+            Evaluación histórica V2
+            <Tabs.Indicator />
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs.ListContainer>
+      <Tabs.Panel id="results">
         <CompanyResults />
-      )}
-    </section>
+      </Tabs.Panel>
+      <Tabs.Panel id="model">
+        <ModelPanel />
+      </Tabs.Panel>
+      <Tabs.Panel id="evaluation">
+        <EvaluationPanel />
+      </Tabs.Panel>
+    </Tabs>
   );
 }
 function CompanyResults() {
@@ -106,25 +107,27 @@ function CompanyResults() {
   const options = producers.data?.pages.flatMap((page) => page.data) ?? [];
   return (
     <section className="space-y-5">
-      <form
+      <Form
+        validationBehavior="native"
         onSubmit={submit}
         className="grid gap-3 rounded-card border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-3"
       >
+        <DateRangeInput
+          onChange={() => setError("")}
+          initialFrom={filter.from}
+          initialTo={filter.to}
+          error={error || undefined}
+        />
         {(
           [
-            ["from", "Desde", "date"],
-            ["to", "Hasta", "date"],
             ["producto", "Producto histórico", "text"],
             ["variedad", "Variedad histórica", "text"],
           ] as const
         ).map(([name, label, type]) => (
-          <TextField key={name} name={name}>
+          <TextField variant="secondary" key={name} name={name}>
             <Label>{label}</Label>
-            <Input
-              type={type}
-              maxLength={150}
-              defaultValue={name === "from" || name === "to" ? filter[name] : undefined}
-            />
+            <Input placeholder={String(label)} variant="secondary" type={type} maxLength={150} />
+            <FieldError />
           </TextField>
         ))}
         <CatalogSelect
@@ -169,7 +172,7 @@ function CompanyResults() {
           <ErrorState error={producers.error} retry={() => producers.refetch()} />
         ) : null}
         {models.isError ? <ErrorState error={models.error} retry={() => models.refetch()} /> : null}
-      </form>
+      </Form>
       <p className="text-sm text-muted">
         Fechas UTC de registro de la evidencia. Se excluyen fotografías descartadas y validaciones
         de detecciones reemplazadas por otro análisis.

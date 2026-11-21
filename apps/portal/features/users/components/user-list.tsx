@@ -89,7 +89,7 @@ export function SharedUsersList({
           }}
         />
       ) : (
-        <>
+        <div className="paginated-content">
           {users.data.data.length ? (
             <Table className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
               <Table.ScrollContainer>
@@ -147,7 +147,7 @@ export function SharedUsersList({
             />
           )}
           <PagePagination last={users.data.meta.last_page} page={page} onChange={setPage} />
-        </>
+        </div>
       )}
     </section>
   );

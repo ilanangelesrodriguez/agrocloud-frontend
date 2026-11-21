@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Chip, toast } from "@heroui/react";
+import { Button, Chip, ScrollShadow, toast } from "@heroui/react";
 import { EmptyState, ErrorState, FormNotice, LoadingState } from "@agrocloud/ui";
 import { useNotifications, useReadNotification, useUnreadNotifications } from "../hooks";
 import { notificationDestination } from "../utils";
@@ -90,81 +90,87 @@ export function NotificationList({
         />
       ) : (
         <>
-          <ul
+          <ScrollShadow
+            size={28}
             className={
-              compact ? "max-h-96 space-y-2 overflow-y-auto overscroll-contain pr-1" : "space-y-3"
+              compact
+                ? "max-h-[min(24rem,50dvh)] overscroll-contain pr-2"
+                : "max-h-[max(24rem,calc(100dvh-23rem))] min-h-80 overscroll-contain pr-2"
             }
+            aria-label="Lista de notificaciones"
           >
-            {rows.map((item) => (
-              <li
-                key={item.id}
-                className={`rounded-xl border p-4 ${item.read_at ? "border-border bg-surface" : "border-accent/25 bg-accent/5"}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="min-w-0 break-words text-sm font-semibold">{item.title}</h3>
-                  {!item.read_at ? (
-                    <span
-                      className="mt-1.5 size-2 shrink-0 rounded-full bg-accent"
-                      aria-label="Sin leer"
-                    />
-                  ) : null}
-                </div>
-                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted">
-                  {item.message}
-                </p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Chip
-                    size="sm"
-                    variant="soft"
-                    color={
-                      item.priority === "critical"
-                        ? "danger"
+            <ul className={compact ? "space-y-2" : "space-y-3"}>
+              {rows.map((item) => (
+                <li
+                  key={item.id}
+                  className={`rounded-xl border p-4 ${item.read_at ? "border-border bg-surface" : "border-accent/25 bg-accent/5"}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="min-w-0 break-words text-sm font-semibold">{item.title}</h3>
+                    {!item.read_at ? (
+                      <span
+                        className="mt-1.5 size-2 shrink-0 rounded-full bg-accent"
+                        aria-label="Sin leer"
+                      />
+                    ) : null}
+                  </div>
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted">
+                    {item.message}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Chip
+                      size="sm"
+                      variant="soft"
+                      color={
+                        item.priority === "critical"
+                          ? "danger"
+                          : item.priority === "high"
+                            ? "warning"
+                            : "default"
+                      }
+                    >
+                      {item.category === "security"
+                        ? "Seguridad"
+                        : item.category === "billing"
+                          ? "Facturación"
+                          : "Operaciones"}
+                      {item.priority === "critical"
+                        ? " · Crítica"
                         : item.priority === "high"
-                          ? "warning"
-                          : "default"
-                    }
-                  >
-                    {item.category === "security"
-                      ? "Seguridad"
-                      : item.category === "billing"
-                        ? "Facturación"
-                        : "Operaciones"}
-                    {item.priority === "critical"
-                      ? " · Crítica"
-                      : item.priority === "high"
-                        ? " · Prioridad alta"
-                        : ""}
-                  </Chip>
-                  <time dateTime={item.created_at} className="text-xs text-muted">
-                    {new Date(item.created_at).toLocaleString("es-PE", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                  </time>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    isDisabled={read.isPending}
-                    onPress={() => void open(item)}
-                  >
-                    Abrir aviso
-                  </Button>
-                  {!item.read_at ? (
+                          ? " · Prioridad alta"
+                          : ""}
+                    </Chip>
+                    <time dateTime={item.created_at} className="text-xs text-muted">
+                      {new Date(item.created_at).toLocaleString("es-PE", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </time>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Button
                       size="sm"
-                      variant="tertiary"
+                      variant="secondary"
                       isDisabled={read.isPending}
-                      onPress={() => read.mutate(item.id)}
+                      onPress={() => void open(item)}
                     >
-                      Marcar leída
+                      Abrir aviso
                     </Button>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
+                    {!item.read_at ? (
+                      <Button
+                        size="sm"
+                        variant="tertiary"
+                        isDisabled={read.isPending}
+                        onPress={() => read.mutate(item.id)}
+                      >
+                        Marcar leída
+                      </Button>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </ScrollShadow>
           {query.hasNextPage ? (
             <Button
               variant="secondary"

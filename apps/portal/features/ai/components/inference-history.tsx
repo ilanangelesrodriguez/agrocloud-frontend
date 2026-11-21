@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Button, Input, Label, TextField } from "@heroui/react";
-import { ErrorState, LoadingState } from "@agrocloud/ui";
+import { Button, Input, Label, TextField, FieldError } from "@heroui/react";
+import { ErrorState, LoadingState, AgroPagination } from "@agrocloud/ui";
 import { CatalogSelect } from "@/features/company/agricultural/components/catalog-select";
 import { useAi, useDebouncedModel } from "../hooks";
 import { inferencePage, inferenceResult } from "../schema";
@@ -41,6 +41,7 @@ export function InferenceHistory() {
           ]}
         />
         <TextField
+          variant="secondary"
           value={model}
           onChange={(value) => {
             setModel(value);
@@ -48,7 +49,12 @@ export function InferenceHistory() {
           }}
         >
           <Label>Modelo exacto (opcional)</Label>
-          <Input maxLength={200} />
+          <Input
+            placeholder="Ingresa modelo exacto (opcional)"
+            variant="secondary"
+            maxLength={200}
+          />
+          <FieldError />
         </TextField>
       </div>
       {page.isPending ? (
@@ -56,7 +62,7 @@ export function InferenceHistory() {
       ) : page.isError ? (
         <ErrorState error={page.error} retry={() => page.refetch()} />
       ) : (
-        <>
+        <div className="paginated-content">
           <div className="overflow-x-auto rounded-card border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
@@ -113,21 +119,13 @@ export function InferenceHistory() {
               <p className="p-5 text-muted">No hay inferencias para estos filtros.</p>
             ) : null}
           </div>
-          <div className="flex items-center gap-3">
-            <Button isDisabled={offset === 0} onPress={() => setOffset(Math.max(0, offset - 30))}>
-              Anterior
-            </Button>
-            <span>
-              {page.data.total} ejecuciones · Página {Math.floor(offset / 30) + 1}
-            </span>
-            <Button
-              isDisabled={offset + 30 >= page.data.total}
-              onPress={() => setOffset(offset + 30)}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </>
+          <AgroPagination
+            page={Math.floor(offset / 30) + 1}
+            pageSize={30}
+            total={page.data.total}
+            onPageChange={(next) => setOffset((next - 1) * 30)}
+          />
+        </div>
       )}
       {selected ? <InferenceDetail key={selected} requestId={selected} /> : null}
     </section>

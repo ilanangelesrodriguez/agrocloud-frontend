@@ -24,11 +24,12 @@ export function OperationFields({ register, control, errors, privacyVersion }: P
       step="03 / Necesidades"
       title="Tu operación agrícola"
     >
-      <TextField isInvalid={Boolean(errors.uso)}>
+      <TextField variant="secondary" isInvalid={Boolean(errors.uso)}>
         <Label className="text-sm font-medium text-foreground">
           ¿Cómo planeas utilizar AgroCloud? *
         </Label>
         <TextArea
+          variant="secondary"
           {...register("uso")}
           className={`min-h-32 w-full resize-y ${errors.uso ? fieldSurfaceInvalid : fieldSurface}`}
           maxLength={4000}

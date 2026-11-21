@@ -22,6 +22,7 @@ export function CompanyTypeField({ control, errors }: Props) {
       name="tipo_empresa"
       render={({ field }) => (
         <Select
+          variant="secondary"
           isInvalid={Boolean(errors.tipo_empresa)}
           name={field.name}
           placeholder="Selecciona la actividad"

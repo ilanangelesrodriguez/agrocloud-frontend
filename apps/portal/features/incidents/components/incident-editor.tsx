@@ -13,6 +13,8 @@ import {
   SearchField,
   TextArea,
   TextField,
+  FieldError,
+  Form,
 } from "@heroui/react";
 import { ErrorState, FormNotice, LoadingState, PagePagination } from "@agrocloud/ui";
 import { CreationDrawer } from "@/components/creation-drawer";
@@ -176,7 +178,7 @@ export function IncidentEditor({
         </>
       ) : null}
       {allowed ? (
-        <form onSubmit={submit} className="mt-5 space-y-4">
+        <Form validationBehavior="native" onSubmit={submit} className="mt-5 space-y-4">
           <fieldset disabled={save.isPending} className="space-y-4">
             {incident ? (
               <>
@@ -187,14 +189,29 @@ export function IncidentEditor({
                   disabled={save.isPending}
                   items={states.map((id) => ({ id, name: incidentLabels[id] }))}
                 />
-                <TextField name="accion" isRequired isDisabled={save.isPending}>
+                <TextField variant="secondary" name="accion" isRequired isDisabled={save.isPending}>
                   <Label>Acción realizada</Label>
-                  <TextArea maxLength={3000} />
+                  <TextArea
+                    placeholder="Ingresa acción realizada"
+                    variant="secondary"
+                    maxLength={3000}
+                  />
+                  <FieldError />
                 </TextField>
                 {["RESUELTA", "CERRADA"].includes(state) ? (
-                  <TextField name="comprobacion" isRequired isDisabled={save.isPending}>
+                  <TextField
+                    variant="secondary"
+                    name="comprobacion"
+                    isRequired
+                    isDisabled={save.isPending}
+                  >
                     <Label>Comprobación del resultado</Label>
-                    <TextArea maxLength={1500} />
+                    <TextArea
+                      placeholder="Ingresa comprobación del resultado"
+                      variant="secondary"
+                      maxLength={1500}
+                    />
+                    <FieldError />
                   </TextField>
                 ) : null}
                 {options.evidences.isError ? (
@@ -231,13 +248,24 @@ export function IncidentEditor({
               </>
             ) : (
               <>
-                <TextField name="titulo" isRequired isDisabled={save.isPending}>
+                <TextField variant="secondary" name="titulo" isRequired isDisabled={save.isPending}>
                   <Label>Título</Label>
-                  <Input maxLength={150} />
+                  <Input placeholder="Ingresa título" variant="secondary" maxLength={150} />
+                  <FieldError />
                 </TextField>
-                <TextField name="descripcion" isRequired isDisabled={save.isPending}>
+                <TextField
+                  variant="secondary"
+                  name="descripcion"
+                  isRequired
+                  isDisabled={save.isPending}
+                >
                   <Label>Descripción</Label>
-                  <TextArea maxLength={3000} />
+                  <TextArea
+                    placeholder="Ingresa descripción"
+                    variant="secondary"
+                    maxLength={3000}
+                  />
+                  <FieldError />
                 </TextField>
                 <CatalogSelect
                   label="Gravedad"
@@ -268,7 +296,7 @@ export function IncidentEditor({
                       </Autocomplete.Trigger>
                       <Autocomplete.Popover>
                         <Autocomplete.Filter>
-                          <SearchField aria-label="Buscar responsable">
+                          <SearchField variant="secondary" aria-label="Buscar responsable">
                             <SearchField.Group>
                               <SearchField.SearchIcon />
                               <SearchField.Input placeholder="Buscar por nombre" />
@@ -307,7 +335,7 @@ export function IncidentEditor({
           <Button type="submit" isPending={save.isPending}>
             Guardar seguimiento
           </Button>
-        </form>
+        </Form>
       ) : null}
     </CreationDrawer>
   );

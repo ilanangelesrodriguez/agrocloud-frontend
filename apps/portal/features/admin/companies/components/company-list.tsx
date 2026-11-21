@@ -26,7 +26,7 @@ export function Companies() {
           }}
         />
       ) : (
-        <>
+        <div className="paginated-content">
           {companies.data.data.length ? (
             <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
               {companies.data.data.map((company) => (
@@ -59,7 +59,7 @@ export function Companies() {
             />
           )}
           <PagePagination last={companies.data.meta.last_page} page={page} onChange={setPage} />
-        </>
+        </div>
       )}
     </section>
   );

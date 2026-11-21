@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Button, Sheet } from "@heroui/react";
+import { Button, Sheet, ScrollShadow } from "@heroui/react";
 import { FiMenu } from "react-icons/fi";
 
 import type { NavigationSection } from "@/config/navigation";
@@ -42,12 +42,18 @@ export function MobileNavigation({
                   AgroCloud AI
                 </Sheet.Heading>
               </Sheet.Header>
-              <Sheet.Body className="px-3 pb-6">
-                <NavigationList
-                  onNavigate={() => setOpen(false)}
-                  pathname={pathname}
-                  sections={sections}
-                />
+              <Sheet.Body className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
+                <ScrollShadow
+                  size={24}
+                  className="min-h-0 flex-1 overscroll-contain px-3 pb-6"
+                  aria-label="Módulos disponibles"
+                >
+                  <NavigationList
+                    onNavigate={() => setOpen(false)}
+                    pathname={pathname}
+                    sections={sections}
+                  />
+                </ScrollShadow>
               </Sheet.Body>
             </Sheet.Dialog>
           </Sheet.Content>

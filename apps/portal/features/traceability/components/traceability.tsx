@@ -70,7 +70,7 @@ export function Traceability({ id }: { id: number }) {
       ) : query.isError ? (
         <ErrorState error={query.error} retry={() => void query.refetch()} />
       ) : (
-        <>
+        <div className="paginated-content">
           {query.data.data.length ? (
             <ol className="space-y-3 border-l-2 border-border pl-5">
               {query.data.data.map((item) => (
@@ -99,7 +99,7 @@ export function Traceability({ id }: { id: number }) {
             />
           )}
           <PagePagination last={query.data.last_page} page={page} onChange={setPage} />
-        </>
+        </div>
       )}
     </section>
   );

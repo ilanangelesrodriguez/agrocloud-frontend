@@ -17,10 +17,16 @@ export function AuthField({ label, error, passwordToggle = false, type, ...input
   const realType = passwordToggle ? (visible ? "text" : "password") : type;
 
   return (
-    <TextField className="w-full" isInvalid={Boolean(error)}>
+    <TextField variant="secondary" className="w-full" isInvalid={Boolean(error)}>
       <Label className="mb-1.5 text-sm font-medium">{label}</Label>
       <div className="relative">
-        <Input {...inputProps} className="min-h-12 w-full pr-12" type={realType} />
+        <Input
+          placeholder={String(label)}
+          variant="secondary"
+          {...inputProps}
+          className="min-h-12 w-full pr-12"
+          type={realType}
+        />
         {passwordToggle && (
           <Button
             isIconOnly

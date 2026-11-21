@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { Tabs } from "@heroui/react";
 import { ErrorState, InlineNotice, LoadingState, PageHeader } from "@agrocloud/ui";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canReadModel, canMonitorAi, canReadAiHistory } from "../policy";
@@ -45,19 +45,23 @@ export function AiDashboard({ view = "summary" }: { view?: AiView }) {
         title="Inteligencia artificial"
         description="Evaluación científica histórica y monitoreo técnico global. Las operaciones empresariales permanecen en Agricultural."
       />
-      <nav aria-label="Consultas de inteligencia artificial" className="flex flex-wrap gap-2">
-        {links
-          .filter((item) => item.allowed)
-          .map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-accent"
-            >
-              {item.label}
-            </Link>
-          ))}
-      </nav>
+      <Tabs
+        variant="secondary"
+        selectedKey={view === "summary" ? "/admin/ai" : "/admin/ai/" + view}
+      >
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Consultas de inteligencia artificial">
+            {links
+              .filter((item) => item.allowed)
+              .map((item) => (
+                <Tabs.Tab key={item.href} id={item.href} href={item.href}>
+                  {item.label}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
+          </Tabs.List>
+        </Tabs.ListContainer>
+      </Tabs>
       {view === "model" ? (
         <ModelPanel />
       ) : view === "evaluation" ? (

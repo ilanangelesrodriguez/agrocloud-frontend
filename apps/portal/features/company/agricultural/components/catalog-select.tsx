@@ -1,9 +1,10 @@
 "use client";
 
-import { Label, ListBox, Select } from "@heroui/react";
+import { Label, ListBox, Select, FieldError } from "@heroui/react";
 
 export function CatalogSelect({
   label,
+  name,
   value,
   onChange,
   items,
@@ -12,6 +13,7 @@ export function CatalogSelect({
   emptyLabel = "Todos los productos",
 }: {
   label: string;
+  name?: string;
   value: string;
   onChange: (value: string) => void;
   items: { id: string; name: string }[];
@@ -21,6 +23,8 @@ export function CatalogSelect({
 }) {
   return (
     <Select
+      name={name}
+      variant="secondary"
       isRequired={!optional}
       isDisabled={disabled}
       value={value || (optional ? "__all" : null)}
@@ -46,6 +50,7 @@ export function CatalogSelect({
           ))}
         </ListBox>
       </Select.Popover>
+      <FieldError />
     </Select>
   );
 }

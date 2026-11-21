@@ -1,4 +1,5 @@
 "use client";
+import { fieldErrorsFrom } from "@/lib/form-fields";
 import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import type { FormEvent } from "react";
@@ -17,6 +18,8 @@ import {
   TextArea,
   TextField,
   toast,
+  FieldError,
+  Form,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EmptyState, ErrorState, FormNotice, LoadingState } from "@agrocloud/ui";
@@ -41,6 +44,7 @@ export function SamplingForm({
   const [confirmed, setConfirmed] = useState(false);
   const [workload, setWorkload] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const query = useAllSamplingProcedures(canManageCompany(actor, "muestreos.crear"), {
     producto: product,
     producto_id: productId ?? undefined,
@@ -61,6 +65,7 @@ export function SamplingForm({
   });
 
   function choose(value: string) {
+    setFieldErrors({});
     setSelected(value);
     setConfirmed(false);
     setWorkload(false);
@@ -80,6 +85,11 @@ export function SamplingForm({
       count > procedure.max_frutos ||
       (procedure.tamano_recomendado && count !== procedure.tamano_recomendado && !reason)
     ) {
+      setFieldErrors(
+        count > procedure.max_frutos
+          ? { tamano_muestra: "Supera el máximo autorizado." }
+          : { motivo_desviacion: "Justifica la diferencia con el tamaño recomendado." },
+      );
       setError(
         "Respeta el máximo del procedimiento y justifica cualquier diferencia con el tamaño recomendado.",
       );
@@ -90,6 +100,11 @@ export function SamplingForm({
       (procedure.requiere_poblacion && !population) ||
       (population && (!source || count > Number(population)))
     ) {
+      setFieldErrors(
+        !population || count > Number(population)
+          ? { poblacion_estimada: "La población debe cubrir el tamaño de muestra." }
+          : { fuente_poblacion: "Documenta la fuente de la población." },
+      );
       setError("Documenta una población que cubra el tamaño de la muestra.");
 
       return;
@@ -106,6 +121,7 @@ export function SamplingForm({
     });
 
     setError(result.success ? "" : (result.error.issues[0]?.message ?? "Revisa los datos."));
+    setFieldErrors(result.success ? {} : fieldErrorsFrom(result.error.issues));
     if (result.success) save.mutate(result.data);
   }
 
@@ -123,6 +139,7 @@ export function SamplingForm({
   return (
     <div className="space-y-6 pt-3">
       <Select
+        variant="secondary"
         isDisabled={save.isPending || !procedures.length}
         placeholder="Selecciona un procedimiento"
         value={selected || null}
@@ -142,6 +159,7 @@ export function SamplingForm({
             ))}
           </ListBox>
         </Select.Popover>
+        <FieldError />
       </Select>
       {procedures.length ? null : (
         <EmptyState
@@ -150,7 +168,14 @@ export function SamplingForm({
         />
       )}
       {procedure ? (
-        <form key={procedure.id} className="space-y-6" onSubmit={submit}>
+        <Form
+          onInputCapture={() => setFieldErrors({})}
+          validationErrors={fieldErrors}
+          validationBehavior="native"
+          key={procedure.id}
+          className="space-y-6"
+          onSubmit={submit}
+        >
           <fieldset className="grid gap-5 sm:grid-cols-2" disabled={save.isPending}>
             <div className="space-y-4 rounded-2xl border border-accent/20 bg-accent/5 p-5 sm:col-span-2">
               <div>
@@ -181,33 +206,68 @@ export function SamplingForm({
               ) : null}
             </div>
             <TextField
+              variant="secondary"
               isRequired
               defaultValue={String(procedure.tamano_recomendado ?? "")}
               name="tamano_muestra"
               type="number"
             >
               <Label>Tamaño de muestra (máximo {procedure.max_frutos})</Label>
-              <Input max={procedure.max_frutos} min={1} />
+              <Input
+                placeholder="Ej. 30 frutos"
+                variant="secondary"
+                max={procedure.max_frutos}
+                min={1}
+              />
+              <FieldError />
             </TextField>
             <TextField
+              variant="secondary"
               isRequired={procedure.requiere_poblacion}
               name="poblacion_estimada"
               type="number"
             >
               <Label>Población estimada</Label>
-              <Input max={100000000} min={1} />
+              <Input
+                placeholder="Ingresa población estimada"
+                variant="secondary"
+                max={100000000}
+                min={1}
+              />
+              <FieldError />
             </TextField>
-            <TextField isRequired={procedure.requiere_poblacion} name="fuente_poblacion">
+            <TextField
+              variant="secondary"
+              isRequired={procedure.requiere_poblacion}
+              name="fuente_poblacion"
+            >
               <Label>Fuente de la estimación</Label>
-              <Input maxLength={500} />
+              <Input
+                placeholder="Ingresa fuente de la estimación"
+                variant="secondary"
+                maxLength={500}
+              />
+              <FieldError />
             </TextField>
-            <TextField className="sm:col-span-2" name="motivo_desviacion">
+            <TextField variant="secondary" className="sm:col-span-2" name="motivo_desviacion">
               <Label>Motivo si difiere del tamaño recomendado</Label>
-              <TextArea rows={2} maxLength={1500} />
+              <TextArea
+                placeholder="Ingresa motivo si difiere del tamaño recomendado"
+                variant="secondary"
+                rows={2}
+                maxLength={1500}
+              />
+              <FieldError />
             </TextField>
-            <TextField className="sm:col-span-2" name="observaciones">
+            <TextField variant="secondary" className="sm:col-span-2" name="observaciones">
               <Label>Observaciones</Label>
-              <TextArea rows={3} maxLength={3000} />
+              <TextArea
+                placeholder="Añade los detalles relevantes"
+                variant="secondary"
+                rows={3}
+                maxLength={3000}
+              />
+              <FieldError />
             </TextField>
             <Checkbox
               className="sm:col-span-2"
@@ -242,7 +302,7 @@ export function SamplingForm({
           <Button isDisabled={!confirmed || save.isPending} type="submit" variant="primary">
             Registrar muestreo
           </Button>
-        </form>
+        </Form>
       ) : null}
     </div>
   );

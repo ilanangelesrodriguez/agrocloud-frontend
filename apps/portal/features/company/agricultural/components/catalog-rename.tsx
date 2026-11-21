@@ -2,7 +2,7 @@
 import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, TextField, Label, Input } from "@heroui/react";
+import { Button, TextField, Label, Input, FieldError, Form } from "@heroui/react";
 import { FormNotice } from "@agrocloud/ui";
 import { bffRequest } from "@/lib/api/bff-client";
 import { catalogUpdated } from "../schema";
@@ -34,10 +34,15 @@ export function CatalogRename({ id, name }: { id: number; name: string }) {
     if (nombre) save.mutate(nombre);
   }
   return open ? (
-    <form onSubmit={submit} className="flex flex-wrap items-center gap-2">
-      <TextField name="nombre" isRequired isDisabled={save.isPending}>
+    <Form
+      validationBehavior="native"
+      onSubmit={submit}
+      className="flex flex-wrap items-center gap-2"
+    >
+      <TextField variant="secondary" name="nombre" isRequired isDisabled={save.isPending}>
         <Label>Nombre</Label>
-        <Input defaultValue={name} maxLength={150} />
+        <Input placeholder="Ej. María" variant="secondary" defaultValue={name} maxLength={150} />
+        <FieldError />
       </TextField>
       <Button type="submit" isPending={save.isPending}>
         Guardar
@@ -46,7 +51,7 @@ export function CatalogRename({ id, name }: { id: number; name: string }) {
         Cancelar
       </Button>
       {save.isError ? <FormNotice message={save.error.message} /> : null}
-    </form>
+    </Form>
   ) : (
     <Button
       size="sm"

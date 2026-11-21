@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Accordion, Input, Label, TextField } from "@heroui/react";
+import { Accordion, Input, Label, TextField, FieldError } from "@heroui/react";
 import { FiCheck, FiShield, FiSearch } from "react-icons/fi";
 import { EmptyState, ErrorState, LoadingState, PageHeader } from "@agrocloud/ui";
 import { useCompanyPermissions, useCompanyRoles } from "../hooks";
@@ -87,11 +87,16 @@ export function CompanyRoles() {
               <p className="mt-2 text-3xl font-semibold tabular-nums">{ownPermissions.length}</p>
             </div>
           </div>
-          <TextField value={search} onChange={setSearch} className="max-w-lg">
+          <TextField variant="secondary" value={search} onChange={setSearch} className="max-w-lg">
             <Label className="flex items-center gap-2">
               <FiSearch aria-hidden="true" /> Buscar rol o permiso
             </Label>
-            <Input className="w-full" placeholder="Ej. recepción, usuarios o lotes" />
+            <Input
+              variant="secondary"
+              className="w-full"
+              placeholder="Ej. recepción, usuarios o lotes"
+            />
+            <FieldError />
           </TextField>
           <div className="grid items-start gap-6 xl:grid-cols-[1.2fr_1fr]">
             <section className="space-y-4">

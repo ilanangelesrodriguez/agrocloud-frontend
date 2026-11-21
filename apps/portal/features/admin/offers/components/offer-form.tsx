@@ -9,7 +9,7 @@ import { usePanelBusy } from "@/components/route-drawer";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast, Button, Checkbox, Label, ListBox, Select } from "@heroui/react";
+import { toast, Button, Checkbox, Label, ListBox, Select, Form, FieldError } from "@heroui/react";
 import { FormNotice, PageHeader } from "@agrocloud/ui";
 import { saveOffer } from "../api";
 import { kinds, offerInput } from "../schema";
@@ -100,7 +100,7 @@ export function OfferForm({
           <PageHeader title={offer ? "Revisar oferta" : "Crear borrador"} />
         </>
       ) : null}
-      <form className="space-y-4" onSubmit={submit}>
+      <Form validationBehavior="native" className="space-y-4" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
           {offer ? (
             <p>
@@ -110,6 +110,7 @@ export function OfferForm({
             <>
               <OfferField required label="Clave única" name="key" />
               <Select
+                variant="secondary"
                 isDisabled={save.isPending}
                 value={kind}
                 onChange={(value) => {
@@ -132,6 +133,7 @@ export function OfferForm({
                     ))}
                   </ListBox>
                 </Select.Popover>
+                <FieldError />
               </Select>
             </>
           )}
@@ -218,7 +220,7 @@ export function OfferForm({
           <FiSave aria-hidden="true" />
           {save.isPending ? "Guardando…" : offer ? "Guardar nueva versión" : "Crear borrador"}
         </Button>
-      </form>
+      </Form>
     </section>
   );
 }

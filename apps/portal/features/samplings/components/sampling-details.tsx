@@ -189,7 +189,7 @@ export function SamplingDetails({ id }: { id: string }) {
           ) : fruits.isError ? (
             <ErrorState error={fruits.error} retry={() => fruits.refetch()} />
           ) : (
-            <>
+            <div className="paginated-content">
               <ul className="grid gap-2 sm:grid-cols-2">
                 {fruits.data.data.map((fruit) => (
                   <li key={fruit.id} className="rounded-lg bg-surface-secondary px-3 py-2">
@@ -204,7 +204,7 @@ export function SamplingDetails({ id }: { id: string }) {
                 />
               ) : null}
               <PagePagination last={fruits.data.meta.last_page} page={page} onChange={setPage} />
-            </>
+            </div>
           )}
         </section>
       ) : null}

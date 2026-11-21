@@ -13,7 +13,14 @@ export type NavigationIcon =
   | "profile"
   | "roles"
   | "subscription"
-  | "notifications";
+  | "notifications"
+  | "sampling"
+  | "inspection"
+  | "quality"
+  | "reports"
+  | "production"
+  | "ai"
+  | "incidents";
 
 export type NavigationItem = {
   href: string;
@@ -31,7 +38,7 @@ const adminItems: NavigationItem[] = [
   { href: "/admin/access-requests", label: "Solicitudes", icon: "requests" },
   { href: "/admin/companies", label: "Empresas", icon: "companies" },
   { href: "/admin/users", label: "Usuarios", icon: "users" },
-  { href: "/admin/ai", label: "Inteligencia artificial", icon: "dashboard" },
+  { href: "/admin/ai", label: "Inteligencia artificial", icon: "ai" },
   { href: "/admin/plans", label: "Planes y ofertas", icon: "plans" },
 ];
 
@@ -44,23 +51,28 @@ const companyItems: (NavigationItem & { permission?: string })[] = [
     permission: "productores.ver",
   },
   { href: "/lots", label: "Lotes", icon: "lots", permission: "lotes.ver" },
-  { href: "/samplings", label: "Muestreos", icon: "requests", permission: "muestreos.ver" },
-  { href: "/inspections", label: "Inspecciones", icon: "requests", permission: "inspecciones.ver" },
-  { href: "/quality", label: "Calidad", icon: "roles", permission: "calidad.clasificar" },
+  { href: "/samplings", label: "Muestreos", icon: "sampling", permission: "muestreos.ver" },
+  {
+    href: "/inspections",
+    label: "Inspecciones",
+    icon: "inspection",
+    permission: "inspecciones.ver",
+  },
+  { href: "/quality", label: "Calidad", icon: "quality", permission: "calidad.clasificar" },
   {
     href: "/incidents",
     label: "Incidencias",
-    icon: "notifications",
+    icon: "incidents",
     permission: "incidencias.ver",
   },
-  { href: "/reports", label: "Reportes", icon: "dashboard", permission: "reportes.operativos" },
+  { href: "/reports", label: "Reportes", icon: "reports", permission: "reportes.operativos" },
   {
     href: "/reports/ai",
     label: "IA de mi empresa",
-    icon: "dashboard",
+    icon: "ai",
     permission: "ia.reportes.ver",
   },
-  { href: "/production", label: "Producción", icon: "lots", permission: "produccion.ver" },
+  { href: "/production", label: "Producción", icon: "production", permission: "produccion.ver" },
 ];
 
 const settingsIcons: Record<(typeof settingsLinks)[number]["href"], NavigationIcon> = {
@@ -94,13 +106,24 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
     .map(({ href, label }) => ({ href, label, icon: settingsIcons[href] }));
 
   const sections: NavigationSection[] = [
-    { title: "Operaciones", items: agricultural },
+    { title: "General", items: agricultural.filter((item) => item.href === "/dashboard") },
     {
-      title: "Cuenta y empresa",
+      title: "Operaciones",
+      items: agricultural.filter(
+        (item) => !["/dashboard", "/reports", "/reports/ai"].includes(item.href),
+      ),
+    },
+    {
+      title: "Análisis y reportes",
+      items: agricultural.filter((item) => ["/reports", "/reports/ai"].includes(item.href)),
+    },
+    { title: "Administración", items: settings },
+    {
+      title: "Mi cuenta",
       items: [
         { href: "/settings/profile", label: "Mi perfil", icon: "profile" },
         { href: "/notifications", label: "Notificaciones", icon: "notifications" },
-        ...settings,
+        { href: "/settings/notifications", label: "Preferencias de avisos", icon: "notifications" },
       ],
     },
   ];

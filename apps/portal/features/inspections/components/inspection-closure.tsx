@@ -5,7 +5,16 @@ import type { IdentityUser } from "@/lib/auth/schemas";
 import type { inspectionDetail } from "@/features/agricultural/inspection";
 import { useState } from "react";
 import Link from "next/link";
-import { Button, Checkbox, Label, TextArea, TextField, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Label,
+  TextArea,
+  TextField,
+  toast,
+  FieldError,
+  Form,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormNotice, InlineNotice, StatusBadge } from "@agrocloud/ui";
 import { canManageCompany } from "@/features/company/navigation";
@@ -99,16 +108,28 @@ export function InspectionClosure({
           />
         )}
         {canValidate ? (
-          <form
+          <Form
+            validationBehavior="native"
             onSubmit={(event) => {
               event.preventDefault();
               if (ready && confirmed && !validate.isPending) validate.mutate();
             }}
             className="space-y-4"
           >
-            <TextField value={notes} onChange={setNotes} isDisabled={validate.isPending}>
+            <TextField
+              variant="secondary"
+              value={notes}
+              onChange={setNotes}
+              isDisabled={validate.isPending}
+            >
               <Label>Observaciones de validación (opcional)</Label>
-              <TextArea maxLength={3000} rows={3} />
+              <TextArea
+                placeholder="Ingresa observaciones de validación (opcional)"
+                variant="secondary"
+                maxLength={3000}
+                rows={3}
+              />
+              <FieldError />
             </TextField>
             <Checkbox
               isSelected={confirmed}
@@ -130,7 +151,7 @@ export function InspectionClosure({
               {validate.isPending ? "Validando…" : "Validar y enviar a dictamen"}
             </Button>
             {validate.error ? <FormNotice message={validate.error.message} /> : null}
-          </form>
+          </Form>
         ) : null}
       </section>
       <section className="space-y-5 rounded-2xl border border-border bg-surface p-5 sm:p-6">

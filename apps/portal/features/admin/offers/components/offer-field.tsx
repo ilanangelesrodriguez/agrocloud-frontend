@@ -2,7 +2,7 @@
 
 import { DateInput } from "@/components/date-input";
 
-import { Input, Label, TextField } from "@heroui/react";
+import { Input, Label, TextField, FieldError } from "@heroui/react";
 
 export function OfferField({
   label,
@@ -31,9 +31,16 @@ export function OfferField({
   }
 
   return (
-    <TextField defaultValue={String(initial ?? "")} isRequired={required} name={name} type={type}>
+    <TextField
+      variant="secondary"
+      defaultValue={String(initial ?? "")}
+      isRequired={required}
+      name={name}
+      type={type}
+    >
       <Label>{label}</Label>
-      <Input className="w-full" step={step} />
+      <Input placeholder={String(label)} variant="secondary" className="w-full" step={step} />
+      <FieldError />
     </TextField>
   );
 }

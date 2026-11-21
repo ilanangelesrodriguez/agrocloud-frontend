@@ -13,6 +13,8 @@ import {
   TextArea,
   TextField,
   toast,
+  FieldError,
+  Form,
 } from "@heroui/react";
 import { FormNotice } from "@agrocloud/ui";
 import { decisionSchema, requestPageSchema } from "../schema";
@@ -62,10 +64,15 @@ export function DecisionForm({
   }
 
   return (
-    <form className="mt-4 space-y-4 border-t border-border pt-4" onSubmit={submit}>
+    <Form
+      validationBehavior="native"
+      className="mt-4 space-y-4 border-t border-border pt-4"
+      onSubmit={submit}
+    >
       <fieldset className="grid gap-3" disabled={mutation.isPending}>
         <legend className="mb-2 font-semibold">Registrar decisión</legend>
         <Select
+          variant="secondary"
           isDisabled={mutation.isPending}
           value={decision}
           onChange={(value) => {
@@ -90,6 +97,7 @@ export function DecisionForm({
               </ListBox.Item>
             </ListBox>
           </Select.Popover>
+          <FieldError />
         </Select>
         {decision === "APROBADA" ? (
           <>
@@ -106,26 +114,34 @@ export function DecisionForm({
               </Checkbox.Content>
             </Checkbox>
             {manual ? (
-              <TextField isDisabled={mutation.isPending} name="referencia">
+              <TextField variant="secondary" isDisabled={mutation.isPending} name="referencia">
                 <Label>Referencia de verificación (opcional)</Label>
-                <Input maxLength={255} />
+                <Input
+                  placeholder="Ingresa referencia de verificación (opcional)"
+                  variant="secondary"
+                  maxLength={255}
+                />
+                <FieldError />
               </TextField>
             ) : null}
           </>
         ) : null}
-        <TextField isRequired isDisabled={mutation.isPending} name="motivo">
+        <TextField variant="secondary" isRequired isDisabled={mutation.isPending} name="motivo">
           <Label>Motivo</Label>
           <TextArea
+            placeholder="Describe el motivo de esta acción"
+            variant="secondary"
             maxLength={2000}
             minLength={decision === "APROBADA" && manual ? 20 : 1}
             rows={3}
           />
+          <FieldError />
         </TextField>
       </fieldset>
       {error || mutation.error ? <FormNotice message={error || mutation.error?.message} /> : null}
       <Button isDisabled={mutation.isPending} type="submit" variant="primary">
         {mutation.isPending ? "Guardando…" : "Guardar decisión"}
       </Button>
-    </form>
+    </Form>
   );
 }

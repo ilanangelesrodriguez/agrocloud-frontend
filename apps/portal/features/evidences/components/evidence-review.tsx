@@ -2,7 +2,16 @@
 import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 import type { z } from "zod";
 import { useState } from "react";
-import { Button, Checkbox, Input, Label, TextArea, TextField, toast } from "@heroui/react";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Label,
+  TextArea,
+  TextField,
+  toast,
+  FieldError,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   EmptyState,
@@ -189,6 +198,7 @@ export function EvidenceReview({
           <div className="space-y-4 rounded-xl border border-border p-4">
             <h4 className="font-semibold">Confirmar revisión de evidencia</h4>
             <TextField
+              variant="secondary"
               value={justification}
               onChange={setJustification}
               isRequired={photo.estado_ia !== "COMPLETADO"}
@@ -198,7 +208,13 @@ export function EvidenceReview({
                 Justificación{" "}
                 {photo.estado_ia === "COMPLETADO" ? "(opcional)" : "de revisión manual"}
               </Label>
-              <TextArea rows={3} maxLength={2000} />
+              <TextArea
+                placeholder="Explica la revisión manual o añade una observación"
+                variant="secondary"
+                rows={3}
+                maxLength={2000}
+              />
+              <FieldError />
             </TextField>
             <Checkbox isSelected={confirmed} onChange={setConfirmed} isDisabled={update.isPending}>
               <Checkbox.Content>
@@ -222,9 +238,20 @@ export function EvidenceReview({
       ) : null}
       {!discarded && ((canReview && !inProgress) || (canAnalyze && cancellable)) ? (
         <div className="space-y-3 rounded-xl border border-border p-4">
-          <TextField value={reason} onChange={setReason} isDisabled={update.isPending}>
+          <TextField
+            variant="secondary"
+            value={reason}
+            onChange={setReason}
+            isDisabled={update.isPending}
+          >
             <Label>Motivo para descartar o cancelar</Label>
-            <TextArea rows={2} maxLength={2000} />
+            <TextArea
+              placeholder="Ingresa motivo para descartar o cancelar"
+              variant="secondary"
+              rows={2}
+              maxLength={2000}
+            />
+            <FieldError />
           </TextField>
           <div className="flex flex-wrap gap-2">
             {canReview && !inProgress ? (
@@ -299,9 +326,19 @@ function DetectionDecision({
       </p>
       {canReview ? (
         <>
-          <TextField value={notes} onChange={setNotes} isDisabled={save.isPending}>
+          <TextField
+            variant="secondary"
+            value={notes}
+            onChange={setNotes}
+            isDisabled={save.isPending}
+          >
             <Label>Observaciones (opcional)</Label>
-            <Input maxLength={2000} />
+            <Input
+              placeholder="Ingresa observaciones (opcional)"
+              variant="secondary"
+              maxLength={2000}
+            />
+            <FieldError />
           </TextField>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -399,9 +436,20 @@ function ManualFindingForm({
                 name: value.replaceAll("_", " "),
               }))}
             />
-            <TextField value={notes} onChange={setNotes} isDisabled={save.isPending}>
+            <TextField
+              variant="secondary"
+              value={notes}
+              onChange={setNotes}
+              isDisabled={save.isPending}
+            >
               <Label>Descripción y justificación</Label>
-              <TextArea rows={3} maxLength={2000} />
+              <TextArea
+                placeholder="Ingresa descripción y justificación"
+                variant="secondary"
+                rows={3}
+                maxLength={2000}
+              />
+              <FieldError />
             </TextField>
             <Button
               variant="primary"

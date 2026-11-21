@@ -33,12 +33,12 @@ export function DateInput({
       granularity={withTime ? "minute" : "day"}
       hourCycle={24}
       isDisabled={disabled}
-      isInvalid={Boolean(error)}
+      isInvalid={error ? true : undefined}
       isRequired={required}
       name={name}
     >
       <Label>{label}</Label>
-      <DateField.Group className="w-full">
+      <DateField.Group variant="secondary" className="w-full">
         <DateField.Input>{(segment) => <DateField.Segment segment={segment} />}</DateField.Input>
         <DateField.Suffix>
           <DatePicker.Trigger aria-label={`Elegir ${label.toLowerCase()}`}>
@@ -61,7 +61,7 @@ export function DateInput({
           </Calendar.Grid>
         </Calendar>
       </DatePicker.Popover>
-      {error ? <FieldError>{error}</FieldError> : null}
+      <FieldError>{error}</FieldError>
     </DatePicker>
   );
 }

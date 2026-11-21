@@ -79,19 +79,23 @@ export function AccessTextField({
         };
 
         return (
-          <TextField className="min-w-0" isInvalid={Boolean(error)} name={name}>
+          <TextField variant="secondary" className="min-w-0" isInvalid={Boolean(error)} name={name}>
             <Label className="text-sm font-medium text-foreground">{label} *</Label>
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 {PrefixIcon ? (
-                  <InputGroup className={`min-h-11 w-full ${surface}`}>
+                  <InputGroup variant="secondary" className={`min-h-11 w-full ${surface}`}>
                     <InputGroup.Prefix aria-hidden="true" className="text-muted">
                       <PrefixIcon className="size-4" />
                     </InputGroup.Prefix>
                     <InputGroup.Input {...inputProps} />
                   </InputGroup>
                 ) : (
-                  <Input {...inputProps} className={`min-h-11 w-full ${surface}`} />
+                  <Input
+                    variant="secondary"
+                    {...inputProps}
+                    className={`min-h-11 w-full ${surface}`}
+                  />
                 )}
               </div>
               {action}

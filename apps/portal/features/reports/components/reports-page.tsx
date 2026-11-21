@@ -1,10 +1,11 @@
 "use client";
 import type { FormEvent } from "react";
+import { DateRangeInput } from "@/components/date-range-input";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { bffRequest } from "@/lib/api/bff-client";
 import { producerList } from "@/features/agricultural/schema";
 import { useState } from "react";
-import { Button, Input, Label, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField, FieldError, Form } from "@heroui/react";
 import { ErrorState, LoadingState, FormNotice } from "@agrocloud/ui";
 import { OperationWorkspace } from "@/features/agricultural/shared/operation-workspace";
 import { CatalogSelect } from "@/features/company/agricultural/components/catalog-select";
@@ -99,21 +100,22 @@ function ReportContent() {
   }
   return (
     <div className="space-y-5">
-      <form
+      <Form
+        validationBehavior="native"
         onSubmit={submit}
         className="grid gap-3 rounded-card border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-3"
       >
+        <DateRangeInput onChange={() => setError("")} error={error || undefined} />
         {(
           [
-            ["from", "Desde", "date"],
-            ["to", "Hasta", "date"],
             ["producto", "Producto", "text"],
             ["variedad", "Variedad", "text"],
           ] as const
         ).map(([name, label, type]) => (
-          <TextField key={name} name={name}>
+          <TextField variant="secondary" key={name} name={name}>
             <Label>{label}</Label>
-            <Input type={type} maxLength={150} />
+            <Input placeholder={String(label)} variant="secondary" type={type} maxLength={150} />
+            <FieldError />
           </TextField>
         ))}
         <CatalogSelect
@@ -147,7 +149,7 @@ function ReportContent() {
           </Button>
         </div>
         {error ? <FormNotice message={error} /> : null}
-      </form>
+      </Form>
       {query.isPending ? (
         <LoadingState label="Cargando reportes" />
       ) : query.isError ? (

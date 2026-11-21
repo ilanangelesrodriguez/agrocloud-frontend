@@ -26,7 +26,7 @@ export function AccessRequests() {
           }}
         />
       ) : (
-        <>
+        <div className="paginated-content">
           {requests.data.data.length ? (
             requests.data.data.map((request) => (
               <RequestDetails key={request.id} request={request} />
@@ -38,7 +38,7 @@ export function AccessRequests() {
             />
           )}
           <PagePagination last={requests.data.last_page} page={page} onChange={setPage} />
-        </>
+        </div>
       )}
     </section>
   );

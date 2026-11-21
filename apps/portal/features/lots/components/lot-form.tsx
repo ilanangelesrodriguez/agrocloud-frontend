@@ -1,4 +1,5 @@
 "use client";
+import { fieldErrorsFrom } from "@/lib/form-fields";
 import { invalidateOperationalQueries } from "@/features/agricultural/shared/invalidation";
 
 import { FiSave } from "react-icons/fi";
@@ -7,7 +8,18 @@ import type { FormEvent } from "react";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast, Button, Input, Label, ListBox, Select, TextField } from "@heroui/react";
+import { usePanelBusy } from "@/components/route-drawer";
+import {
+  toast,
+  Button,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  TextField,
+  FieldError,
+  Form,
+} from "@heroui/react";
 import { FormNotice, LoadingState, ErrorState, PagePagination } from "@agrocloud/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -28,6 +40,11 @@ export function LotForm({
   onBusyChange?: (busy: boolean) => void;
 }) {
   const router = useRouter();
+  const panelBusy = usePanelBusy();
+  const reportBusy = (busy: boolean) => {
+    onBusyChange?.(busy);
+    if (panelBusy !== onBusyChange) panelBusy?.(busy);
+  };
   const cache = useQueryClient();
   const [product, setProduct] = useState("");
   const [variety, setVariety] = useState("");
@@ -35,6 +52,7 @@ export function LotForm({
   const [producerPage, setProducerPage] = useState(1);
   const [producerId, setProducerId] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const attempts = useRef(new Map<string, string>());
   const [products, varieties, units] = useLotCatalogs();
   const producers = useLotProducers(canReadProducers, producerPage);
@@ -46,8 +64,8 @@ export function LotForm({
 
   const save = useMutation({
     mutationFn: createLot,
-    onMutate: () => onBusyChange?.(true),
-    onSettled: () => onBusyChange?.(false),
+    onMutate: () => reportBusy(true),
+    onSettled: () => reportBusy(false),
     onSuccess: ({ data }) => {
       toast.success("Lote registrado");
       void invalidateOperationalQueries(cache, { notifications: true, subscription: true });
@@ -74,10 +92,12 @@ export function LotForm({
       fecha_llegada_prevista: Number.isFinite(date.getTime()) ? date.toISOString() : "",
     });
     if (!parsed.success) {
+      setFieldErrors(fieldErrorsFrom(parsed.error.issues));
       setError(parsed.error.issues[0]?.message ?? "Revisa los datos del lote.");
       return;
     }
     setError("");
+    setFieldErrors({});
     const body = JSON.stringify(parsed.data);
     const key = attempts.current.get(body) ?? crypto.randomUUID();
     attempts.current.set(body, key);
@@ -99,16 +119,28 @@ export function LotForm({
   }
 
   return (
-    <form className="space-y-4 rounded-card border border-border bg-surface p-5" onSubmit={submit}>
+    <Form
+      onInputCapture={() => setFieldErrors({})}
+      validationErrors={fieldErrors}
+      validationBehavior="native"
+      className="space-y-4 rounded-card border border-border bg-surface p-5"
+      onSubmit={submit}
+    >
       <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
         <legend className="mb-3 font-semibold">Datos del lote</legend>
         {canReadProducers ? (
           <div className="space-y-2">
             <Select
+              variant="secondary"
               isDisabled={producers.isPending || save.isPending}
+              name="id_productor"
+              isRequired
               placeholder="Selecciona un productor"
               value={producerId || null}
-              onChange={(value) => setProducerId(typeof value === "string" ? value : "")}
+              onChange={(value) => {
+                setFieldErrors({});
+                setProducerId(typeof value === "string" ? value : "");
+              }}
             >
               <Label>Productor</Label>
               <Select.Trigger className="min-h-11 w-full">
@@ -128,6 +160,7 @@ export function LotForm({
                   ))}
                 </ListBox>
               </Select.Popover>
+              <FieldError />
             </Select>
             {producers.isPending ? <LoadingState label="Cargando productores" /> : null}
             {producers.isError ? (
@@ -151,6 +184,7 @@ export function LotForm({
           </div>
         ) : (
           <TextField
+            variant="secondary"
             value={producerId}
             onChange={setProducerId}
             name="id_productor"
@@ -158,18 +192,23 @@ export function LotForm({
             isRequired
           >
             <Label>ID del productor</Label>
-            <Input className="w-full" min={1} />
+            <Input placeholder="Ej. 24" variant="secondary" className="w-full" min={1} />
             <p className="text-xs text-muted">
               Para ver el catálogo de productores necesitas el permiso de consulta.
             </p>
+            <FieldError />
           </TextField>
         )}
 
         <RecordField required label="Código del lote" maxLength={50} name="codigo_lote" />
         <Select
+          variant="secondary"
+          name="producto_id"
+          isRequired
           placeholder="Selecciona un producto"
           value={product || null}
           onChange={(value) => {
+            setFieldErrors({});
             setProduct(typeof value === "string" ? value : "");
             setVariety("");
           }}
@@ -192,9 +231,12 @@ export function LotForm({
               ))}
             </ListBox>
           </Select.Popover>
+          <FieldError />
         </Select>
         <Select
+          variant="secondary"
           isDisabled={!productId || save.isPending}
+          name="variedad_id"
           placeholder="Sin variedad"
           value={variety || null}
           onChange={(value) =>
@@ -222,12 +264,19 @@ export function LotForm({
               ))}
             </ListBox>
           </Select.Popover>
+          <FieldError />
         </Select>
         <RecordField required label="Peso (kg)" name="peso_kg" step="any" type="number" />
         <Select
+          variant="secondary"
+          name="unidad_medida"
+          isRequired
           placeholder="Selecciona una unidad"
           value={unit || null}
-          onChange={(value) => setUnit(typeof value === "string" ? value : "")}
+          onChange={(value) => {
+            setFieldErrors({});
+            setUnit(typeof value === "string" ? value : "");
+          }}
         >
           <Label>Unidad de medida</Label>
           <Select.Trigger className="min-h-11 w-full">
@@ -243,6 +292,7 @@ export function LotForm({
               ))}
             </ListBox>
           </Select.Popover>
+          <FieldError />
         </Select>
         <RecordField
           required
@@ -260,6 +310,6 @@ export function LotForm({
         <FiSave aria-hidden="true" />
         {save.isPending ? "Guardando…" : "Guardar lote"}
       </Button>
-    </form>
+    </Form>
   );
 }

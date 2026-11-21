@@ -29,7 +29,7 @@ export function RecordList({
   filtered?: boolean;
 }) {
   return (
-    <div className="grid gap-4">
+    <div className="paginated-content  gap-4">
       <p aria-live="polite" className="text-sm text-muted">
         {rows.length} {rows.length === 1 ? "registro visible" : "registros visibles"} en esta
         página.

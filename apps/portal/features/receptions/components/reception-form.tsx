@@ -1,10 +1,21 @@
 "use client";
+import { fieldErrorsFrom } from "@/lib/form-fields";
 
 import { DateInput } from "@/components/date-input";
 import type { FormEvent } from "react";
 import type { Lot } from "@/features/lots/schema";
 import { useState } from "react";
-import { Button, Input, Label, ListBox, Select, TextArea, TextField } from "@heroui/react";
+import {
+  Button,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  TextArea,
+  TextField,
+  FieldError,
+  Form,
+} from "@heroui/react";
 import { FormNotice } from "@agrocloud/ui";
 import { receptionDocuments, receptionInput } from "../schema";
 import { useReceptionMutation } from "../hooks";
@@ -12,6 +23,7 @@ import { useReceptionMutation } from "../hooks";
 export function ReceptionForm({ lot }: { lot: Lot }) {
   const [documentType, setDocumentType] = useState<string>(receptionDocuments[0]);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const save = useReceptionMutation(lot);
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -25,6 +37,7 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
 
     if (date.getTime() > Date.now()) {
       setError("La recepción no puede tener una fecha futura.");
+      setFieldErrors({ recibido_en: "La recepción no puede tener una fecha futura." });
 
       return;
     }
@@ -34,6 +47,7 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
       !notes
     ) {
       setError("Explica la diferencia de peso en las observaciones.");
+      setFieldErrors({ observaciones: "Explica la diferencia con el peso del lote." });
 
       return;
     }
@@ -50,14 +64,22 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
     setError(
       result.success ? "" : (result.error.issues[0]?.message ?? "Revisa los datos de recepción."),
     );
+    setFieldErrors(result.success ? {} : fieldErrorsFrom(result.error.issues));
     if (result.success) save.mutate(result.data);
   }
 
   return (
-    <form className="space-y-4" onSubmit={submit}>
+    <Form
+      onInputCapture={() => setFieldErrors({})}
+      validationErrors={fieldErrors}
+      validationBehavior="native"
+      className="space-y-4"
+      onSubmit={submit}
+    >
       <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
         <legend className="mb-3 font-semibold">Registrar recepción</legend>
         <Select
+          variant="secondary"
           isDisabled={save.isPending}
           value={documentType}
           onChange={(value) => {
@@ -78,20 +100,34 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
               ))}
             </ListBox>
           </Select.Popover>
+          <FieldError />
         </Select>
         {[
           ["documento", "Número de documento", 100],
           ["transportista", "Transportista", 150],
           ["placa", "Placa", 20],
         ].map(([name, label, max]) => (
-          <TextField key={name} isRequired={name === "documento"} name={String(name)}>
+          <TextField
+            variant="secondary"
+            key={name}
+            isRequired={name === "documento"}
+            name={String(name)}
+          >
             <Label>{label}</Label>
-            <Input maxLength={Number(max)} />
+            <Input placeholder={String(label)} variant="secondary" maxLength={Number(max)} />
+            <FieldError />
           </TextField>
         ))}
-        <TextField isRequired name="peso_recibido_kg" type="number">
+        <TextField variant="secondary" isRequired name="peso_recibido_kg" type="number">
           <Label>Peso recibido (kg)</Label>
-          <Input max={99999999.99} min={0.01} step="0.01" />
+          <Input
+            placeholder="Ingresa peso recibido (kg)"
+            variant="secondary"
+            max={99999999.99}
+            min={0.01}
+            step="0.01"
+          />
+          <FieldError />
         </TextField>
         <DateInput
           required
@@ -104,15 +140,22 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
           Si el peso recibido difiere del peso registrado en el lote, explica el motivo en
           observaciones.
         </p>
-        <TextField className="sm:col-span-2" name="observaciones">
+        <TextField variant="secondary" className="sm:col-span-2" name="observaciones">
           <Label>Observaciones</Label>
-          <TextArea className="w-full" maxLength={3000} rows={3} />
+          <TextArea
+            placeholder="Añade los detalles relevantes"
+            variant="secondary"
+            className="w-full"
+            maxLength={3000}
+            rows={3}
+          />
+          <FieldError />
         </TextField>
       </fieldset>
       {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
       <Button isDisabled={save.isPending} type="submit" variant="primary">
         {save.isPending ? "Guardando…" : "Registrar recepción"}
       </Button>
-    </form>
+    </Form>
   );
 }
