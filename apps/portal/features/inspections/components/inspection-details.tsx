@@ -123,7 +123,10 @@ export function InspectionDetails({
           ) : (
             <InspectionEvidence
               key={id}
+              initialBatchId={value.analysis_batch_id}
+              aiSupported={value.ai_supported ?? false}
               canAnalyze={
+                value.ai_supported === true &&
                 value.estado === "EN_CAPTURA" &&
                 (value.id_inspector == null || value.id_inspector === actor?.id_usuario) &&
                 actor?.rol?.codigo === "INSPECTOR" &&

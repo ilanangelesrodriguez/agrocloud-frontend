@@ -4,8 +4,8 @@ import { invalidateOperationalQueries } from "@/features/agricultural/shared/inv
 import type { FormEvent } from "react";
 import type { z } from "zod";
 
-import { useState } from "react";
-import { Button, Checkbox, Input, Label, ListBox, Select, toast } from "@heroui/react";
+import { useEffect, useRef, useState } from "react";
+import { Button, Checkbox, Input, Label, toast } from "@heroui/react";
 import {
   EmptyState,
   ErrorState,
@@ -14,10 +14,16 @@ import {
   PagePagination,
   StatusBadge,
 } from "@agrocloud/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { evidence, evidenceMaxBytes, evidenceTypes } from "../schema";
-import { uploadEvidence, analyzeEvidence } from "../api";
+import {
+  uploadEvidence,
+  analyzeEvidence,
+  requestAnalysisBatch,
+  fetchAnalysisBatch,
+  retryAnalysisBatch,
+} from "../api";
 import { useEvidenceFruits } from "../hooks";
 import { EvidenceReview } from "./evidence-review";
 import type { aiDetection, manualFinding } from "@/features/agricultural/inspection";
@@ -25,6 +31,8 @@ import type { aiDetection, manualFinding } from "@/features/agricultural/inspect
 export function InspectionEvidence({
   id,
   sampling,
+  initialBatchId,
+  aiSupported,
   photos,
   canUpload,
   canAnalyze,
@@ -34,6 +42,8 @@ export function InspectionEvidence({
 }: {
   id: string;
   sampling: number;
+  initialBatchId?: string | null;
+  aiSupported: boolean;
   photos: z.infer<typeof evidence>[];
   canUpload: boolean;
   canAnalyze: boolean;
@@ -42,55 +52,64 @@ export function InspectionEvidence({
   findings: z.infer<typeof manualFinding>[];
 }) {
   const cache = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [fruit, setFruit] = useState("");
-  const [error, setError] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
-  const fruits = useEvidenceFruits(sampling, page, canUpload && canReadFruits);
-  const refresh = () => invalidateOperationalQueries(cache);
-  const upload = useMutation({
-    mutationFn: (body: FormData) => uploadEvidence(id, body),
-    onSuccess: ({ data }) => {
-      setSelectedPhoto(data.id_evidencia);
-      setFruit("");
-      toast.success("Fotografía registrada");
-
-      return refresh();
+  const [requestedBatchId, setBatchId] = useState<string | null>(null);
+  const batchId = requestedBatchId ?? initialBatchId ?? null;
+  const operation = useRef<{ signature: string; key: string } | null>(null);
+  const batch = useQuery({
+    queryKey: ["agricultural", "analysis-batch", id, batchId],
+    enabled: !!batchId,
+    queryFn: ({ signal }) => fetchAnalysisBatch(id, batchId!, signal),
+    refetchInterval: ({ state }) => (state.data?.status === "PROCESSING" ? 5000 : false),
+    retry: false,
+  });
+  const collective = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const signature = [...ids].sort((a, b) => a - b).join(",");
+      if (operation.current?.signature !== signature)
+        operation.current = { signature, key: crypto.randomUUID() };
+      return requestAnalysisBatch(id, ids, operation.current.key);
+    },
+    onSuccess: async (result) => {
+      operation.current = null;
+      setBatchId(result.batchId);
+      cache.setQueryData(["agricultural", "analysis-batch", id, result.batchId], result);
+      toast.success("Solicitud registrada. Esperando que el worker procese las fotografías.");
+      await invalidateOperationalQueries(cache, { subscription: true });
+    },
+    retry: false,
+  });
+  const retryBatch = useMutation({
+    mutationFn: () => retryAnalysisBatch(id, batchId!),
+    onSuccess: async (result) => {
+      cache.setQueryData(["agricultural", "analysis-batch", id, batchId], result);
+      await invalidateOperationalQueries(cache, { subscription: true });
     },
     retry: false,
   });
   const analyze = useMutation({
     mutationFn: analyzeEvidence,
     onSuccess: () => {
-      toast.success("Análisis IA enviado a la cola");
+      toast.success(
+        "Solicitud registrada. El resultado estará disponible cuando termine el análisis.",
+      );
       return invalidateOperationalQueries(cache, { subscription: true });
     },
     retry: false,
   });
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (upload.isPending) return;
-    const form = new FormData(event.currentTarget);
-    const photo = form.get("foto");
-
-    if (
-      !fruit ||
-      !(photo instanceof File) ||
-      !evidenceTypes.includes(photo.type) ||
-      !photo.size ||
-      photo.size > evidenceMaxBytes
-    ) {
-      setError("Selecciona un fruto y una imagen JPG, PNG o WebP de hasta 3 MB.");
-
-      return;
-    }
-    setError("");
-    form.set("id_fruto", fruit);
-    upload.mutate(form);
-  }
-
   const current = photos.find((photo) => photo.id_evidencia === selectedPhoto) ?? photos[0];
+
+  const eligible = photos.filter(
+    (photo) =>
+      photo.pertinencia !== "INVALIDA" &&
+      !["EN_COLA", "PROCESANDO", "COMPLETADO"].includes(photo.estado_ia ?? ""),
+  );
+  const failed = eligible.filter((photo) => photo.estado_ia === "ERROR");
+  const completed = photos.filter((photo) => photo.estado_ia === "COMPLETADO").length;
+  const active = photos.filter((photo) =>
+    ["EN_COLA", "PROCESANDO"].includes(photo.estado_ia ?? ""),
+  ).length;
 
   return (
     <section className="space-y-5">
@@ -100,81 +119,25 @@ export function InspectionEvidence({
           Asocia cada imagen a su fruto y revisa el estado de su análisis.
         </p>
       </div>
+      {!aiSupported ? (
+        <p role="status" className="rounded-xl border border-border p-3 text-sm">
+          Este producto no tiene un modelo IA compatible configurado. Puedes subir evidencias y
+          continuar con revisión manual justificada.
+        </p>
+      ) : null}
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
         <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 sm:p-6">
           <h3 className="font-semibold">Captura de evidencias</h3>
           {canUpload && canReadFruits ? (
-            <form className="grid gap-3" onSubmit={submit}>
-              <Select
-                isDisabled={upload.isPending || !fruits.data?.data.length}
-                placeholder="Selecciona un fruto"
-                value={fruit || null}
-                onChange={(value) => setFruit(typeof value === "string" ? value : "")}
-              >
-                <Label>Fruto de la muestra</Label>
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox aria-label="Frutos">
-                    {fruits.data?.data.map((item) => (
-                      <ListBox.Item
-                        key={item.id}
-                        id={String(item.id)}
-                        textValue={item.codigo ?? "Fruto " + item.numero}
-                      >
-                        {item.codigo ?? "Fruto " + item.numero}
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
-              </Select>
-              {fruits.isPending ? <LoadingState label="Cargando frutos" /> : null}
-              {fruits.isError ? (
-                <ErrorState
-                  title="No se pudieron cargar los frutos"
-                  error={fruits.error}
-                  retry={() => fruits.refetch()}
-                />
-              ) : null}
-              {fruits.data ? (
-                <PagePagination
-                  last={fruits.data.meta.last_page}
-                  page={page}
-                  onChange={(next) => {
-                    setFruit("");
-                    setPage(next);
-                  }}
-                />
-              ) : null}
-              <label htmlFor="evidence-photo">Fotografía (JPG, PNG o WebP, máximo 3 MB)</label>
-              <Input
-                key={upload.data?.data.id_evidencia}
-                required
-                accept={evidenceTypes.join(",")}
-                disabled={upload.isPending}
-                id="evidence-photo"
-                name="foto"
-                type="file"
-              />
-              {fruits.isSuccess && !fruits.data.data.length ? (
-                <EmptyState
-                  title="Sin frutos disponibles"
-                  description="Revisa los frutos registrados en el muestreo antes de adjuntar una fotografía."
-                />
-              ) : null}
-              <Button
-                isDisabled={!fruit || upload.isPending || fruits.isError}
-                type="submit"
-                variant="primary"
-              >
-                {upload.isPending ? "Subiendo…" : "Subir fotografía"}
-              </Button>
-              {error || upload.error ? (
-                <FormNotice message={error || upload.error?.message} />
-              ) : null}
-            </form>
+            <MultipleEvidenceUpload
+              key={id}
+              id={id}
+              sampling={sampling}
+              canAnalyze={canAnalyze}
+              analysisPending={collective.isPending}
+              onAnalyze={(ids) => collective.mutateAsync(ids).then(() => undefined)}
+              onUploaded={(photoId) => setSelectedPhoto(photoId)}
+            />
           ) : canUpload ? (
             <p>Para seleccionar un fruto necesitas acceso al muestreo.</p>
           ) : (
@@ -188,6 +151,83 @@ export function InspectionEvidence({
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-semibold">Evidencias registradas</h3>
             <span className="text-sm tabular-nums text-muted">{photos.length} fotografías</span>
+          </div>
+          <div className="space-y-3" aria-live="polite">
+            <p className="text-sm">
+              {completed} de {photos.length} fotografías analizadas · {active} pendientes o en
+              proceso · {failed.length} fallidas
+            </p>
+            {photos.length > 0 ? (
+              <progress
+                className="w-full"
+                value={completed}
+                max={photos.length}
+                aria-label="Fotografías analizadas"
+              />
+            ) : null}
+            {canAnalyze && eligible.length > 0 ? (
+              <Button
+                isDisabled={
+                  collective.isPending ||
+                  analyze.isPending ||
+                  retryBatch.isPending ||
+                  eligible.length > 100
+                }
+                onPress={() => collective.mutate(eligible.map((photo) => photo.id_evidencia))}
+              >
+                Solicitar análisis de {eligible.length} fotografías
+              </Button>
+            ) : null}
+            {canAnalyze && failed.length > 0 ? (
+              <Button
+                variant="secondary"
+                isDisabled={collective.isPending || retryBatch.isPending || failed.length > 100}
+                onPress={() => collective.mutate(failed.map((photo) => photo.id_evidencia))}
+              >
+                Reintentar únicamente {failed.length} fallidas
+              </Button>
+            ) : null}
+            {eligible.length > 100 ? (
+              <p>Selecciona hasta 100 fotografías por carga para analizarlas juntas.</p>
+            ) : null}
+            {batch.data ? (
+              <div className="rounded-xl border border-border p-3 text-sm">
+                <p>
+                  Último conjunto: {batch.data.completed} de {batch.data.total} completadas ·{" "}
+                  {batch.data.processing} analizando · {batch.data.pending} esperando ·{" "}
+                  {batch.data.failed} fallidas · {batch.data.cancelled} canceladas
+                </p>
+                {batch.data.stalled ? (
+                  <p role="status">
+                    El procesamiento lleva más de cinco minutos sin avanzar. Revisa el servicio;
+                    puedes cancelar las solicitudes en espera y continuar con revisión manual
+                    justificada.
+                  </p>
+                ) : null}
+                {batch.data.items
+                  .filter((item) => item.stage === "RETRYING")
+                  .map((item) => (
+                    <p key={item.evidenceId}>
+                      Evidencia #{item.evidenceId}: nuevo intento programado ({item.attempts}/3).{" "}
+                      {item.errorCode}
+                    </p>
+                  ))}
+                {canAnalyze && batch.data.failed > 0 ? (
+                  <Button
+                    variant="secondary"
+                    isDisabled={retryBatch.isPending || collective.isPending}
+                    onPress={() => retryBatch.mutate()}
+                  >
+                    Reintentar fallidas de este conjunto
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+            {collective.error || retryBatch.error || batch.error ? (
+              <FormNotice
+                message={(collective.error ?? retryBatch.error ?? batch.error)?.message}
+              />
+            ) : null}
           </div>
           {photos.length ? (
             <ul className="space-y-2">
@@ -216,11 +256,16 @@ export function InspectionEvidence({
                   >
                     {photo.estado_ia?.replaceAll("_", " ") ?? "Sin análisis"}
                   </StatusBadge>
+                  {photo.error_ia ? (
+                    <p className="w-full text-sm" role="status">
+                      {photo.error_ia}
+                    </p>
+                  ) : null}
                   {canAnalyze &&
                   photo.pertinencia !== "INVALIDA" &&
                   !["EN_COLA", "PROCESANDO", "COMPLETADO"].includes(photo.estado_ia ?? "") ? (
                     <Button
-                      isDisabled={analyze.isPending}
+                      isDisabled={analyze.isPending || collective.isPending || retryBatch.isPending}
                       type="button"
                       variant="secondary"
                       onPress={() => analyze.mutate(photo.id_evidencia)}
@@ -260,6 +305,306 @@ export function InspectionEvidence({
       </div>
     </section>
   );
+}
+
+type PreparedPhoto = {
+  key: string;
+  file: File;
+  fruit: string;
+  status: "ready" | "uploading" | "uploaded" | "error";
+  evidenceId?: number;
+  error?: string;
+};
+
+function MultipleEvidenceUpload({
+  id,
+  sampling,
+  canAnalyze,
+  analysisPending,
+  onAnalyze,
+  onUploaded,
+}: {
+  id: string;
+  sampling: number;
+  canAnalyze: boolean;
+  analysisPending: boolean;
+  onAnalyze: (ids: number[]) => Promise<void>;
+  onUploaded: (id: number) => void;
+}) {
+  const cache = useQueryClient();
+  const [page, setPage] = useState(1);
+  const fruits = useEvidenceFruits(sampling, page, true);
+  const [options, setOptions] = useState<{ id: number; numero: number; codigo?: string | null }[]>(
+    [],
+  );
+  const [rows, setRows] = useState<PreparedPhoto[]>([]);
+  const [confirmed, setConfirmed] = useState(false);
+  const [automatic, setAutomatic] = useState(true);
+  const [error, setError] = useState("");
+  const busy = useRef(false);
+  useEffect(() => {
+    if (fruits.data)
+      setOptions((previous) => {
+        const merged = new Map(previous.map((item) => [item.id, item]));
+        fruits.data.data.forEach((item) => merged.set(item.id, item));
+        return [...merged.values()];
+      });
+  }, [fruits.data]);
+
+  function prepare(files: File[]) {
+    if (busy.current || analysisPending) return;
+    if (rows.length + files.length > 100) {
+      setError("Prepara como máximo 100 fotografías por carga.");
+      return;
+    }
+    const invalid = files.find(
+      (file) => !evidenceTypes.includes(file.type) || !file.size || file.size > evidenceMaxBytes,
+    );
+    if (invalid) {
+      setError(invalid.name + ": selecciona JPG, PNG o WebP de hasta 3 MB.");
+      return;
+    }
+    const suggestions = fruits.data?.data ?? [];
+    setRows((previous) => [
+      ...previous,
+      ...files.map((file, index): PreparedPhoto => {
+        const stem = file.name.replace(/\.[^.]+$/, "").toLocaleLowerCase();
+        const matched = options.find((item) => item.codigo?.toLocaleLowerCase() === stem);
+        return {
+          key: crypto.randomUUID(),
+          file,
+          fruit: String(matched?.id ?? suggestions[index]?.id ?? ""),
+          status: "ready",
+        };
+      }),
+    ]);
+    setConfirmed(false);
+    setError("");
+  }
+
+  const upload = useMutation({
+    mutationFn: async () => {
+      if (busy.current) return;
+      busy.current = true;
+      setError("");
+      const snapshot = rows.filter((row) => !row.evidenceId);
+      const uploaded: number[] = [];
+      let cursor = 0;
+      try {
+        await Promise.all(
+          Array.from({ length: Math.min(2, snapshot.length) }, async () => {
+            for (;;) {
+              const row = snapshot[cursor++];
+              if (!row) break;
+              setRows((current) =>
+                current.map((item) =>
+                  item.key === row.key ? { ...item, status: "uploading", error: undefined } : item,
+                ),
+              );
+              try {
+                const body = new FormData();
+                body.set("id_fruto", row.fruit);
+                body.set("foto", row.file);
+                const result = await uploadEvidence(id, body);
+                uploaded.push(result.data.id_evidencia);
+                onUploaded(result.data.id_evidencia);
+                setRows((current) =>
+                  current.map((item) =>
+                    item.key === row.key
+                      ? { ...item, status: "uploaded", evidenceId: result.data.id_evidencia }
+                      : item,
+                  ),
+                );
+              } catch (cause) {
+                setRows((current) =>
+                  current.map((item) =>
+                    item.key === row.key
+                      ? {
+                          ...item,
+                          status: "error",
+                          error:
+                            cause instanceof Error
+                              ? cause.message
+                              : "No se pudo subir la fotografía.",
+                        }
+                      : item,
+                  ),
+                );
+              }
+            }
+          }),
+        );
+        if (uploaded.length) {
+          toast.success(uploaded.length + " fotografías registradas");
+          await invalidateOperationalQueries(cache);
+          if (canAnalyze && automatic) await onAnalyze(uploaded);
+        }
+      } finally {
+        busy.current = false;
+      }
+    },
+    retry: false,
+  });
+  const pending = rows.filter((row) => !row.evidenceId);
+  const disabled = upload.isPending || analysisPending;
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (disabled || busy.current || !pending.length) return;
+    if (!confirmed || pending.some((row) => !row.fruit)) {
+      setError("Asocia cada fotografía y confirma los frutos antes de guardar.");
+      return;
+    }
+    upload.mutate();
+  }
+  return (
+    <form className="grid gap-4" onSubmit={submit}>
+      <div
+        className="rounded-xl border border-dashed border-border p-4"
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          event.preventDefault();
+          prepare(Array.from(event.dataTransfer.files));
+        }}
+      >
+        <label htmlFor="evidence-photos">Arrastra fotografías o selecciona varias</label>
+        <Input
+          id="evidence-photos"
+          type="file"
+          multiple
+          accept={evidenceTypes.join(",")}
+          disabled={disabled}
+          onChange={(event) => {
+            prepare(Array.from(event.target.files ?? []));
+            event.target.value = "";
+          }}
+        />
+        <p className="mt-2 text-sm text-muted">
+          JPG, PNG o WebP · Hasta 3 MB por fotografía · Hasta 100 fotografías
+        </p>
+      </div>
+      {fruits.isPending ? <LoadingState label="Cargando frutos" /> : null}
+      {fruits.isError ? (
+        <ErrorState
+          title="No se pudieron cargar los frutos"
+          error={fruits.error}
+          retry={() => fruits.refetch()}
+        />
+      ) : null}
+      {fruits.data ? (
+        <PagePagination page={page} last={fruits.data.meta.last_page} onChange={setPage} />
+      ) : null}
+      <p className="text-sm text-muted">
+        Las asociaciones son sugerencias por código o por orden de la página de frutos. Revísalas
+        antes de guardar. Puedes asociar varias fotografías al mismo fruto y cambiar de página para
+        cargar más frutos.
+      </p>
+      <ul className="max-h-[36rem] space-y-3 overflow-y-auto">
+        {rows.map((row) => (
+          <li key={row.key} className="space-y-2 rounded-xl border border-border p-3">
+            <PreparedPreview file={row.file} />
+            <p className="break-all text-sm">{row.file.name}</p>
+            <label className="grid gap-1 text-sm">
+              Fruto asociado a {row.file.name}
+              <select
+                className="w-full rounded-lg border border-border bg-surface p-2"
+                value={row.fruit}
+                disabled={disabled || !!row.evidenceId}
+                onChange={(event) => {
+                  setConfirmed(false);
+                  setRows((current) =>
+                    current.map((item) =>
+                      item.key === row.key ? { ...item, fruit: event.target.value } : item,
+                    ),
+                  );
+                }}
+              >
+                <option value="">Selecciona un fruto</option>
+                {options.map((item) => (
+                  <option key={item.id} value={String(item.id)}>
+                    {item.codigo ?? "Fruto " + item.numero}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="text-sm" role="status">
+              {row.status === "uploaded"
+                ? "Registrada como evidencia #" + row.evidenceId
+                : row.status === "uploading"
+                  ? "Subiendo…"
+                  : row.status === "error"
+                    ? row.error
+                    : "Preparada"}
+            </p>
+            <Button
+              type="button"
+              variant="secondary"
+              isDisabled={disabled}
+              onPress={() => {
+                setRows((current) => current.filter((item) => item.key !== row.key));
+                setConfirmed(false);
+              }}
+            >
+              {row.evidenceId ? "Quitar de esta lista" : "Quitar fotografía"}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      {rows.length ? (
+        <p aria-live="polite" className="text-sm">
+          {rows.filter((row) => row.evidenceId).length} de {rows.length} fotografías guardadas
+        </p>
+      ) : null}
+      {pending.length ? (
+        <Checkbox isSelected={confirmed} isDisabled={disabled} onChange={setConfirmed}>
+          <Checkbox.Content>
+            <Checkbox.Control>
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+            <Label>He revisado y confirmo la asociación de cada fotografía con su fruto</Label>
+          </Checkbox.Content>
+        </Checkbox>
+      ) : null}
+      {canAnalyze ? (
+        <Checkbox isSelected={automatic} isDisabled={disabled} onChange={setAutomatic}>
+          <Checkbox.Content>
+            <Checkbox.Control>
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+            <Label>Solicitar IA después de subir (consume la cuota de análisis)</Label>
+          </Checkbox.Content>
+        </Checkbox>
+      ) : null}
+      <Button
+        type="submit"
+        variant="primary"
+        isDisabled={disabled || !pending.length || !confirmed || pending.some((row) => !row.fruit)}
+      >
+        {upload.isPending
+          ? "Guardando fotografías…"
+          : "Subir " +
+            pending.length +
+            (canAnalyze && automatic ? " y solicitar análisis" : " fotografías")}
+      </Button>
+      {error || upload.error ? <FormNotice message={error || upload.error?.message} /> : null}
+    </form>
+  );
+}
+
+function PreparedPreview({ file }: { file: File }) {
+  const [url, setUrl] = useState<string>();
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+  // eslint-disable-next-line @next/next/no-img-element
+  return url ? (
+    <img
+      src={url}
+      alt={"Vista previa de " + file.name}
+      className="h-24 w-full rounded-lg object-contain"
+    />
+  ) : null;
 }
 
 function EvidencePreview({

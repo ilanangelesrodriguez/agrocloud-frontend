@@ -2,6 +2,12 @@
 export function agriculturalErrorMessage(message: unknown): string | undefined {
   if (typeof message !== "string") return undefined;
   const messages: Record<string, string> = {
+    "No hay un modelo IA compatible con este producto. Continúa con la revisión manual justificada.":
+      "Este producto no tiene un modelo IA compatible. Continúa con revisión manual justificada.",
+    "Every evidence must belong to this inspection.":
+      "Todas las evidencias deben pertenecer a esta inspección.",
+    "Idempotency key used with different evidence.":
+      "Esta solicitud ya fue registrada con otras fotografías. Actualiza la página.",
     "Inspection is closed.":
       "La inspección ya no está en captura. Actualiza la información para continuar.",
     "Assigned to another inspector.": "La inspección está asignada a otro inspector.",

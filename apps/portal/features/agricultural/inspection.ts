@@ -81,6 +81,8 @@ export const samplingFruits = z.object({
 });
 export const inspectionDetail = z.object({
   data: inspection.extend({
+    analysis_batch_id: z.string().uuid().nullish(),
+    ai_supported: z.boolean().optional(),
     observaciones: z.string().nullish(),
     evidencias: z.array(evidence).optional(),
     hallazgos: z.array(manualFinding).optional(),

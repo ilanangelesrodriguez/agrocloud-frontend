@@ -1,3 +1,4 @@
+import { analysisBatch, analysisBatchInput } from "@/features/evidences/schema";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 
@@ -47,6 +48,20 @@ type Context = { params: Promise<{ resource: string[] }> };
 
 export async function GET(request: NextRequest, { params }: Context) {
   const evidencePath = (await params).resource;
+  if (
+    evidencePath.length === 4 &&
+    evidencePath[0] === "inspections" &&
+    positiveInteger(evidencePath[1]) &&
+    evidencePath[2] === "analyses" &&
+    z.string().uuid().safeParse(evidencePath[3]).success
+  ) {
+    return authorizedIdentity(
+      request,
+      (user) => (canManageCompany(user, "inspecciones.ver") ? "/" + evidencePath.join("/") : null),
+      analysisBatch,
+      { service: "agricultural" },
+    );
+  }
   const operation = await readOperation(request, evidencePath);
   if (operation) return operation;
 
@@ -281,7 +296,30 @@ async function save(request: NextRequest, { params }: Context, method: "POST" | 
 }
 
 export async function POST(request: NextRequest, context: Context) {
-  const operation = await saveOperation(request, (await context.params).resource, "POST");
+  const segments = (await context.params).resource;
+  const isBatch =
+    segments[0] === "inspections" && positiveInteger(segments[1]) && segments[2] === "analyses";
+  const retryBatch =
+    isBatch &&
+    segments.length === 5 &&
+    segments[4] === "retry" &&
+    z.string().uuid().safeParse(segments[3]).success;
+  if ((isBatch && segments.length === 3) || retryBatch) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const input = (retryBatch ? z.object({}) : analysisBatchInput).safeParse(json.body);
+    if (!input.success) return reply({ message: "Revisa las evidencias del análisis." }, 422);
+    return authorizedIdentity(
+      request,
+      (user) =>
+        user.rol?.codigo === "INSPECTOR" && canManageCompany(user, "inspecciones.analizar")
+          ? "/" + segments.join("/")
+          : null,
+      analysisBatch,
+      { service: "agricultural", method: "POST", body: input.data },
+    );
+  }
+  const operation = await saveOperation(request, segments, "POST");
   if (operation) return operation;
   const reviewed = await saveInspectionAction(request, (await context.params).resource, "POST");
   if (reviewed) return reviewed;
