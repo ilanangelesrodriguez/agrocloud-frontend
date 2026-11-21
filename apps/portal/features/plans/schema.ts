@@ -96,14 +96,47 @@ export const orderStatus = z.object({
     "READY",
     "DECLINED",
     "PROCESSING",
+    "REQUIRES_3DS",
     "RECONCILIATION_REQUIRED",
     "AWAITING_CONFIRMATION",
     "CONFIRMED",
     "UNAVAILABLE",
   ]),
 });
-export const chargeResponse = z.object({
-  reference: z.string(),
-  status: z.string(),
-  message: z.string(),
+export const authentication3DS = z
+  .object({
+    eci: z.string().regex(/^\d{2}$/),
+    xid: z.string().regex(/^[A-Za-z0-9+/=_-]{1,256}$/),
+    cavv: z.string().regex(/^[A-Za-z0-9+/=_-]{1,256}$/),
+    protocolVersion: z.string().regex(/^[12]\.\d{1,2}\.\d{1,2}$/),
+    directoryServerTransactionId: z.string().uuid().optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.protocolVersion.startsWith("2.") && !value.directoryServerTransactionId)
+      context.addIssue({
+        code: "custom",
+        path: ["directoryServerTransactionId"],
+        message: "Falta la transacción 3DS.",
+      });
+  });
+export const chargeInput = z.object({
+  token_id: z
+    .string()
+    .max(128)
+    .regex(/^tkn_test_[A-Za-z0-9]+$/),
+  device_fingerprint_id: z.string().uuid(),
 });
+export const completeAuthenticationInput = chargeInput.extend({
+  attempt_id: z.string().regex(/^[a-f0-9]{24}$/),
+  authentication_3ds: authentication3DS,
+});
+export const chargeResponse = z.discriminatedUnion("status", [
+  z.object({ reference: z.string(), status: z.literal("PENDING"), message: z.string() }),
+  z.object({
+    reference: z.string(),
+    status: z.literal("REQUIRES_3DS"),
+    message: z.string(),
+    attempt_id: z.string().regex(/^[a-f0-9]{24}$/),
+    authentication_expires_at: z.string().datetime(),
+  }),
+]);

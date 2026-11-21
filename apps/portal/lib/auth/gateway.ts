@@ -97,7 +97,13 @@ export async function identityRequest(
       ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
     },
     body: multipart ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(
+      (options.service === undefined || options.service === "identity") &&
+        options.method === "POST" &&
+        /^\/subscription\/orders\/AGRO-[0-9A-HJKMNP-TV-Z]{26}\/(charge|complete-3ds)$/.test(path)
+        ? 50_000
+        : 15_000,
+    ),
     cache: "no-store",
     redirect: "error",
   });

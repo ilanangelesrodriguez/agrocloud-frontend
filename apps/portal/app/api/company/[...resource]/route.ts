@@ -9,6 +9,8 @@ import {
   orderResponse,
   orderStatus,
   chargeResponse,
+  chargeInput,
+  completeAuthenticationInput,
 } from "@/features/plans/schema";
 import {
   companyResponseSchema,
@@ -91,6 +93,33 @@ export async function POST(request: NextRequest, { params }: Context) {
     resource,
   );
 
+  const cancelAuthentication =
+    /^subscription\/orders\/(AGRO-[0-9A-HJKMNP-TV-Z]{26})\/cancel-authentication$/.exec(resource);
+  const completeAuthentication =
+    /^subscription\/orders\/(AGRO-[0-9A-HJKMNP-TV-Z]{26})\/complete-3ds$/.exec(resource);
+  if (completeAuthentication) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    const input = completeAuthenticationInput.safeParse(json.body);
+    if (!input.success)
+      return reply({ message: "La respuesta de autenticación 3DS no es válida." }, 422);
+    return authorizedIdentity(
+      request,
+      (user) => (canManageCompany(user, "suscripciones.gestionar") ? "/" + resource : null),
+      chargeResponse,
+      { method: "POST", body: input.data, operation: "company.subscription.complete-3ds" },
+    );
+  }
+  if (cancelAuthentication) {
+    const json = await parseJson(request);
+    if (!json.ok) return json.response;
+    return authorizedIdentity(
+      request,
+      (user) => (canManageCompany(user, "suscripciones.gestionar") ? "/" + resource : null),
+      orderStatus,
+      { method: "POST", body: {}, operation: "company.subscription.cancel-authentication" },
+    );
+  }
   if (reconcileMatch) {
     const json = await parseJson(request);
     if (!json.ok) return json.response;
@@ -117,11 +146,13 @@ export async function POST(request: NextRequest, { params }: Context) {
     const json = await parseJson(request);
 
     if (!json.ok) return json.response;
-    const token = z
-      .object({ token_id: z.string().regex(/^tkn_test_[A-Za-z0-9]+$/) })
-      .safeParse(json.body);
+    const token = chargeInput.safeParse(json.body);
 
-    if (!token.success) return reply({ message: "Solo se aceptan tokens Culqi de prueba." }, 422);
+    if (!token.success)
+      return reply(
+        { message: "Se requieren un token Culqi de prueba y el identificador del dispositivo." },
+        422,
+      );
 
     return authorizedIdentity(
       request,
