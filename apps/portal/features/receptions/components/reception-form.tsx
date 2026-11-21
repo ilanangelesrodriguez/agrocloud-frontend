@@ -70,13 +70,16 @@ export function ReceptionForm({ lot }: { lot: Lot }) {
 
   return (
     <Form
-      onInputCapture={() => setFieldErrors({})}
       validationErrors={fieldErrors}
       validationBehavior="native"
       className="space-y-4"
       onSubmit={submit}
     >
-      <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
+      <fieldset
+        onInputCapture={() => setFieldErrors({})}
+        className="grid gap-4 sm:grid-cols-2"
+        disabled={save.isPending}
+      >
         <legend className="mb-3 font-semibold">Registrar recepción</legend>
         <Select
           variant="secondary"

@@ -120,13 +120,16 @@ export function LotForm({
 
   return (
     <Form
-      onInputCapture={() => setFieldErrors({})}
       validationErrors={fieldErrors}
       validationBehavior="native"
       className="space-y-4 rounded-card border border-border bg-surface p-5"
       onSubmit={submit}
     >
-      <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
+      <fieldset
+        onInputCapture={() => setFieldErrors({})}
+        className="grid gap-4 sm:grid-cols-2"
+        disabled={save.isPending}
+      >
         <legend className="mb-3 font-semibold">Datos del lote</legend>
         {canReadProducers ? (
           <div className="space-y-2">

@@ -145,13 +145,16 @@ export function SharedUserForm({
 
   return (
     <Form
-      onInputCapture={() => setFieldErrors({})}
       validationErrors={fieldErrors}
       validationBehavior="native"
       className="grid gap-4"
       onSubmit={submit}
     >
-      <fieldset className="grid gap-4" disabled={mutation.isPending}>
+      <fieldset
+        onInputCapture={() => setFieldErrors({})}
+        className="grid gap-4"
+        disabled={mutation.isPending}
+      >
         <legend className="mb-2 font-semibold">
           {user ? "Editar usuario" : "Datos de la invitación"}
         </legend>

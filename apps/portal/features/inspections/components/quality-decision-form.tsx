@@ -59,7 +59,6 @@ export function QualityDecisionForm({
     );
   return (
     <Form
-      onInputCapture={() => setFieldErrors({})}
       validationErrors={fieldErrors}
       validationBehavior="native"
       className="space-y-5 border-t border-border pt-5"
@@ -88,7 +87,11 @@ export function QualityDecisionForm({
         title={previous ? "Respuesta a una observación" : "Revisión independiente de calidad"}
         description="La aprobación libera el lote como clasificado. Una observación puede requerir corrección documental o una nueva inspección. El servicio verificará las revisiones e incidencias que puedan impedir la liberación."
       />
-      <fieldset disabled={save.isPending} className="grid gap-5 sm:grid-cols-2">
+      <fieldset
+        onInputCapture={() => setFieldErrors({})}
+        disabled={save.isPending}
+        className="grid gap-5 sm:grid-cols-2"
+      >
         <CatalogSelect
           name="decision"
           label="Decisión"

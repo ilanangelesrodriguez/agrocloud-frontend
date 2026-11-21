@@ -169,14 +169,17 @@ export function SamplingForm({
       )}
       {procedure ? (
         <Form
-          onInputCapture={() => setFieldErrors({})}
           validationErrors={fieldErrors}
           validationBehavior="native"
           key={procedure.id}
           className="space-y-6"
           onSubmit={submit}
         >
-          <fieldset className="grid gap-5 sm:grid-cols-2" disabled={save.isPending}>
+          <fieldset
+            onInputCapture={() => setFieldErrors({})}
+            className="grid gap-5 sm:grid-cols-2"
+            disabled={save.isPending}
+          >
             <div className="space-y-4 rounded-2xl border border-accent/20 bg-accent/5 p-5 sm:col-span-2">
               <div>
                 <h3 className="font-semibold">Instrucciones del procedimiento</h3>

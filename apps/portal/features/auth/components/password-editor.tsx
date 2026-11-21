@@ -39,13 +39,15 @@ export function PasswordEditor() {
     }
   }
   return (
-    <section className="space-y-4 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <section
+      onInputCapture={() => setFieldErrors({})}
+      className="space-y-4 rounded-2xl border border-border bg-surface p-6 sm:p-8"
+    >
       <h2 className="text-lg font-semibold">Cambiar contraseña</h2>
       <p className="text-sm text-muted">
         Usa tu contraseña actual. Se cerrarán las demás sesiones.
       </p>
       <Form
-        onInputCapture={() => setFieldErrors({})}
         validationErrors={fieldErrors}
         validationBehavior="native"
         className="grid gap-4"

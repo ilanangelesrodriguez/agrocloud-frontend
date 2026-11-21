@@ -82,7 +82,10 @@ export function ProfileEditor({ user }: { user: IdentityUser }) {
     .join("")
     .toUpperCase();
   return (
-    <section className="space-y-5 rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <section
+      onInputCapture={() => setFieldErrors({})}
+      className="space-y-5 rounded-2xl border border-border bg-surface p-6 sm:p-8"
+    >
       <h2 className="text-lg font-semibold">Datos personales</h2>
       <div className="flex flex-wrap items-center gap-4">
         <Avatar className="size-20 text-2xl">
@@ -120,7 +123,6 @@ export function ProfileEditor({ user }: { user: IdentityUser }) {
         </div>
       </div>
       <Form
-        onInputCapture={() => setFieldErrors({})}
         validationErrors={fieldErrors}
         validationBehavior="native"
         onSubmit={(event) => void save(event)}
