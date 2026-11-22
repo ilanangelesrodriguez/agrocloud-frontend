@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button, Chip, Typography } from "@heroui/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { FiArrowLeft, FiArrowRight, FiPause, FiPlay, FiCheck, FiUsers } from "react-icons/fi";
+import { AnimatePresence, motion } from "motion/react";
+import { FiArrowLeft, FiArrowRight, FiCheck, FiUsers } from "react-icons/fi";
 
 import { PageHero, CallToAction } from "@/components/marketing/marketing";
+import { useMarketingAutoStep } from "@/components/marketing/use-marketing-auto-step";
 
 type Step = { n: string; t: string; d: string; tag?: string };
 
@@ -52,24 +52,12 @@ const steps: Step[] = [
 const roles = ["Recepción", "Inspección", "Supervisión", "Producción", "Administración"];
 
 export function WorkflowContent() {
-  const [active, setActive] = useState(0);
-  const [autoplay, setAutoplay] = useState(true);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    if (!autoplay || reduceMotion) return;
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
-        setActive((current) => (current + 1) % steps.length);
-      }
-    }, 4800);
-    return () => window.clearInterval(interval);
-  }, [autoplay, reduceMotion]);
-
-  const selectStep = (index: number) => {
-    setAutoplay(false);
-    setActive(index);
-  };
+  const {
+    ref: autoStepRef,
+    active,
+    selectStep,
+    reduceMotion,
+  } = useMarketingAutoStep(steps.length, 4800);
   const current = steps[active];
 
   return (
@@ -90,23 +78,15 @@ export function WorkflowContent() {
                 Siete etapas, un mismo historial
               </h2>
               <p className="mt-2 text-sm leading-7 text-muted">
-                Explora cada paso. La demostración es ilustrativa y puedes reproducir el recorrido
-                automáticamente.
+                Explora cada paso de forma interactiva mientras el recorrido avanza automáticamente.
               </p>
             </div>
-            <Button
-              aria-label={autoplay ? "Pausar recorrido" : "Reproducir recorrido"}
-              className="self-start"
-              isDisabled={Boolean(reduceMotion)}
-              variant="secondary"
-              onPress={() => setAutoplay((enabled) => !enabled)}
-            >
-              {autoplay ? <FiPause aria-hidden="true" /> : <FiPlay aria-hidden="true" />}
-              {autoplay ? "Pausar recorrido" : "Reproducir recorrido"}
-            </Button>
           </div>
 
-          <div className="grid gap-6 rounded-[2rem] border border-brand-600/15 bg-surface p-4 shadow-lg shadow-brand-700/5 sm:p-6 lg:grid-cols-[.95fr_1.05fr] lg:gap-8 lg:p-8">
+          <div
+            ref={autoStepRef}
+            className="grid gap-6 rounded-[2rem] border border-brand-600/15 bg-surface p-4 shadow-lg shadow-brand-700/5 sm:p-6 lg:grid-cols-[.95fr_1.05fr] lg:gap-8 lg:p-8"
+          >
             <nav aria-label="Etapas del proceso" className="min-w-0">
               <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
                 {steps.map((step, index) => {
@@ -230,11 +210,6 @@ export function WorkflowContent() {
               </div>
             </div>
           </div>
-          {reduceMotion ? (
-            <p className="text-xs text-muted">
-              La reproducción automática se desactiva según tu preferencia de movimiento reducido.
-            </p>
-          ) : null}
         </div>
       </section>
 

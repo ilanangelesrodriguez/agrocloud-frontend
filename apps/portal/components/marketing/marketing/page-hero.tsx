@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { Typography } from "@heroui/react";
 
 import { Eyebrow } from "./eyebrow";
+import { MarketingBackdrop } from "./marketing-backdrop";
 
 type Props = {
   eyebrow: string;
@@ -19,14 +20,7 @@ export function PageHero({ eyebrow, title, description, children, compact = fals
 
   return (
     <section className="site-hero-grid relative overflow-hidden border-b border-border bg-gradient-to-b from-brand-50/70 via-background to-background dark:from-brand-700/10">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-32 top-0 size-96 rounded-full bg-brand-600/10 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-5rem] top-0 hidden size-72 rounded-full border-[55px] border-brand-600/5 lg:block"
-      />
+      <MarketingBackdrop />
       <div className={`site-container relative ${spacing}`}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <Typography.Heading
