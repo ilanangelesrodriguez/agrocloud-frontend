@@ -83,12 +83,15 @@ export function WorkflowContent() {
         <div className="site-container space-y-8">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">Recorrido del expediente</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent">
+                Recorrido del expediente
+              </p>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                 Siete etapas, un mismo historial
               </h2>
               <p className="mt-2 text-sm leading-7 text-muted">
-                Explora cada paso. La demostración es ilustrativa y puedes reproducir el recorrido automáticamente.
+                Explora cada paso. La demostración es ilustrativa y puedes reproducir el recorrido
+                automáticamente.
               </p>
             </div>
             <Button
@@ -121,17 +124,27 @@ export function WorkflowContent() {
                         type="button"
                         onClick={() => selectStep(index)}
                       >
-                        <span className={`grid size-9 shrink-0 place-items-center rounded-xl text-sm font-bold tabular-nums transition-colors ${
-                          selected ? "bg-brand-700 text-white" : completed ? "bg-brand-600/15 text-accent" : "bg-surface-secondary text-muted"
-                        }`}>
+                        <span
+                          className={`grid size-9 shrink-0 place-items-center rounded-xl text-sm font-bold tabular-nums transition-colors ${
+                            selected
+                              ? "bg-brand-700 text-white"
+                              : completed
+                                ? "bg-brand-600/15 text-accent"
+                                : "bg-surface-secondary text-muted"
+                          }`}
+                        >
                           {completed ? <FiCheck aria-hidden="true" /> : step.n}
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className={`block text-sm font-semibold ${selected ? "text-accent" : "text-foreground"}`}>
+                          <span
+                            className={`block text-sm font-semibold ${selected ? "text-accent" : "text-foreground"}`}
+                          >
                             {step.t}
                           </span>
                         </span>
-                        {selected ? <span aria-hidden="true" className="size-2 rounded-full bg-brand-600" /> : null}
+                        {selected ? (
+                          <span aria-hidden="true" className="size-2 rounded-full bg-brand-600" />
+                        ) : null}
                       </button>
                     </li>
                   );
@@ -145,7 +158,9 @@ export function WorkflowContent() {
                   ETAPA {current.n} DE 07
                 </span>
                 {current.tag ? (
-                  <Chip color="accent" size="sm" variant="soft">{current.tag}</Chip>
+                  <Chip color="accent" size="sm" variant="soft">
+                    {current.tag}
+                  </Chip>
                 ) : (
                   <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/80">
                     Proceso conectado
@@ -164,7 +179,10 @@ export function WorkflowContent() {
                     <span className="mb-4 grid size-12 place-items-center rounded-2xl bg-white/10 text-[#B7F5A2]">
                       <FiCheck aria-hidden="true" className="size-6" />
                     </span>
-                    <Typography.Heading className="text-2xl font-semibold text-white sm:text-3xl" level={3}>
+                    <Typography.Heading
+                      className="text-2xl font-semibold text-white sm:text-3xl"
+                      level={3}
+                    >
                       {current.t}
                     </Typography.Heading>
                     <Typography.Paragraph className="mt-4 max-w-lg text-sm leading-7 text-[#D4EDE2] sm:text-base">
@@ -176,7 +194,10 @@ export function WorkflowContent() {
               <div className="space-y-4">
                 <div aria-hidden="true" className="flex gap-1.5">
                   {steps.map((step, index) => (
-                    <span key={step.n} className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15">
+                    <span
+                      key={step.n}
+                      className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15"
+                    >
                       <motion.span
                         animate={{ scaleX: index <= active ? 1 : 0 }}
                         className="block h-full origin-left rounded-full bg-[#B7F5A2]"

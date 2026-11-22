@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
 
-import { FiArchive, FiCamera, FiCheckCircle, FiClipboard, FiLayers, FiShield, FiTruck, FiUsers, FiFileText } from "react-icons/fi";
+import {
+  FiArchive,
+  FiCamera,
+  FiCheckCircle,
+  FiClipboard,
+  FiLayers,
+  FiShield,
+  FiTruck,
+  FiUsers,
+  FiFileText,
+} from "react-icons/fi";
 
 import { Reveal } from "@/components/marketing/reveal";
 
@@ -17,7 +27,17 @@ export const metadata: Metadata = {
     "Conoce los módulos de AgroCloud para gestión de lotes, inspección y calidad agrícola.",
   alternates: { canonical: "/funcionalidades" },
 };
-const featureIcons = [FiUsers, FiArchive, FiTruck, FiLayers, FiClipboard, FiCamera, FiFileText, FiCheckCircle, FiShield];
+const featureIcons = [
+  FiUsers,
+  FiArchive,
+  FiTruck,
+  FiLayers,
+  FiClipboard,
+  FiCamera,
+  FiFileText,
+  FiCheckCircle,
+  FiShield,
+];
 
 const items = [
   [
@@ -89,9 +109,21 @@ export default function FunctionalitiesPage() {
           <Reveal viewport>
             <div className="grid gap-4 rounded-2xl border border-brand-600/15 bg-gradient-to-r from-brand-50/70 via-surface to-surface p-5 shadow-sm shadow-brand-700/5 sm:grid-cols-3 sm:p-6 dark:from-brand-700/15">
               {[
-                { title: "Información conectada", text: "Cada registro conserva su relación con el lote.", Icon: FiLayers },
-                { title: "Evidencia revisable", text: "Fotografías y hallazgos al alcance del inspector.", Icon: FiCamera },
-                { title: "Control por permisos", text: "Acceso delimitado según responsabilidades.", Icon: FiShield },
+                {
+                  title: "Información conectada",
+                  text: "Cada registro conserva su relación con el lote.",
+                  Icon: FiLayers,
+                },
+                {
+                  title: "Evidencia revisable",
+                  text: "Fotografías y hallazgos al alcance del inspector.",
+                  Icon: FiCamera,
+                },
+                {
+                  title: "Control por permisos",
+                  text: "Acceso delimitado según responsabilidades.",
+                  Icon: FiShield,
+                },
               ].map(({ title, text, Icon }) => (
                 <div key={title} className="flex items-start gap-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-600/10 text-accent">
@@ -114,7 +146,12 @@ export default function FunctionalitiesPage() {
             {items.map(([number, title, description, tag], index) => {
               const Icon = featureIcons[index] ?? FiLayers;
               return (
-                <Reveal key={number} className="h-full" delay={Math.min(index % 3, 2) * 0.06} viewport>
+                <Reveal
+                  key={number}
+                  className="h-full"
+                  delay={Math.min(index % 3, 2) * 0.06}
+                  viewport
+                >
                   <FeatureCard
                     description={description}
                     icon={<Icon aria-hidden="true" />}

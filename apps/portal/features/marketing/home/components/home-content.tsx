@@ -207,7 +207,10 @@ export function HomeContent() {
                                     Etapa {stage.n} de 04
                                   </span>
                                   <span className="grid size-10 place-items-center rounded-xl bg-white/10">
-                                    <StageIcon aria-hidden="true" className="size-5 text-[#B7F5A2]" />
+                                    <StageIcon
+                                      aria-hidden="true"
+                                      className="size-5 text-[#B7F5A2]"
+                                    />
                                   </span>
                                 </div>
                                 <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight text-white">
@@ -226,7 +229,10 @@ export function HomeContent() {
                 </Tabs>
                 <div aria-hidden="true" className="mt-4 flex gap-1.5">
                   {stages.map((stage, index) => (
-                    <span key={stage.n} className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-600/10">
+                    <span
+                      key={stage.n}
+                      className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-600/10"
+                    >
                       <motion.span
                         animate={{ scaleX: index <= active ? 1 : 0 }}
                         className="block h-full origin-left rounded-full bg-brand-700"

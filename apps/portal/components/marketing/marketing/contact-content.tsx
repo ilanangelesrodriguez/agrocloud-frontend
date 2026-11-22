@@ -28,63 +28,63 @@ export function ContactContent() {
         <div className="site-container grid max-w-6xl gap-5 lg:grid-cols-2 lg:gap-7">
           <Reveal viewport className="h-full">
             <Card className="site-card h-full border border-brand-600/20 shadow-sm shadow-brand-700/5 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none">
-            <Card.Content className="flex h-full flex-col p-7 sm:p-9">
-              <div className="flex items-center justify-between gap-3">
-                <Chip color="accent" size="sm" variant="soft">
-                  Nuevas empresas
-                </Chip>
-                <span className="grid size-11 place-items-center rounded-xl bg-brand-600/10 text-accent">
-                  <FiBriefcase aria-hidden="true" className="size-5" />
-                </span>
-              </div>
-              <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
-                {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
-              </Typography.Heading>
-              <Typography.Paragraph className="mt-3 min-h-20 text-sm leading-7 text-muted">
-                {onboardingAvailable
-                  ? "Envía los datos de tu organización y describe su operación. La solicitud se registrará para revisión."
-                  : "Consulta las modalidades disponibles. Las nuevas solicitudes se habilitarán después de validar la incorporación y el aviso de privacidad."}
-              </Typography.Paragraph>
-              <Link
-                className="site-button site-button-primary mt-6"
-                href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
-              >
-                {onboardingAvailable ? "Completar solicitud" : "Ver planes"}
-                <FiArrowUpRight aria-hidden="true" className="size-4" />
-              </Link>
-            </Card.Content>
+              <Card.Content className="flex h-full flex-col p-7 sm:p-9">
+                <div className="flex items-center justify-between gap-3">
+                  <Chip color="accent" size="sm" variant="soft">
+                    Nuevas empresas
+                  </Chip>
+                  <span className="grid size-11 place-items-center rounded-xl bg-brand-600/10 text-accent">
+                    <FiBriefcase aria-hidden="true" className="size-5" />
+                  </span>
+                </div>
+                <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
+                  {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
+                </Typography.Heading>
+                <Typography.Paragraph className="mt-3 min-h-20 text-sm leading-7 text-muted">
+                  {onboardingAvailable
+                    ? "Envía los datos de tu organización y describe su operación. La solicitud se registrará para revisión."
+                    : "Consulta las modalidades disponibles. Las nuevas solicitudes se habilitarán después de validar la incorporación y el aviso de privacidad."}
+                </Typography.Paragraph>
+                <Link
+                  className="site-button site-button-primary mt-6"
+                  href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
+                >
+                  {onboardingAvailable ? "Completar solicitud" : "Ver planes"}
+                  <FiArrowUpRight aria-hidden="true" className="size-4" />
+                </Link>
+              </Card.Content>
             </Card>
           </Reveal>
 
           <Reveal viewport className="h-full" delay={0.09}>
             <Card className="site-card h-full border border-brand-600/20 shadow-sm shadow-brand-700/5 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none">
-            <Card.Content className="flex h-full flex-col p-7 sm:p-9">
-              <div className="flex items-center justify-between gap-3">
-                <Chip color="accent" size="sm" variant="soft">
-                  Cuentas existentes
-                </Chip>
-                <span className="grid size-11 place-items-center rounded-xl bg-brand-600/10 text-accent">
-                  <FiShield aria-hidden="true" className="size-5" />
-                </span>
-              </div>
-              <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
-                Acceder al portal
-              </Typography.Heading>
-              <Typography.Paragraph className="mt-3 min-h-20 text-sm leading-7 text-muted">
-                Si ya tienes un usuario activo, utiliza el portal empresarial. Las consultas sobre
-                cuentas se gestionan por los canales de tu organización.
-              </Typography.Paragraph>
-              {portalLoginUrl ? (
-                <Link className="site-button site-button-outline mt-6" href={portalLoginUrl}>
-                  Ir al portal
-                  <FiLogIn aria-hidden="true" className="size-4" />
-                </Link>
-              ) : (
-                <Typography.Paragraph className="mt-6 text-xs leading-6 text-muted">
-                  El enlace al portal se habilitará cuando se configure su dirección pública.
+              <Card.Content className="flex h-full flex-col p-7 sm:p-9">
+                <div className="flex items-center justify-between gap-3">
+                  <Chip color="accent" size="sm" variant="soft">
+                    Cuentas existentes
+                  </Chip>
+                  <span className="grid size-11 place-items-center rounded-xl bg-brand-600/10 text-accent">
+                    <FiShield aria-hidden="true" className="size-5" />
+                  </span>
+                </div>
+                <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
+                  Acceder al portal
+                </Typography.Heading>
+                <Typography.Paragraph className="mt-3 min-h-20 text-sm leading-7 text-muted">
+                  Si ya tienes un usuario activo, utiliza el portal empresarial. Las consultas sobre
+                  cuentas se gestionan por los canales de tu organización.
                 </Typography.Paragraph>
-              )}
-            </Card.Content>
+                {portalLoginUrl ? (
+                  <Link className="site-button site-button-outline mt-6" href={portalLoginUrl}>
+                    Ir al portal
+                    <FiLogIn aria-hidden="true" className="size-4" />
+                  </Link>
+                ) : (
+                  <Typography.Paragraph className="mt-6 text-xs leading-6 text-muted">
+                    El enlace al portal se habilitará cuando se configure su dirección pública.
+                  </Typography.Paragraph>
+                )}
+              </Card.Content>
             </Card>
           </Reveal>
         </div>

@@ -66,7 +66,8 @@ export function PlansContent() {
                   Compara lo que incluye cada opción
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-                  Precios y cuotas actualizados desde las ofertas publicadas. Compara hasta tres planes a la vez.
+                  Precios y cuotas actualizados desde las ofertas publicadas. Compara hasta tres
+                  planes a la vez.
                 </p>
               </div>
               <Link
