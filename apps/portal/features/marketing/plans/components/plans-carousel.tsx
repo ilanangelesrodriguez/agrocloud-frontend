@@ -30,9 +30,7 @@ export function PlansCarousel({ items }: Props) {
       if (!slide) return;
 
       const left =
-        slide.getBoundingClientRect().left -
-        track.getBoundingClientRect().left +
-        track.scrollLeft;
+        slide.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
 
       track.scrollTo({ left, behavior: reduceMotion ? "instant" : "smooth" });
       setFirstVisible(targetIndex);
