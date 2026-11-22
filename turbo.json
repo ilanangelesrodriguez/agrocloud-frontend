@@ -13,6 +13,10 @@
         ".next/**",
         "!.next/cache/**",
         "dist/**"
+      ],
+      "env": [
+        "AGROCLOUD_PUBLIC_ONBOARDING_ENABLED",
+        "IDENTITY_PRIVACY_VERSION"
       ]
     },
     "lint": {
