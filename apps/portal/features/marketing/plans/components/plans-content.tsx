@@ -37,7 +37,7 @@ export function PlansContent() {
         title="Elige el acceso que necesita tu empresa"
       />
       <section className="site-section site-section-first">
-        <div className="site-container max-w-5xl">
+        <div className="site-container">
           {!onboardingAvailable && !actor ? (
             <div
               className="mb-7 flex items-start gap-3 rounded-2xl border border-brand-600/20 bg-brand-50/50 p-4 text-sm dark:bg-brand-700/10"
@@ -66,7 +66,7 @@ export function PlansContent() {
                   Compara lo que incluye cada opción
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-                  Los importes de las ofertas empresariales provienen del catálogo publicado.
+                  Precios y cuotas actualizados desde las ofertas publicadas. Compara hasta tres planes a la vez.
                 </p>
               </div>
               <Link
