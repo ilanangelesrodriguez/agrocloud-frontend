@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Alert, Card, Chip, Tabs, Typography } from "@heroui/react";
+import { Alert, Button, Card, Chip, Tabs, Typography } from "@heroui/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   FiArrowRight,
   FiArrowUpRight,
@@ -11,6 +12,8 @@ import {
   FiClipboard,
   FiFileText,
   FiPackage,
+  FiPause,
+  FiPlay,
   FiSearch,
   FiShield,
 } from "react-icons/fi";
@@ -61,7 +64,26 @@ const highlights = [
 
 export function HomeContent() {
   const [active, setActive] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const reduceMotion = useReducedMotion();
   const onboardingAvailable = useOnboardingAvailability();
+
+  useEffect(() => {
+    if (reduceMotion || isPaused || isHovering || isFocused) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        setActive((current) => (current + 1) % stages.length);
+      }
+    }, 4700);
+    return () => window.clearInterval(timer);
+  }, [reduceMotion, isPaused, isHovering, isFocused]);
+
+  const chooseStage = (index: number) => {
+    setActive(index);
+    setIsPaused(true);
+  };
 
   return (
     <>
@@ -114,13 +136,34 @@ export function HomeContent() {
           </Reveal>
 
           <Reveal className="relative z-10" delay={0.12}>
-            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-lg shadow-brand-700/10">
+            <Card
+              className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-lg shadow-brand-700/10"
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+              onFocusCapture={() => setIsFocused(true)}
+              onBlurCapture={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) setIsFocused(false);
+              }}
+            >
               <Card.Content className="p-4 sm:p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <span className="text-sm font-semibold text-accent">Expediente agrícola</span>
-                  <Chip color="accent" size="sm" variant="soft">
-                    Flujo ilustrativo
-                  </Chip>
+                  <div className="flex items-center gap-2">
+                    <Chip color="accent" size="sm" variant="soft">
+                      Flujo ilustrativo
+                    </Chip>
+                    <Button
+                      isIconOnly
+                      aria-label={isPaused ? "Reanudar demostración" : "Pausar demostración"}
+                      className="size-9 rounded-lg"
+                      isDisabled={Boolean(reduceMotion)}
+                      size="sm"
+                      variant="secondary"
+                      onPress={() => setIsPaused((paused) => !paused)}
+                    >
+                      {isPaused ? <FiPlay aria-hidden="true" /> : <FiPause aria-hidden="true" />}
+                    </Button>
+                  </div>
                 </div>
                 <Tabs
                   className="mt-4 space-y-4"
@@ -128,7 +171,7 @@ export function HomeContent() {
                   variant="secondary"
                   onSelectionChange={(key) => {
                     const index = stages.findIndex((stage) => stage.n === String(key));
-                    if (index !== -1) setActive(index);
+                    if (index !== -1) chooseStage(index);
                   }}
                 >
                   <Tabs.ListContainer className="max-w-full overflow-x-auto">
@@ -150,26 +193,56 @@ export function HomeContent() {
                     return (
                       <Tabs.Panel key={stage.n} id={stage.n}>
                         <div className="min-h-52 rounded-2xl bg-gradient-to-br from-[#0F523C] to-[#103D35] p-5 text-white sm:p-6">
-                          <div className="flex items-start justify-between">
-                            <span className="text-xs font-medium text-white/70">
-                              Etapa {stage.n} de 04
-                            </span>
-                            <span className="grid size-10 place-items-center rounded-xl bg-white/10">
-                              <StageIcon aria-hidden="true" className="size-5 text-[#B7F5A2]" />
-                            </span>
-                          </div>
-                          <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight text-white">
-                            {stage.title}
-                          </Typography.Paragraph>
-                          <Typography.Paragraph className="mt-2 max-w-md text-sm leading-7 text-white/80">
-                            {stage.detail}
-                          </Typography.Paragraph>
+                          <AnimatePresence mode="wait" initial={false}>
+                            {active === stages.indexOf(stage) ? (
+                              <motion.div
+                                key={stage.n}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: reduceMotion ? 0 : -8 }}
+                                initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }}
+                                transition={{ duration: reduceMotion ? 0 : 0.25 }}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <span className="text-xs font-medium text-white/70">
+                                    Etapa {stage.n} de 04
+                                  </span>
+                                  <span className="grid size-10 place-items-center rounded-xl bg-white/10">
+                                    <StageIcon
+                                      aria-hidden="true"
+                                      className="size-5 text-[#B7F5A2]"
+                                    />
+                                  </span>
+                                </div>
+                                <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight text-white">
+                                  {stage.title}
+                                </Typography.Paragraph>
+                                <Typography.Paragraph className="mt-2 max-w-md text-sm leading-7 text-white/80">
+                                  {stage.detail}
+                                </Typography.Paragraph>
+                              </motion.div>
+                            ) : null}
+                          </AnimatePresence>
                         </div>
                       </Tabs.Panel>
                     );
                   })}
                 </Tabs>
-                <Typography.Paragraph className="mt-4 text-center text-[11px] text-muted">
+                <div aria-hidden="true" className="mt-4 flex gap-1.5">
+                  {stages.map((stage, index) => (
+                    <span
+                      key={stage.n}
+                      className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-600/10"
+                    >
+                      <motion.span
+                        animate={{ scaleX: index <= active ? 1 : 0 }}
+                        className="block h-full origin-left rounded-full bg-brand-700"
+                        initial={false}
+                        transition={{ duration: reduceMotion ? 0 : 0.3 }}
+                      />
+                    </span>
+                  ))}
+                </div>
+                <Typography.Paragraph className="mt-3 text-center text-[11px] text-muted">
                   Ejemplo ilustrativo: no representa datos reales ni reemplaza la revisión humana.
                 </Typography.Paragraph>
               </Card.Content>

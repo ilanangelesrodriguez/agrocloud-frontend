@@ -18,6 +18,7 @@ export function PlansCarousel({ items }: Props) {
   const [firstVisible, setFirstVisible] = useState(0);
   const lastStart = Math.max(0, items.length - visibleCount);
   const canScroll = items.length > visibleCount;
+  const narrowCollection = items.length <= 2;
 
   const moveTo = useCallback(
     (index: number) => {
@@ -56,16 +57,21 @@ export function PlansCarousel({ items }: Props) {
   }, [lastStart]);
 
   useEffect(() => {
-    const breakpoint = window.matchMedia("(min-width: 768px)");
+    const tablet = window.matchMedia("(min-width: 768px)");
+    const desktop = window.matchMedia("(min-width: 1024px)");
     const updateLayout = () => {
-      setVisibleCount(breakpoint.matches ? 2 : 1);
+      setVisibleCount(desktop.matches ? 3 : tablet.matches ? 2 : 1);
       setFirstVisible(0);
       trackRef.current?.scrollTo({ left: 0, behavior: "auto" });
     };
 
     updateLayout();
-    breakpoint.addEventListener("change", updateLayout);
-    return () => breakpoint.removeEventListener("change", updateLayout);
+    tablet.addEventListener("change", updateLayout);
+    desktop.addEventListener("change", updateLayout);
+    return () => {
+      tablet.removeEventListener("change", updateLayout);
+      desktop.removeEventListener("change", updateLayout);
+    };
   }, []);
 
   const move = (direction: -1 | 1) => moveTo(firstVisible + direction * visibleCount);
@@ -113,7 +119,7 @@ export function PlansCarousel({ items }: Props) {
         ref={trackRef}
         aria-label="Comparación de planes de AgroCloud"
         aria-roledescription="carrusel"
-        className="flex min-w-0 snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overscroll-x-contain rounded-2xl pb-3 scroll-smooth motion-reduce:scroll-auto md:gap-6 [&::-webkit-scrollbar]:hidden"
+        className={`flex min-w-0 snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overscroll-x-contain rounded-2xl pb-4 scroll-smooth motion-reduce:scroll-auto md:gap-6 [&::-webkit-scrollbar]:hidden ${narrowCollection ? "lg:justify-center" : ""}`}
         id="planes-disponibles"
         role="region"
         style={{ scrollbarWidth: "none" }}
@@ -124,7 +130,7 @@ export function PlansCarousel({ items }: Props) {
             key={index}
             aria-label={"Plan " + (index + 1) + " de " + items.length}
             aria-roledescription="diapositiva"
-            className="min-w-0 basis-full shrink-0 snap-start md:basis-[calc((100%-1.5rem)/2)]"
+            className={`min-w-0 basis-full shrink-0 snap-start md:basis-[calc(50%-0.75rem)] ${narrowCollection ? "lg:basis-[calc(50%-0.75rem)]" : "lg:basis-[calc(33.333%-1rem)]"}`}
             data-plan-slide=""
             role="group"
           >
@@ -148,7 +154,7 @@ export function PlansCarousel({ items }: Props) {
           </div>
           <p className="text-xs text-muted">
             <span className="md:hidden">Desliza para comparar otros planes</span>
-            <span className="hidden md:inline">Utiliza las flechas para comparar más opciones</span>
+            <span className="hidden md:inline">Explora otras modalidades con las flechas</span>
           </p>
         </div>
       ) : null}
