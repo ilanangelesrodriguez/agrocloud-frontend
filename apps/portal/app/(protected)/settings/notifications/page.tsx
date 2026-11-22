@@ -1,4 +1,5 @@
-import { NotificationPreferencesPage } from "@/features/notifications/components/notification-preferences";
+import { redirect } from "next/navigation";
+
 export default function Page() {
-  return <NotificationPreferencesPage />;
+  redirect("/notifications#preferences");
 }

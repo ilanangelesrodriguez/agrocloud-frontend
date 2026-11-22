@@ -10,6 +10,9 @@ export type RecordRow = {
   id: number;
   title: string;
   detail: string;
+  product?: string;
+  producer?: string;
+  action?: { label: string; href: string };
   status?: { label: string; tone: "success" | "danger" | "warning" | "neutral" | "info" };
 };
 
@@ -44,8 +47,12 @@ export function RecordList({
                 <Table.Column isRowHeader>
                   {resource === "lots" ? "Lote" : "Productor"}
                 </Table.Column>
-                <Table.Column>Información</Table.Column>
+                <Table.Column>
+                  {resource === "lots" ? "Producto y variedad" : "Información"}
+                </Table.Column>
+                {resource === "lots" ? <Table.Column>Productor</Table.Column> : null}
                 <Table.Column>{resource === "lots" ? "Estado" : "Acceso"}</Table.Column>
+                {resource === "lots" ? <Table.Column>Acción</Table.Column> : null}
               </Table.Header>
               <Table.Body items={rows}>
                 {(row) => (
@@ -66,8 +73,14 @@ export function RecordList({
                       </Link>
                     </Table.Cell>
                     <Table.Cell className="min-w-48 max-w-md whitespace-normal text-sm text-muted">
-                      {row.detail || "Sin información adicional"}
+                      {(resource === "lots" ? (row.product ?? row.detail) : row.detail) ||
+                        "Sin información adicional"}
                     </Table.Cell>
+                    {resource === "lots" ? (
+                      <Table.Cell className="min-w-44 max-w-xs whitespace-normal text-sm">
+                        {row.producer || "Sin productor disponible"}
+                      </Table.Cell>
+                    ) : null}
                     <Table.Cell>
                       {row.status ? (
                         <StatusBadge tone={row.status.tone}>{row.status.label}</StatusBadge>
@@ -80,6 +93,17 @@ export function RecordList({
                         </Link>
                       )}
                     </Table.Cell>
+                    {resource === "lots" ? (
+                      <Table.Cell>
+                        <Link
+                          href={row.action?.href ?? `/lots/${row.id}`}
+                          className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-3 text-sm font-medium text-accent hover:bg-default"
+                        >
+                          <FiEye aria-hidden="true" />
+                          {row.action?.label ?? "Ver detalle"}
+                        </Link>
+                      </Table.Cell>
+                    ) : null}
                   </Table.Row>
                 )}
               </Table.Body>

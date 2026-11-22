@@ -83,7 +83,14 @@ export function EvidenceReview({
   });
   const detections = photo.resultado_ia?.detections ?? [];
   const validations = photo.validaciones ?? [];
-  const validationByIndex = new Map(validations.map((item) => [item.indice_deteccion, item]));
+  const validationByIndex = new Map(
+    validations
+      .filter((item) => {
+        const detection = detections[item.indice_deteccion];
+        return detection && (!item.detection_id || item.detection_id === detection.id);
+      })
+      .map((item) => [item.indice_deteccion, item]),
+  );
   const pending = detections.filter((_, index) => !validationByIndex.has(index)).length;
   const inProgress = ["EN_COLA", "PROCESANDO"].includes(photo.estado_ia ?? "");
   const discarded = photo.pertinencia === "INVALIDA";
@@ -111,10 +118,22 @@ export function EvidenceReview({
     <section className="space-y-5 border-t border-border pt-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-lg font-semibold">Revisión humana</h3>
-        <StatusBadge tone={discarded ? "danger" : photo.reviewed_at ? "success" : "warning"}>
-          {discarded ? "Descartada" : photo.reviewed_at ? "Revisada" : "Pendiente de revisión"}
+        <StatusBadge tone={discarded ? "danger" : photo.reviewed_at ? "neutral" : "warning"}>
+          {discarded
+            ? "Descartada"
+            : photo.reviewed_at
+              ? "Revisión guardada"
+              : "Pendiente de revisión"}
         </StatusBadge>
       </div>
+      {!discarded ? (
+        <p className="text-sm text-muted">
+          {pending} de {detections.length} detecciones pendientes de decisión en esta fotografía.{" "}
+          {photo.reviewed_at
+            ? "La vigencia de la revisión guardada se comprueba antes de validar la inspección."
+            : "Guarda la revisión cuando hayas completado las decisiones y verificado la pertinencia."}
+        </p>
+      ) : null}
       {photo.version_modelo || photo.resultado_ia?.model_id ? (
         <p className="break-words text-xs text-muted">
           Modelo: {photo.version_modelo || photo.resultado_ia?.model_id}

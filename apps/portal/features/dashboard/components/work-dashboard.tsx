@@ -1,17 +1,35 @@
 "use client";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@heroui/react";
 import { ErrorState, LoadingState } from "@agrocloud/ui";
 import { bffRequest } from "@/lib/api/bff-client";
 import { dashboardResponse } from "@/features/agricultural/operations-schema";
-export function WorkDashboard() {
+import { InspectorWorkDashboard } from "./inspector-work-dashboard";
+export function WorkDashboard({ inspector = false }: { inspector?: boolean }) {
   const query = useQuery({
     queryKey: ["agricultural", "dashboard"],
     queryFn: ({ signal }) => bffRequest("dashboard", dashboardResponse, { signal }, "agricultural"),
     retry: false,
   });
-  if (query.isPending) return <LoadingState label="Cargando actividades pendientes" />;
+  if (query.isPending)
+    return inspector ? (
+      <section role="status" aria-label="Cargando actividades pendientes" className="space-y-5">
+        <span className="sr-only">Cargando actividades pendientes</span>
+        <div aria-hidden="true" className="grid gap-4 md:grid-cols-3">
+          {[0, 1, 2].map((key) => (
+            <Skeleton key={key} className="h-48 rounded-2xl" />
+          ))}
+        </div>
+        <Skeleton aria-hidden="true" className="h-24 rounded-2xl" />
+        <Skeleton aria-hidden="true" className="h-56 rounded-2xl" />
+      </section>
+    ) : (
+      <LoadingState label="Cargando actividades pendientes" />
+    );
   if (query.isError) return <ErrorState error={query.error} retry={() => query.refetch()} />;
+  if (inspector)
+    return <InspectorWorkDashboard data={query.data} updatedAt={query.dataUpdatedAt} />;
   return (
     <section className="space-y-5" aria-label="Bandeja de trabajo">
       <h2 className="text-xl font-semibold">Tu trabajo pendiente</h2>

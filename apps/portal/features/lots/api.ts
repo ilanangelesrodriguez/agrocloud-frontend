@@ -2,8 +2,13 @@ import { bffRequest } from "@/lib/api/bff-client";
 import { catalog, lotDetail, lotList } from "./schema";
 import { producerList } from "@/features/producers/schema";
 
-export function fetchLots(page: number, signal?: AbortSignal) {
-  return bffRequest("lots?page=" + page, lotList, { signal }, "agricultural");
+export function fetchLots(page: number, signal?: AbortSignal, status?: string) {
+  return bffRequest(
+    "lots?page=" + page + (status ? "&estado=" + encodeURIComponent(status) : ""),
+    lotList,
+    { signal },
+    "agricultural",
+  );
 }
 
 export function fetchLot(id: string, signal?: AbortSignal) {

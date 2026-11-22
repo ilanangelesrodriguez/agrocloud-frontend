@@ -35,8 +35,16 @@ export const procedureInput = z
     version: z.string().trim().min(1, "Ingresa la versión.").max(30),
     metodo: z.string().trim().min(1, "Selecciona un método.").max(80),
     producto: z.string().trim().min(1).max(150).nullable(),
-    criterio_muestra: z.string().trim().min(1, "Describe el criterio de muestra.").max(1500),
-    seleccion_frutos: z.string().trim().min(1, "Describe la selección de frutos.").max(1500),
+    criterio_muestra: z
+      .string()
+      .trim()
+      .min(10, "Describe el criterio de muestra con al menos 10 caracteres.")
+      .max(1500),
+    seleccion_frutos: z
+      .string()
+      .trim()
+      .min(10, "Describe la selección de frutos con al menos 10 caracteres.")
+      .max(1500),
     tamano_recomendado: z.number().int().positive().nullable(),
     max_frutos: z.number().int().min(1).max(100000),
     requiere_poblacion: z.boolean(),

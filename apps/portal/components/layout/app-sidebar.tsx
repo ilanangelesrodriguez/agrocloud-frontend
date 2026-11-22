@@ -7,6 +7,8 @@ import { ScrollShadow } from "@heroui/react";
 
 import type { NavigationSection } from "@/config/navigation";
 
+import { OrganizationBadge } from "./organization-badge";
+import type { CompanyBrand } from "@/features/company/profile/use-company-brand";
 import { NavigationList } from "./navigation-list";
 
 export function AppSidebar({
@@ -14,11 +16,13 @@ export function AppSidebar({
   pathname,
   home,
   collapsed,
+  brand,
 }: {
   sections: NavigationSection[];
   pathname: string;
   home: string;
   collapsed: boolean;
+  brand: CompanyBrand;
 }) {
   return (
     <aside
@@ -49,6 +53,9 @@ export function AppSidebar({
         ) : null}
       </Link>
 
+      <div className={collapsed ? "shrink-0 px-2 pt-4" : "shrink-0 px-3 pt-4"}>
+        <OrganizationBadge brand={brand} collapsed={collapsed} />
+      </div>
       <ScrollShadow
         size={28}
         hideScrollBar

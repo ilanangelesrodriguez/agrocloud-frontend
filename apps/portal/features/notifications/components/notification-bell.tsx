@@ -45,7 +45,7 @@ export function NotificationBell() {
           <div className="flex items-center justify-between gap-3">
             <Popover.Heading className="text-lg font-semibold">Notificaciones</Popover.Heading>
             <Link
-              href="/settings/notifications"
+              href="/notifications#preferences"
               onClick={() => setOpen(false)}
               className="text-xs font-medium text-accent"
             >

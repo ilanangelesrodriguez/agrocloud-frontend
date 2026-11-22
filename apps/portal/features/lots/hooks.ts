@@ -3,17 +3,18 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { fetchCatalog, fetchLot, fetchLotProducers, fetchLots } from "./api";
 
-export function useLotsPage(page: number) {
+export function useLotsPage(page: number, status = "") {
   return useQuery({
-    queryKey: ["agricultural", "lots", page],
-    queryFn: ({ signal }) => fetchLots(page, signal),
+    queryKey: ["agricultural", "lots", page, status],
+    queryFn: ({ signal }) => fetchLots(page, signal, status),
     retry: false,
   });
 }
 
-export function useLotDetails(id: string) {
+export function useLotDetails(id: string, enabled = true) {
   return useQuery({
     queryKey: ["agricultural", "lots", "detail", id],
+    enabled,
     // Preservar el shape del caché usado al registrar la recepción.
     queryFn: async ({ signal }) => ({ producer: null, lot: (await fetchLot(id, signal)).data }),
     refetchInterval: ({ state }) =>

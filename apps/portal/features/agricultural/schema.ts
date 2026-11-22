@@ -101,6 +101,8 @@ const lot = z.object({
           sampled_fruits: z.number(),
           captured_fruits: z.number(),
           reviewed_fruits: z.number(),
+          relevant_photos: z.number().optional(),
+          reviewed_photos: z.number().optional(),
           ai_pending: z.number(),
           ai_completed: z.number(),
           manual_reviewed: z.number(),

@@ -1,17 +1,8 @@
 "use client";
-
-import { useState } from "react";
-import { Button } from "@heroui/react";
-import {
-  FiBriefcase,
-  FiCheckCircle,
-  FiEdit3,
-  FiFileText,
-  FiMail,
-  FiMapPin,
-  FiPhone,
-  FiShield,
-} from "react-icons/fi";
+import { useState, type ReactNode } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { Button, Tabs } from "@heroui/react";
+import { FiEdit3, FiFileText, FiShield } from "react-icons/fi";
 import { ErrorState, LoadingState, PageHeader, StatusBadge } from "@agrocloud/ui";
 import { CreationDrawer } from "@/components/creation-drawer";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
@@ -19,8 +10,30 @@ import { canManageCompany } from "@/features/company/navigation";
 import { useCompanyProfile } from "../hooks";
 import { CompanyEditor } from "./company-editor";
 import { CompanyLogoEditor } from "./company-logo-editor";
-
+function CompanyPanel({ children }: { children: ReactNode }) {
+  const reducedMotion = useReducedMotion();
+  return (
+    <motion.div
+      initial={reducedMotion ? false : { opacity: 0, y: 3 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.15 }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+function Datum({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs font-medium text-muted">{label}</dt>
+      <dd className="mt-2 break-words text-sm [overflow-wrap:anywhere]">
+        {value || "Sin información registrada"}
+      </dd>
+    </div>
+  );
+}
 export function CompanyProfile() {
+  const reducedMotion = useReducedMotion();
   const { data: actor } = useCurrentUser();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -30,10 +43,60 @@ export function CompanyProfile() {
   const active =
     profile?.estado === true ||
     (typeof profile?.estado === "string" &&
-      ["ACTIVA", "ACTIVO", "ACTIVE"].includes(profile.estado.toUpperCase()));
+      ["ACTIVA", "ACTIVO", "ACTIVE"].includes(profile.estado.trim().toUpperCase()));
+  const inactive =
+    profile?.estado === false ||
+    (typeof profile?.estado === "string" &&
+      ["INACTIVA", "INACTIVO", "INACTIVE"].includes(profile.estado.trim().toUpperCase()));
+  const accountStatus = active
+    ? "Empresa activa"
+    : inactive
+      ? "Empresa inactiva"
+      : "Estado de cuenta sin confirmar";
   const verification = profile?.sunat_verificacion;
+  const result = (verification?.resultado ?? "").trim().toUpperCase().replaceAll(" ", "_");
+  const verified = [
+    "VERIFICADO",
+    "VERIFICADA",
+    "VERIFIED",
+    "ENCONTRADO",
+    "ENCONTRADA",
+    "FOUND",
+    "SUCCESS",
+    "EXITOSO",
+    "OK",
+  ].includes(result);
+  const notFound = ["NO_ENCONTRADO", "NO_ENCONTRADA", "NOT_FOUND"].includes(result);
+  const providerError = [
+    "ERROR",
+    "ERROR_PROVEEDOR",
+    "PROVIDER_ERROR",
+    "UNAVAILABLE",
+    "NO_DISPONIBLE",
+  ].includes(result);
+  const verificationTitle = verified
+    ? "Verificado"
+    : notFound
+      ? "No encontrado"
+      : providerError
+        ? "Error del proveedor"
+        : result && !["PENDIENTE", "PENDING"].includes(result)
+          ? "Resultado sin clasificar"
+          : "Consulta pendiente";
+  const verificationDescription = verified
+    ? "La consulta registrada encontró información tributaria para este RUC. Revisa el estado y la condición SUNAT por separado."
+    : notFound
+      ? "La consulta no encontró información para este RUC. Esto no significa que tu cuenta empresarial esté inactiva ni determina la validez del RUC."
+      : providerError
+        ? "No se pudo completar la consulta al proveedor. Este resultado no determina la situación tributaria de la empresa."
+        : "No hay una verificación concluyente registrada para este RUC.";
   return (
-    <section className="min-w-0 space-y-6">
+    <motion.section
+      initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.16 }}
+      className="min-w-0 space-y-6"
+    >
       <PageHeader
         title="Mi empresa"
         description="Información de tu organización, datos de contacto y verificación tributaria."
@@ -65,107 +128,116 @@ export function CompanyProfile() {
       ) : company.isError ? (
         <ErrorState error={company.error} retry={() => void company.refetch()} />
       ) : profile ? (
-        <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="min-w-0 space-y-6">
-            <CompanyLogoEditor logoUrl={profile.logo_url} companyName={profile.razon_social} canEdit={canEdit} />
-            <section className="min-w-0 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <span className="rounded-2xl bg-accent/10 p-4 text-accent">
-                  <FiBriefcase aria-hidden="true" className="size-7" />
+        <>
+          <section className="flex min-w-0 flex-col gap-6 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-start sm:p-6">
+            <CompanyLogoEditor
+              compact
+              logoUrl={profile.logo_url}
+              companyName={profile.nombre_comercial || profile.razon_social}
+              canEdit={canEdit}
+            />
+            <div className="min-w-0 flex-1 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                Identidad empresarial
+              </p>
+              <h2 className="break-words text-2xl font-semibold">
+                {profile.nombre_comercial || profile.razon_social}
+              </h2>
+              <p className="break-words text-sm text-muted">{profile.razon_social}</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 text-sm">
+                  <FiFileText aria-hidden="true" />
+                  RUC {profile.ruc}
                 </span>
-                <StatusBadge tone={active ? "success" : "neutral"}>
-                  {typeof profile.estado === "boolean"
-                    ? active
-                      ? "Empresa activa"
-                      : "Empresa inactiva"
-                    : profile.estado.replaceAll("_", " ")}
-                </StatusBadge>
+                <StatusBadge tone={active ? "success" : "neutral"}>{accountStatus}</StatusBadge>
               </div>
-              <p className="mb-2 mt-6 text-xs font-semibold uppercase tracking-wider text-muted">
-                Razón social
-              </p>
-              <h2 className="break-words text-2xl font-semibold tracking-tight [overflow-wrap:anywhere]">
-                {profile.razon_social}
-              </h2>
-              <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-default px-3 py-2 font-mono text-sm">
-                <FiFileText aria-hidden="true" /> RUC {profile.ruc}
-              </p>
-              <dl className="mt-7 grid gap-6 border-t border-border pt-6 sm:grid-cols-2">
-                <div className="min-w-0">
-                  <dt className="text-xs font-medium text-muted">Nombre comercial</dt>
-                  <dd className="mt-2 break-words text-sm font-medium [overflow-wrap:anywhere]">
-                    {profile.nombre_comercial || "Sin nombre comercial registrado"}
-                  </dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="text-xs font-medium text-muted">Actividad de la empresa</dt>
-                  <dd className="mt-2 break-words text-sm font-medium">
-                    {profile.tipo_empresa || "Sin actividad registrada"}
-                  </dd>
-                </div>
-              </dl>
-            </section>
-            <section className="min-w-0 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-              <h2 className="flex items-center gap-2 text-lg font-semibold">
-                <FiMail aria-hidden="true" className="text-accent" /> Contacto y ubicación
-              </h2>
-              <dl className="mt-6 grid gap-6 sm:grid-cols-2">
-                <div className="min-w-0">
-                  <dt className="flex items-center gap-2 text-xs font-medium text-muted">
-                    <FiMail aria-hidden="true" /> Correo de contacto
-                  </dt>
-                  <dd className="mt-2 break-words text-sm [overflow-wrap:anywhere]">
-                    {profile.correo || "Sin correo registrado"}
-                  </dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="flex items-center gap-2 text-xs font-medium text-muted">
-                    <FiPhone aria-hidden="true" /> Teléfono
-                  </dt>
-                  <dd className="mt-2 break-words text-sm">
-                    {profile.telefono || "Sin teléfono registrado"}
-                  </dd>
-                </div>
-                <div className="min-w-0 sm:col-span-2">
-                  <dt className="flex items-center gap-2 text-xs font-medium text-muted">
-                    <FiMapPin aria-hidden="true" /> Dirección
-                  </dt>
-                  <dd className="mt-2 break-words text-sm [overflow-wrap:anywhere]">
-                    {profile.direccion || "Sin dirección registrada"}
-                  </dd>
-                </div>
-              </dl>
-            </section>
-          </div>
-          <section className="min-w-0 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-            <span className="mb-5 inline-flex rounded-xl bg-accent/10 p-3 text-accent">
-              <FiShield aria-hidden="true" className="size-6" />
-            </span>
-            <h2 className="text-lg font-semibold">Verificación tributaria</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              Resultado registrado para los datos tributarios de tu empresa.
-            </p>
-            <dl className="mt-6 space-y-5">
-              {[
-                ["Resultado", verification?.resultado],
-                ["Estado SUNAT", verification?.estado],
-                ["Condición SUNAT", verification?.condicion],
-              ].map(([label, value]) => (
-                <div key={label} className="min-w-0 border-t border-border pt-4">
-                  <dt className="text-xs font-medium text-muted">{label}</dt>
-                  <dd className="mt-2 break-words text-sm font-medium">
-                    {value ? value.replaceAll("_", " ") : "Sin información registrada"}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-6 flex items-start gap-2 rounded-xl bg-default p-4 text-xs leading-relaxed text-muted">
-              <FiCheckCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" /> La
-              verificación tributaria se actualiza al modificar la razón social.
-            </p>
+            </div>
           </section>
-        </div>
+          <Tabs variant="secondary" className="min-w-0 space-y-5">
+            <Tabs.ListContainer>
+              <Tabs.List aria-label="Datos de la empresa">
+                {[
+                  ["information", "Información"],
+                  ["location", "Ubicación"],
+                  ["verification", "Verificación"],
+                ].map(([id, label]) => (
+                  <Tabs.Tab key={id} id={id}>
+                    {label}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+            <Tabs.Panel id="information">
+              <CompanyPanel>
+                <section className="rounded-2xl border border-border bg-surface p-5 sm:p-7">
+                  <h2 className="text-lg font-semibold">Información general</h2>
+                  <dl className="mt-5 grid gap-6 sm:grid-cols-2">
+                    <Datum label="Razón social" value={profile.razon_social} />
+                    <Datum label="Nombre comercial" value={profile.nombre_comercial} />
+                    <Datum label="Actividad de la empresa" value={profile.tipo_empresa} />
+                    <Datum label="RUC" value={profile.ruc} />
+                  </dl>
+                  <h3 className="mb-5 mt-7 border-t border-border pt-6 font-semibold">Contacto</h3>
+                  <dl className="grid gap-6 sm:grid-cols-2">
+                    <Datum label="Correo de contacto" value={profile.correo} />
+                    <Datum label="Teléfono" value={profile.telefono} />
+                  </dl>
+                </section>
+              </CompanyPanel>
+            </Tabs.Panel>
+            <Tabs.Panel id="location">
+              <CompanyPanel>
+                <section className="rounded-2xl border border-border bg-surface p-5 sm:p-7">
+                  <h2 className="text-lg font-semibold">Ubicación de la empresa</h2>
+                  <dl className="mt-5 grid gap-6 sm:grid-cols-2">
+                    <Datum label="Departamento" value={profile.departamento} />
+                    <Datum label="Provincia" value={profile.provincia} />
+                    <Datum label="Distrito" value={profile.distrito} />
+                    <Datum label="UBIGEO" value={profile.ubigeo} />
+                    <Datum label="Dirección" value={profile.direccion} />
+                  </dl>
+                </section>
+              </CompanyPanel>
+            </Tabs.Panel>
+            <Tabs.Panel id="verification">
+              <CompanyPanel>
+                <section className="space-y-5 rounded-2xl border border-border bg-surface p-5 sm:p-7">
+                  <h2 className="flex items-center gap-2 text-lg font-semibold">
+                    <FiShield aria-hidden="true" />
+                    Verificación tributaria
+                  </h2>
+                  <StatusBadge
+                    tone={verified ? "success" : notFound || providerError ? "warning" : "neutral"}
+                  >
+                    {verificationTitle}
+                  </StatusBadge>
+                  <p className="max-w-3xl text-sm leading-relaxed text-muted">
+                    {verificationDescription}
+                  </p>
+                  <dl className="grid gap-6 border-t border-border pt-5 sm:grid-cols-2">
+                    <Datum
+                      label="Resultado registrado"
+                      value={verification?.resultado?.replaceAll("_", " ")}
+                    />
+                    <Datum label="Estado SUNAT" value={verification?.estado} />
+                    <Datum label="Condición SUNAT" value={verification?.condicion} />
+                    <Datum
+                      label="Última consulta"
+                      value="Fecha no disponible en el registro actual"
+                    />
+                  </dl>
+                  <p className="text-xs leading-relaxed text-muted">
+                    La verificación tributaria es independiente del estado de tu cuenta en
+                    AgroCloud. Si necesitas revisar este resultado, consulta con la administración
+                    de la plataforma.
+                  </p>
+                </section>
+              </CompanyPanel>
+            </Tabs.Panel>
+          </Tabs>
+        </>
       ) : null}
-    </section>
+    </motion.section>
   );
 }

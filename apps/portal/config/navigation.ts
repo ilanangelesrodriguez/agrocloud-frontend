@@ -123,7 +123,6 @@ export function navigationFor(user: IdentityUser): NavigationSection[] {
       items: [
         { href: "/settings/profile", label: "Mi perfil", icon: "profile" },
         { href: "/notifications", label: "Notificaciones", icon: "notifications" },
-        { href: "/settings/notifications", label: "Preferencias de avisos", icon: "notifications" },
       ],
     },
   ];

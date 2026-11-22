@@ -1,7 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Chip, ScrollShadow, toast } from "@heroui/react";
+import { Button, Chip, ScrollShadow, Tabs, toast } from "@heroui/react";
 import { EmptyState, ErrorState, FormNotice, LoadingState } from "@agrocloud/ui";
 import { useNotifications, useReadNotification, useUnreadNotifications } from "../hooks";
 import { notificationDestination } from "../utils";
@@ -24,6 +25,7 @@ export function NotificationList({
       (query.data?.pages.flatMap((page) => page.data) ?? []).map((item) => [item.id, item]),
     ).values(),
   );
+
   async function open(item: Notification) {
     if (read.isPending) return;
     if (!item.read_at) {
@@ -36,26 +38,30 @@ export function NotificationList({
     onNavigate?.();
     router.push(notificationDestination(item.destination));
   }
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div
-          role="group"
-          aria-label="Filtrar notificaciones"
-          className="flex gap-1 rounded-xl bg-default p-1"
+    <div
+      className={compact ? "min-w-0 space-y-4" : "flex min-w-0 flex-col gap-4 lg:min-h-0 lg:flex-1"}
+    >
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <Tabs
+          variant="secondary"
+          selectedKey={unread ? "unread" : "all"}
+          onSelectionChange={(key) => setUnread(String(key) === "unread")}
         >
-          {[false, true].map((value) => (
-            <Button
-              key={String(value)}
-              size="sm"
-              variant={unread === value ? "secondary" : "tertiary"}
-              aria-pressed={unread === value}
-              onPress={() => setUnread(value)}
-            >
-              {value ? "Sin leer" : "Todas"}
-            </Button>
-          ))}
-        </div>
+          <Tabs.ListContainer>
+            <Tabs.List aria-label="Filtrar notificaciones">
+              <Tabs.Tab id="all">
+                Todas
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id="unread" className="whitespace-nowrap">
+                Sin leer
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs.ListContainer>
+        </Tabs>
         <Button
           size="sm"
           variant="tertiary"
@@ -91,19 +97,20 @@ export function NotificationList({
       ) : (
         <>
           <ScrollShadow
+            hideScrollBar
             size={28}
             className={
               compact
                 ? "max-h-[min(24rem,50dvh)] overscroll-contain pr-2"
-                : "max-h-[max(24rem,calc(100dvh-23rem))] min-h-80 overscroll-contain pr-2"
+                : "min-w-0 overscroll-contain lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:pr-2"
             }
             aria-label="Lista de notificaciones"
           >
-            <ul className={compact ? "space-y-2" : "space-y-3"}>
+            <ul className={compact ? "grid min-w-0 gap-2" : "grid min-w-0 grid-cols-1 gap-4"}>
               {rows.map((item) => (
                 <li
                   key={item.id}
-                  className={`rounded-xl border p-4 ${item.read_at ? "border-border bg-surface" : "border-accent/25 bg-accent/5"}`}
+                  className={`flex min-w-0 flex-col rounded-xl border p-4 sm:p-5 ${item.read_at ? "border-border bg-surface" : "border-accent/25 bg-accent/5"}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="min-w-0 break-words text-sm font-semibold">{item.title}</h3>
@@ -147,7 +154,7 @@ export function NotificationList({
                       })}
                     </time>
                   </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-auto flex flex-wrap gap-2 pt-4">
                     <Button
                       size="sm"
                       variant="secondary"
@@ -173,6 +180,7 @@ export function NotificationList({
           </ScrollShadow>
           {query.hasNextPage ? (
             <Button
+              className="shrink-0 self-start"
               variant="secondary"
               isDisabled={query.isFetchingNextPage}
               onPress={() => void query.fetchNextPage()}

@@ -20,6 +20,8 @@ import { createProcedure } from "../api";
 import { useMasterCatalog } from "../hooks";
 import { procedureInput } from "../schema";
 import type { Procedure, CatalogItem } from "../schema";
+import { versionLabel } from "../procedure-display";
+import { fieldErrorsFrom } from "@/lib/form-fields";
 import { CatalogSelect } from "./catalog-select";
 
 function findMaster(items: CatalogItem[] | undefined, key: string) {
@@ -53,6 +55,9 @@ export function ProcedureForm({
   );
   const [population, setPopulation] = useState(source?.requiere_poblacion ?? false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [maximum, setMaximum] = useState(String(source?.max_frutos ?? ""));
+  const [recommendedSize, setRecommendedSize] = useState(String(source?.tamano_recomendado ?? ""));
   const create = useMutation({
     mutationFn: createProcedure,
     retry: false,
@@ -70,8 +75,10 @@ export function ProcedureForm({
     const fields = new FormData(event.currentTarget);
     const recommended = String(fields.get("tamano_recomendado") ?? "").trim();
     const parsed = procedureInput.safeParse({
-      nombre: fields.get("nombre"),
-      version: fields.get("version"),
+      nombre: String(fields.get("nombre") ?? "").trim(),
+      version: String(fields.get("version") ?? "")
+        .trim()
+        .replace(/^(?:v\s*)+(?=\d)/i, ""),
       metodo_id: findMaster(methods.data?.data, method)?.id,
       producto_id: findMaster(products.data?.data, product)?.id ?? null,
       metodo: findMaster(methods.data?.data, method)?.nombre ?? "",
@@ -85,13 +92,14 @@ export function ProcedureForm({
     if (
       source &&
       parsed.success &&
-      parsed.data.nombre === source.nombre &&
-      parsed.data.version === String(source.version)
+      parsed.data.nombre.toLocaleLowerCase("es") === source.nombre.trim().toLocaleLowerCase("es") &&
+      versionLabel(parsed.data.version) === versionLabel(source.version)
     ) {
       setError("Usa una versión diferente a la del procedimiento original.");
       return;
     }
     setError(parsed.success ? "" : (parsed.error.issues[0]?.message ?? "Revisa los datos."));
+    setFieldErrors(parsed.success ? {} : fieldErrorsFrom(parsed.error.issues));
     if (parsed.success) create.mutate(parsed.data);
   }
   if (products.isPending || methods.isPending)
@@ -107,11 +115,16 @@ export function ProcedureForm({
   const methodItems = (methods.data?.data ?? []).filter((item) => item.habilitado !== false);
   const productItems = (products.data?.data ?? []).filter((item) => item.habilitado !== false);
   return (
-    <Form validationBehavior="native" onSubmit={submit} className="space-y-5">
+    <Form
+      validationErrors={fieldErrors}
+      validationBehavior="native"
+      onSubmit={submit}
+      className="space-y-5"
+    >
       {source ? (
         <InlineNotice
           status="accent"
-          title={"Basado en " + source.nombre + " · v" + source.version}
+          title={"Basado en " + source.nombre + " · " + versionLabel(source.version)}
           description="Se creará un procedimiento independiente y activo. La versión anterior conservará su estado hasta que la desactives."
         />
       ) : null}
@@ -122,21 +135,31 @@ export function ProcedureForm({
           description="Registra un método en Maestros antes de crear un procedimiento."
         />
       ) : null}
-      <fieldset disabled={create.isPending} className="grid gap-5">
+      <fieldset
+        disabled={create.isPending}
+        className="grid gap-5"
+        onChange={() => {
+          setFieldErrors((previous) => (Object.keys(previous).length ? {} : previous));
+          setError("");
+        }}
+      >
         <TextField variant="secondary" isRequired name="nombre" defaultValue={source?.nombre ?? ""}>
           <Label>Nombre del procedimiento</Label>
-          <Input placeholder="Ej. María" variant="secondary" maxLength={150} />
+          <Input
+            placeholder="Ej. Muestreo de palta para recepción"
+            variant="secondary"
+            maxLength={150}
+          />
           <FieldError />
         </TextField>
         <TextField variant="secondary" isRequired name="version" defaultValue={source ? "" : "1.0"}>
           <Label>Versión</Label>
-          <Input
-            variant="secondary"
-            maxLength={30}
-            placeholder={source ? "Nueva versión" : "1.0"}
-          />
+          <Input variant="secondary" maxLength={30} placeholder={source ? "Ej. 2.0" : "Ej. 1.0"} />
           <FieldError />
         </TextField>
+        <p className="-mt-3 text-xs text-muted">
+          Usa una versión como 1.0 o 2.1. El prefijo v se añade al mostrarla.
+        </p>
         <CatalogSelect
           label="Producto"
           value={String(findMaster(productItems, product)?.id ?? "")}
@@ -177,7 +200,8 @@ export function ProcedureForm({
             variant="secondary"
             rows={4}
             maxLength={1500}
-            placeholder="Describe cómo obtener una muestra representativa."
+            placeholder="Ej. Distribuir la muestra entre distintos puntos del lote e indicar el criterio de representatividad."
+            minLength={10}
           />
           <FieldError />
         </TextField>
@@ -189,7 +213,8 @@ export function ProcedureForm({
         >
           <Label>Instrucciones de selección de frutos</Label>
           <TextArea
-            placeholder="Ingresa instrucciones de selección de frutos"
+            placeholder="Ej. Seleccionar frutos de diferentes cajas y posiciones sin elegir únicamente los visibles."
+            minLength={10}
             variant="secondary"
             rows={4}
             maxLength={1500}
@@ -201,16 +226,11 @@ export function ProcedureForm({
             variant="secondary"
             name="tamano_recomendado"
             type="number"
-            defaultValue={String(source?.tamano_recomendado ?? "")}
+            value={recommendedSize}
+            onChange={setRecommendedSize}
           >
             <Label>Tamaño recomendado</Label>
-            <Input
-              placeholder="Ingresa tamaño recomendado"
-              variant="secondary"
-              min={1}
-              max={100000}
-              step={1}
-            />
+            <Input placeholder="Ej. 30" variant="secondary" min={1} max={100000} step={1} />
             <FieldError />
           </TextField>
           <TextField
@@ -218,19 +238,25 @@ export function ProcedureForm({
             isRequired
             name="max_frutos"
             type="number"
-            defaultValue={String(source?.max_frutos ?? "")}
+            value={maximum}
+            onChange={setMaximum}
           >
             <Label>Máximo de frutos</Label>
-            <Input
-              placeholder="Ingresa máximo de frutos"
-              variant="secondary"
-              min={1}
-              max={100000}
-              step={1}
-            />
+            <Input placeholder="Ej. 60" variant="secondary" min={1} max={100000} step={1} />
             <FieldError />
           </TextField>
         </div>
+        <p className="text-xs leading-relaxed text-muted">
+          Define las cantidades según el protocolo autorizado. El tamaño recomendado no debe superar
+          el máximo de frutos.
+        </p>
+        {Number(maximum) === 1 || (recommendedSize !== "" && Number(recommendedSize) === 1) ? (
+          <InlineNotice
+            status="warning"
+            title="Revisa el tamaño de muestra"
+            description="Se ha indicado un solo fruto. Confirma que esta cantidad corresponde al protocolo; AgroCloud no determina su representatividad."
+          />
+        ) : null}
         <Checkbox isSelected={population} onChange={setPopulation} isDisabled={create.isPending}>
           <Checkbox.Content>
             <Checkbox.Control>

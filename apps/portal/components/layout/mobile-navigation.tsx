@@ -5,15 +5,19 @@ import Image from "next/image";
 import { Button, Sheet, ScrollShadow } from "@heroui/react";
 import { FiMenu } from "react-icons/fi";
 
+import type { CompanyBrand } from "@/features/company/profile/use-company-brand";
 import type { NavigationSection } from "@/config/navigation";
 
+import { OrganizationBadge } from "./organization-badge";
 import { NavigationList } from "./navigation-list";
 
 export function MobileNavigation({
   sections,
+  brand,
   pathname,
 }: {
   sections: NavigationSection[];
+  brand: CompanyBrand;
   pathname: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -42,6 +46,9 @@ export function MobileNavigation({
                   AgroCloud AI
                 </Sheet.Heading>
               </Sheet.Header>
+              <div className="shrink-0 px-3 pb-4">
+                <OrganizationBadge brand={brand} />
+              </div>
               <Sheet.Body className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
                 <ScrollShadow
                   size={24}

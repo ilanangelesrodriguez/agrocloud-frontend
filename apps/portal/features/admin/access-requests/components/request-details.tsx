@@ -60,7 +60,10 @@ export function RequestDetails({ request }: { request: AccessRequest }) {
         closeLabel="Cerrar"
         trigger={
           <Button variant="secondary" onPress={() => setOpen(true)}>
-            <FiEye aria-hidden="true" /> Ver solicitud
+            <FiEye aria-hidden="true" />{" "}
+            {request.estado === "PENDIENTE" || request.estado === "EN_REVISION"
+              ? "Revisar solicitud"
+              : "Ver solicitud"}
           </Button>
         }
       >

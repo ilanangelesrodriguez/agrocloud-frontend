@@ -43,7 +43,12 @@ export function LotOperations({
                 ["Transportista", reception.transportista],
                 ["Placa", reception.placa],
                 ["Peso recibido", reception.peso_recibido_kg + " kg"],
-                ["Recibido el", new Date(reception.recibido_en).toLocaleString("es-PE")],
+                [
+                  "Recibido el",
+                  new Date(reception.recibido_en).toLocaleString("es-PE", {
+                    timeZone: "America/Lima",
+                  }),
+                ],
                 ["Observaciones", reception.observaciones],
               ].map(([label, value]) => (
                 <div key={label}>
@@ -98,7 +103,12 @@ export function LotOperations({
                     ) : null}
                   </div>
                   <p className="text-sm text-muted">
-                    {[metodo, tamano_muestra ? tamano_muestra + " frutos" : null]
+                    {[
+                      metodo,
+                      tamano_muestra
+                        ? tamano_muestra + (tamano_muestra === 1 ? " fruto" : " frutos")
+                        : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>

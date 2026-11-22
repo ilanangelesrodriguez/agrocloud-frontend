@@ -27,5 +27,15 @@ export function SettingsShell({ children }: { children: ReactNode }) {
     );
   }
 
-  return <div className="min-w-0">{children}</div>;
+  return (
+    <div
+      className={
+        pathname === "/settings/notifications"
+          ? "min-w-0 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
+          : "min-w-0"
+      }
+    >
+      {children}
+    </div>
+  );
 }

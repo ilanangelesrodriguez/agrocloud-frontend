@@ -6,6 +6,7 @@ import type { z } from "zod";
 
 import { useEffect, useRef, useState } from "react";
 import {
+  Tabs,
   Button,
   Checkbox,
   Input,
@@ -62,6 +63,10 @@ export function InspectionEvidence({
   findings: z.infer<typeof manualFinding>[];
 }) {
   const cache = useQueryClient();
+  const [photoFilter, setPhotoFilter] = useState("all");
+  useEffect(() => {
+    if (window.location.hash === "#pending") setPhotoFilter("pending");
+  }, []);
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const [requestedBatchId, setBatchId] = useState<string | null>(null);
   const batchId = requestedBatchId ?? initialBatchId ?? null;
@@ -108,7 +113,29 @@ export function InspectionEvidence({
     retry: false,
   });
 
-  const current = photos.find((photo) => photo.id_evidencia === selectedPhoto) ?? photos[0];
+  function pendingDecisions(photo: z.infer<typeof evidence>) {
+    return (photo.resultado_ia?.detections ?? []).filter(
+      (detection, index) =>
+        !(photo.validaciones ?? []).some(
+          (validation) =>
+            validation.indice_deteccion === index &&
+            (!validation.detection_id || validation.detection_id === detection.id),
+        ),
+    ).length;
+  }
+  const shownPhotos = photos.filter((photo) =>
+    photoFilter === "discarded"
+      ? photo.pertinencia === "INVALIDA"
+      : photoFilter === "pending"
+        ? photo.pertinencia !== "INVALIDA" &&
+          (!photo.reviewed_at ||
+            photo.pertinencia !== "VALIDA" ||
+            ["EN_COLA", "PROCESANDO"].includes(photo.estado_ia ?? "") ||
+            pendingDecisions(photo) > 0)
+        : true,
+  );
+  const current =
+    shownPhotos.find((photo) => photo.id_evidencia === selectedPhoto) ?? shownPhotos[0];
 
   const eligible = photos.filter(
     (photo) =>
@@ -239,9 +266,34 @@ export function InspectionEvidence({
               />
             ) : null}
           </div>
-          {photos.length ? (
+          <Tabs
+            variant="secondary"
+            selectedKey={photoFilter}
+            onSelectionChange={(key) => setPhotoFilter(String(key))}
+          >
+            <Tabs.ListContainer>
+              <Tabs.List aria-label="Filtrar evidencias">
+                {[
+                  ["all", "Todas"],
+                  ["pending", "Por revisar"],
+                  ["discarded", "Descartadas"],
+                ].map(([key, label]) => (
+                  <Tabs.Tab key={key} id={key}>
+                    {label}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
+          <p className="text-xs text-muted">
+            «Por revisar» muestra revisiones sin guardar, pertinencia pendiente, análisis en curso o
+            detecciones sin decisión. La vigencia final de revisiones guardadas se comprueba en
+            Validación.
+          </p>
+          {shownPhotos.length ? (
             <ul className="space-y-2">
-              {photos.map((photo) => (
+              {shownPhotos.map((photo) => (
                 <li
                   key={photo.id_evidencia}
                   className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 ${current?.id_evidencia === photo.id_evidencia ? "border-accent bg-accent/5" : "border-border"}`}
@@ -266,6 +318,13 @@ export function InspectionEvidence({
                   >
                     {photo.estado_ia?.replaceAll("_", " ") ?? "Sin análisis"}
                   </StatusBadge>
+                  <span className="text-xs text-muted">
+                    {photo.pertinencia === "INVALIDA"
+                      ? "Descartada · Conservada en historial"
+                      : pendingDecisions(photo) +
+                        " detecciones sin decisión" +
+                        (photo.reviewed_at ? " · Revisión guardada" : " · Revisión sin guardar")}
+                  </span>
                   {photo.error_ia ? (
                     <p className="w-full text-sm" role="status">
                       {photo.error_ia}
@@ -288,8 +347,14 @@ export function InspectionEvidence({
             </ul>
           ) : (
             <EmptyState
-              title="Sin evidencias registradas"
-              description="Las evidencias capturadas aparecerán en esta sección."
+              title={
+                photos.length ? "No hay evidencias para este filtro" : "Sin evidencias registradas"
+              }
+              description={
+                photos.length
+                  ? "Selecciona Todas para consultar el historial completo de fotografías."
+                  : "Las evidencias capturadas aparecerán en esta sección."
+              }
             />
           )}
           {analyze.error ? <FormNotice message={analyze.error.message} /> : null}

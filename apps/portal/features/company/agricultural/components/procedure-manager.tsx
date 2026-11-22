@@ -4,9 +4,27 @@ import { invalidateOperationalQueries } from "@/features/agricultural/shared/inv
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Chip, Input, Label, TextField, toast, FieldError } from "@heroui/react";
+import {
+  Button,
+  Chip,
+  Input,
+  Label,
+  TextField,
+  toast,
+  FieldError,
+  Tabs,
+  Dropdown,
+  AlertDialog,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FiPlus, FiCopy } from "react-icons/fi";
+import {
+  FiPlus,
+  FiCopy,
+  FiMoreHorizontal,
+  FiLayers,
+  FiCheckCircle,
+  FiPauseCircle,
+} from "react-icons/fi";
 import {
   EmptyState,
   ErrorState,
@@ -23,6 +41,8 @@ import { toggleProcedure } from "../api";
 import type { Procedure } from "../schema";
 import { ProcedureForm } from "./procedure-form";
 import { CatalogSelect } from "./catalog-select";
+
+import { versionLabel, procedureKey, compareVersions } from "../procedure-display";
 
 const base = "/settings/sampling-procedures";
 
@@ -65,7 +85,26 @@ export function ProcedureManager({
       (status === "all" || item.activo === (status === "active")) &&
       (!product || (product === "__general" ? !item.producto : item.producto === product)),
   );
-  const last = Math.max(1, Math.ceil(rows.length / 12));
+  const groups = new Map<string, Procedure[]>();
+  for (const item of rows) {
+    const key = procedureKey(item);
+    const group = groups.get(key) ?? [];
+    group.push(item);
+    groups.set(key, group);
+  }
+  const versionCounts = new Map<string, number>();
+  for (const item of all) {
+    const key = procedureKey(item);
+    versionCounts.set(key, (versionCounts.get(key) ?? 0) + 1);
+  }
+  const cards = Array.from(groups.values()).map(
+    (group) =>
+      [...group].sort((a, b) => Number(b.activo) - Number(a.activo) || compareVersions(a, b))[0]!,
+  );
+  const history = detail
+    ? all.filter((item) => procedureKey(item) === procedureKey(detail)).sort(compareVersions)
+    : [];
+  const last = Math.max(1, Math.ceil(cards.length / 12));
   const current = Math.min(page, last);
   function closeCreate(next: boolean) {
     setCreating(next);
@@ -78,7 +117,11 @@ export function ProcedureManager({
     <section className="space-y-6">
       <PageHeader
         title="Procedimientos de muestreo"
-        description="Gestiona las instrucciones y versiones autorizadas para el muestreo de tu empresa."
+        description={
+          canWrite
+            ? "Gestiona las instrucciones y versiones autorizadas para el muestreo de tu empresa."
+            : "Consulta los procedimientos autorizados para el muestreo de tu empresa."
+        }
         actions={
           canWrite ? (
             <Button
@@ -101,17 +144,31 @@ export function ProcedureManager({
         <>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
-              ["Registrados", all.length],
+              ["Versiones registradas", all.length],
               ["Activos", all.filter((item) => item.activo).length],
               ["Inactivos", all.filter((item) => !item.activo).length],
             ].map(([label, count]) => (
-              <div key={label} className="rounded-2xl border border-border bg-surface p-5">
-                <p className="text-sm text-muted">{label}</p>
-                <p className="mt-2 text-3xl font-semibold tabular-nums">{count}</p>
+              <div
+                key={label}
+                className="flex items-center justify-between rounded-2xl border border-border bg-surface px-5 py-4"
+              >
+                <div>
+                  <p className="text-sm text-muted">{label}</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums">{count}</p>
+                </div>
+                <span className="text-accent" aria-hidden="true">
+                  {label === "Activos" ? (
+                    <FiCheckCircle />
+                  ) : label === "Inactivos" ? (
+                    <FiPauseCircle />
+                  ) : (
+                    <FiLayers />
+                  )}
+                </span>
               </div>
             ))}
           </div>
-          <div className="grid items-end gap-4 md:grid-cols-[2fr_1fr_1fr]">
+          <div className="grid items-end gap-4 md:grid-cols-[2fr_1fr]">
             <TextField
               variant="secondary"
               value={search}
@@ -124,19 +181,6 @@ export function ProcedureManager({
               <Input variant="secondary" placeholder="Nombre, versión, producto o método" />
               <FieldError />
             </TextField>
-            <CatalogSelect
-              label="Estado"
-              value={status}
-              onChange={(value) => {
-                setStatus(value);
-                setPage(1);
-              }}
-              items={[
-                { id: "all", name: "Todos" },
-                { id: "active", name: "Activos" },
-                { id: "inactive", name: "Inactivos" },
-              ]}
-            />
             <CatalogSelect
               label="Producto"
               value={product}
@@ -158,19 +202,49 @@ export function ProcedureManager({
               ]}
             />
           </div>
+          <Tabs
+            variant="secondary"
+            selectedKey={status}
+            onSelectionChange={(key) => {
+              setStatus(String(key));
+              setPage(1);
+            }}
+          >
+            <Tabs.ListContainer>
+              <Tabs.List aria-label="Estado de los procedimientos">
+                {[
+                  ["all", "Todos"],
+                  ["active", "Activos"],
+                  ["inactive", "Inactivos"],
+                ].map(([key, label]) => (
+                  <Tabs.Tab key={key} id={key}>
+                    {label}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs.ListContainer>
+          </Tabs>
           {!rows.length ? (
             <EmptyState
               title="No hay procedimientos"
               description={
                 all.length
                   ? "Prueba otros filtros."
-                  : "Crea el primer procedimiento para habilitar el muestreo de tus lotes."
+                  : canWrite
+                    ? "Crea el primer procedimiento para habilitar el muestreo de tus lotes."
+                    : "Todavía no hay procedimientos autorizados disponibles. Consulta con la administración de tu empresa."
               }
             />
           ) : (
             <div className="paginated-content">
-              <div className="grid gap-4 xl:grid-cols-2">
-                {rows.slice((current - 1) * 12, current * 12).map((item) => (
+              <p className="mb-4 text-xs text-muted" role="status">
+                {cards.length}{" "}
+                {cards.length === 1 ? "procedimiento encontrado" : "procedimientos encontrados"}. Se
+                muestra una versión por nombre y producto; consulta el historial para ver las demás.
+              </p>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {cards.slice((current - 1) * 12, current * 12).map((item) => (
                   <article
                     key={item.id}
                     className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 sm:p-6"
@@ -184,7 +258,7 @@ export function ProcedureManager({
                           {item.nombre}
                         </Link>
                         <p className="mt-1 text-sm text-muted">
-                          {item.producto || "Todos los productos"} · v{item.version}
+                          {item.producto || "Todos los productos"} · {versionLabel(item.version)}
                         </p>
                       </div>
                       <Chip size="sm" variant="soft" color={item.activo ? "success" : "default"}>
@@ -192,28 +266,67 @@ export function ProcedureManager({
                       </Chip>
                     </div>
                     <p className="text-sm text-muted">
-                      {item.metodo} · Máximo {item.max_frutos} frutos
+                      {item.metodo} · Máximo {item.max_frutos}{" "}
+                      {item.max_frutos === 1 ? "fruto" : "frutos"}
                     </p>
                     <p className="line-clamp-2 text-sm leading-relaxed">{item.criterio_muestra}</p>
+                    {item.max_frutos === 1 || item.tamano_recomendado === 1 ? (
+                      <p className="text-xs text-warning">
+                        Muestra de un solo fruto: revisa las cantidades del protocolo.
+                      </p>
+                    ) : null}
                     <div className="mt-auto flex flex-wrap items-center gap-2">
                       <Link
                         href={base + "/" + item.id}
                         className="inline-flex min-h-10 items-center rounded-xl border border-border px-3 text-sm font-medium text-accent"
                       >
-                        Ver procedimiento
+                        Ver detalles
                       </Link>
                       {canWrite ? (
-                        <Button
-                          size="sm"
-                          variant="tertiary"
-                          onPress={() => {
-                            toggle.reset();
-                            setConfirm(item);
-                          }}
-                        >
-                          {item.activo ? "Desactivar" : "Activar"}
-                        </Button>
+                        <Dropdown>
+                          <Button
+                            size="sm"
+                            variant="tertiary"
+                            isIconOnly
+                            aria-label={"Acciones de " + item.nombre}
+                          >
+                            <FiMoreHorizontal aria-hidden="true" />
+                          </Button>
+                          <Dropdown.Popover>
+                            <Dropdown.Menu
+                              aria-label="Acciones del procedimiento"
+                              onAction={(key) => {
+                                if (key === "version") {
+                                  setSource(item);
+                                  setCreating(true);
+                                } else {
+                                  toggle.reset();
+                                  setConfirm(item);
+                                }
+                              }}
+                            >
+                              <Dropdown.Item id="version" textValue="Nueva versión">
+                                <Label>Nueva versión</Label>
+                              </Dropdown.Item>
+                              <Dropdown.Item
+                                id="toggle"
+                                textValue={item.activo ? "Desactivar" : "Activar"}
+                              >
+                                <Label>{item.activo ? "Desactivar" : "Activar"}</Label>
+                              </Dropdown.Item>
+                            </Dropdown.Menu>
+                          </Dropdown.Popover>
+                        </Dropdown>
                       ) : null}
+                      <Link
+                        href={base + "/" + item.id + "#version-history"}
+                        className="w-full text-xs font-medium text-accent underline-offset-4 hover:underline"
+                      >
+                        Ver historial · {versionCounts.get(procedureKey(item)) ?? 1}{" "}
+                        {(versionCounts.get(procedureKey(item)) ?? 1) === 1
+                          ? "versión"
+                          : "versiones"}
+                      </Link>
                     </div>
                   </article>
                 ))}
@@ -232,6 +345,7 @@ export function ProcedureManager({
         trigger={null}
       >
         <ProcedureForm
+          key={source?.id ?? "new"}
           source={source}
           onBusyChange={setBusy}
           onSaved={() => {
@@ -267,7 +381,7 @@ export function ProcedureManager({
               </Chip>
               <h2 className="mt-3 break-words text-xl font-semibold">{detail.nombre}</h2>
               <p className="mt-1 text-sm text-muted">
-                {detail.producto || "Todos los productos"} · v{detail.version}
+                {detail.producto || "Todos los productos"} · {versionLabel(detail.version)}
               </p>
             </div>
             <dl className="grid grid-cols-2 gap-4 rounded-xl bg-default p-4 text-sm">
@@ -283,6 +397,13 @@ export function ProcedureManager({
                 </div>
               ))}
             </dl>
+            {detail.max_frutos === 1 || detail.tamano_recomendado === 1 ? (
+              <InlineNotice
+                status="warning"
+                title="Muestra de un solo fruto"
+                description="Confirma que las cantidades corresponden al protocolo autorizado. AgroCloud no determina su representatividad."
+              />
+            ) : null}
             <div>
               <h3 className="font-semibold">Criterio de muestra</h3>
               <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
@@ -295,6 +416,35 @@ export function ProcedureManager({
                 {detail.seleccion_frutos}
               </p>
             </div>
+            <details
+              key={detail.id}
+              id="version-history"
+              open
+              className="scroll-mt-4 rounded-xl border border-border p-4"
+            >
+              <summary className="cursor-pointer font-semibold">
+                Historial de versiones ({history.length})
+              </summary>
+              <p className="mt-2 text-xs text-muted">
+                Registros con el mismo nombre y producto. Puede haber varias versiones activas.
+              </p>
+              <ul className="mt-4 space-y-3">
+                {history.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3"
+                  >
+                    <Link className="text-sm font-medium text-accent" href={base + "/" + entry.id}>
+                      {versionLabel(entry.version)}
+                      {entry.id === detail.id ? " · En consulta" : ""}
+                    </Link>
+                    <Chip size="sm" variant="soft" color={entry.activo ? "success" : "default"}>
+                      {entry.activo ? "Activa" : "Inactiva"}
+                    </Chip>
+                  </li>
+                ))}
+              </ul>
+            </details>
             {canWrite ? (
               <div className="flex flex-wrap gap-3">
                 <Button
@@ -320,36 +470,53 @@ export function ProcedureManager({
           </div>
         )}
       </CreationDrawer>
-      <CreationDrawer
-        open={Boolean(confirm)}
-        onOpenChange={(next) => {
-          if (!next) setConfirm(null);
+      <AlertDialog
+        isOpen={Boolean(confirm)}
+        onOpenChange={(open) => {
+          if (!open && !toggle.isPending) setConfirm(null);
         }}
-        busy={toggle.isPending}
-        title={confirm?.activo ? "Desactivar procedimiento" : "Activar procedimiento"}
-        description="Este cambio afecta a los nuevos muestreos de tu empresa."
-        trigger={null}
       >
-        <p className="mb-5 text-sm">
-          {confirm?.nombre} · v{confirm?.version}
-        </p>
-        <InlineNotice
-          status="accent"
-          title="Muestreos existentes"
-          description="Los muestreos ya registrados conservarán su procedimiento y versión."
-        />
-        {toggle.error ? <FormNotice message={toggle.error.message} /> : null}
-        <Button
-          className="mt-5"
-          variant={confirm?.activo ? "danger" : "primary"}
-          isDisabled={toggle.isPending}
-          onPress={() => {
-            if (confirm) toggle.mutate(confirm);
-          }}
+        <AlertDialog.Backdrop
+          isDismissable={!toggle.isPending}
+          isKeyboardDismissDisabled={toggle.isPending}
         >
-          {toggle.isPending ? "Guardando…" : "Confirmar cambio"}
-        </Button>
-      </CreationDrawer>
+          <AlertDialog.Container placement="center" size="sm">
+            <AlertDialog.Dialog>
+              <AlertDialog.Header>
+                <AlertDialog.Icon status={confirm?.activo ? "warning" : "accent"} />
+                <AlertDialog.Heading>
+                  {confirm?.activo ? "¿Desactivar procedimiento?" : "¿Activar procedimiento?"}
+                </AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                <p className="mb-4 break-words">
+                  {confirm?.nombre} · {confirm ? versionLabel(confirm.version) : ""}
+                </p>
+                <InlineNotice
+                  status="accent"
+                  title="Muestreos existentes"
+                  description="Los muestreos registrados conservarán su procedimiento y versión. El cambio afecta a los nuevos muestreos."
+                />
+                {toggle.error ? <FormNotice message={toggle.error.message} /> : null}
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button variant="secondary" slot="close" isDisabled={toggle.isPending}>
+                  Cancelar
+                </Button>
+                <Button
+                  variant={confirm?.activo ? "danger" : "primary"}
+                  isDisabled={toggle.isPending}
+                  onPress={() => {
+                    if (confirm) toggle.mutate(confirm);
+                  }}
+                >
+                  {toggle.isPending ? "Guardando…" : "Confirmar cambio"}
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
     </section>
   );
 }

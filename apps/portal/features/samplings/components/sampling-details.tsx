@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, toast } from "@heroui/react";
+import { Button, Chip, toast } from "@heroui/react";
 import {
   FormNotice,
   InlineNotice,
@@ -23,6 +24,7 @@ import { startSamplingInspection } from "@/features/inspections/api";
 import { OperationNavigation } from "@/features/agricultural/shared/operation-navigation";
 
 export function SamplingDetails({ id }: { id: string }) {
+  const reducedMotion = useReducedMotion();
   const router = useRouter();
   const cache = useQueryClient();
   const session = useCurrentUser();
@@ -46,16 +48,15 @@ export function SamplingDetails({ id }: { id: string }) {
   });
 
   const value = sample.data?.data;
-  const current = value?.inspecciones?.find((item) => item.estado === "EN_CAPTURA");
+  const current = [...(value?.inspecciones ?? [])]
+    .sort((a, b) => b.id_inspeccion - a.id_inspeccion)
+    .find((item) => item.estado === "EN_CAPTURA");
+  const canReadInspection = canManageCompany(actor, "inspecciones.ver");
+  const canReadLot = canManageCompany(actor, "lotes.ver");
   const canStart =
     actor?.rol?.codigo === "INSPECTOR" &&
     canManageCompany(actor, "inspecciones.crear") &&
-    Boolean(
-      value &&
-      value.estado !== "COMPLETADO" &&
-      (!value.inspecciones?.length ||
-        (current && (current.id_inspector == null || current.id_inspector === actor?.id_usuario))),
-    );
+    Boolean(value && value.estado !== "COMPLETADO" && !value.inspecciones?.length);
 
   if (session.isPending) return <LoadingState label="Verificando acceso al muestreo" />;
   if (session.isError) return <ErrorState error={session.error} retry={() => session.refetch()} />;
@@ -71,17 +72,39 @@ export function SamplingDetails({ id }: { id: string }) {
   }
 
   return (
-    <section className="space-y-5">
+    <motion.section
+      className="space-y-5"
+      initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reducedMotion ? 0 : 0.15 }}
+    >
       <PageHeader
         title={`Muestreo #${id}`}
-        description="Consulta la muestra registrada, revisa sus frutos y continúa con la inspección."
+        description={
+          value
+            ? [value.lote?.codigo_lote ?? "Lote #" + value.id_lote, value.metodo]
+                .filter(Boolean)
+                .join(" · ")
+            : "Consulta la muestra registrada, revisa sus frutos y continúa con la inspección."
+        }
         actions={
-          <Link
-            className="inline-flex min-h-10 items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium"
-            href={value ? `/lots/${value.id_lote}/sampling` : "/lots"}
-          >
-            Volver al lote
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {value ? (
+              <Chip
+                size="sm"
+                variant="soft"
+                color={value.estado === "COMPLETADO" ? "success" : "default"}
+              >
+                {value.estado.replaceAll("_", " ").toLocaleLowerCase("es")}
+              </Chip>
+            ) : null}
+            <Link
+              className="inline-flex min-h-10 items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium"
+              href={value && canReadLot ? `/lots/${value.id_lote}/sampling` : "/samplings"}
+            >
+              {canReadLot ? "Volver al lote" : "Volver a muestreos"}
+            </Link>
+          </div>
         }
       />
       {sample.isPending ? (
@@ -101,9 +124,9 @@ export function SamplingDetails({ id }: { id: string }) {
           />
           <dl className="grid gap-5 rounded-2xl border border-border bg-surface p-6 sm:grid-cols-3">
             <div>
-              <dt className="text-sm text-muted">Estado</dt>
-              <dd className="mt-2">
-                <StatusBadge tone="neutral">{value.estado.replaceAll("_", " ")}</StatusBadge>
+              <dt className="text-sm text-muted">Inspecciones vinculadas</dt>
+              <dd className="mt-2 text-xl font-semibold tabular-nums">
+                {value.inspecciones?.length ?? 0}
               </dd>
             </div>
             <div>
@@ -113,87 +136,146 @@ export function SamplingDetails({ id }: { id: string }) {
             <div>
               <dt className="text-sm text-muted">Tamaño de muestra</dt>
               <dd className="mt-2 text-xl font-semibold tabular-nums">
-                {value.tamano_muestra} frutos
+                {value.tamano_muestra} {value.tamano_muestra === 1 ? "fruto" : "frutos"}
               </dd>
             </div>
           </dl>
-          <section className="space-y-3 rounded-card border border-border bg-surface p-4">
-            <h2 className="text-xl font-semibold">Inspecciones vinculadas</h2>
+          <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+            <div>
+              <h2 className="text-lg font-semibold">Inspecciones vinculadas</h2>
+              <p className="mt-1 text-sm text-muted">
+                Continúa la captura o consulta los registros de esta muestra.
+              </p>
+            </div>
             {value.inspecciones?.length ? (
-              <ul className="space-y-3">
-                {value.inspecciones.map((inspection) => (
-                  <li
-                    key={inspection.id_inspeccion}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"
-                  >
-                    <Link
-                      className="font-semibold text-accent"
-                      href={"/inspections/" + inspection.id_inspeccion}
-                    >
-                      Inspección #{inspection.id_inspeccion}
-                    </Link>{" "}
-                    <StatusBadge tone={inspection.estado === "EN_CAPTURA" ? "info" : "neutral"}>
-                      {inspection.estado.replaceAll("_", " ")}
-                    </StatusBadge>
-                    {canManageCompany(actor, "inspecciones.ver") ? (
-                      <Link
-                        className="text-sm font-medium text-accent"
-                        href={`/inspections/${inspection.id_inspeccion}/evidences`}
+              <ul className="grid items-start gap-3 lg:grid-cols-2">
+                {[...value.inspecciones]
+                  .sort(
+                    (a, b) =>
+                      Number(b.estado === "EN_CAPTURA") - Number(a.estado === "EN_CAPTURA") ||
+                      b.id_inspeccion - a.id_inspeccion,
+                  )
+                  .map((inspection) => {
+                    const canContinue =
+                      inspection.estado === "EN_CAPTURA" &&
+                      actor?.rol?.codigo === "INSPECTOR" &&
+                      canReadInspection &&
+                      canManageCompany(actor, "inspecciones.capturar") &&
+                      (inspection.id_inspector == null ||
+                        inspection.id_inspector === actor?.id_usuario);
+                    return (
+                      <li
+                        key={inspection.id_inspeccion}
+                        className={
+                          "space-y-3 rounded-xl border p-4 " +
+                          (canContinue ? "border-accent/30 bg-accent/5" : "border-border")
+                        }
                       >
-                        Ver evidencias
-                      </Link>
-                    ) : null}
-                  </li>
-                ))}
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h3 className="font-semibold">Inspección #{inspection.id_inspeccion}</h3>
+                          <StatusBadge
+                            tone={
+                              inspection.estado === "EN_CAPTURA"
+                                ? "info"
+                                : inspection.estado === "VALIDADA"
+                                  ? "success"
+                                  : "neutral"
+                            }
+                          >
+                            {inspection.estado.replaceAll("_", " ").toLocaleLowerCase("es")}
+                          </StatusBadge>
+                        </div>
+                        <p className="text-xs text-muted">
+                          {inspection.estado === "EN_CAPTURA"
+                            ? "Captura en curso"
+                            : "Registro de inspección"}{" "}
+                          · Vinculada al muestreo #{value.id_muestreo}
+                        </p>
+                        {inspection.estado === "EN_CAPTURA" &&
+                        inspection.id_inspector != null &&
+                        inspection.id_inspector !== actor?.id_usuario ? (
+                          <p className="text-xs text-muted">Asignada a otro inspector.</p>
+                        ) : null}
+                        {canReadInspection ? (
+                          <div className="flex flex-wrap gap-2">
+                            <Link
+                              href={"/inspections/" + inspection.id_inspeccion}
+                              className={
+                                "inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-medium " +
+                                (canContinue
+                                  ? "bg-accent text-accent-foreground"
+                                  : "border border-border text-accent")
+                              }
+                            >
+                              {canContinue ? "Continuar inspección" : "Consultar inspección"}
+                            </Link>
+                            <Link
+                              href={"/inspections/" + inspection.id_inspeccion + "/evidences"}
+                              className="inline-flex min-h-10 items-center rounded-xl border border-border px-3 text-sm font-medium text-accent"
+                            >
+                              {inspection.estado === "VALIDADA"
+                                ? "Consultar evidencias"
+                                : "Ver evidencias"}
+                            </Link>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted">
+                            Tu cuenta no tiene permiso para abrir esta inspección.
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
               </ul>
             ) : (
-              <p className="text-muted">No hay inspecciones vinculadas.</p>
+              <div className="space-y-3 rounded-xl bg-surface-secondary p-4">
+                <p className="text-sm text-muted">No hay inspecciones vinculadas a esta muestra.</p>
+                {canStart ? (
+                  <Button
+                    isPending={start.isPending}
+                    type="button"
+                    variant="primary"
+                    onPress={() => {
+                      if (!start.isPending) start.mutate();
+                    }}
+                  >
+                    Iniciar inspección
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted">
+                    El inicio requiere un inspector autorizado y un muestreo habilitado para esta
+                    operación.
+                  </p>
+                )}
+              </div>
             )}
-            {current && !canStart ? (
-              <Link
-                className="font-medium text-accent underline"
-                href={"/inspections/" + current.id_inspeccion}
-              >
-                Consultar inspección en captura
-              </Link>
-            ) : null}
-            {canStart ? (
-              <Button
-                isDisabled={start.isPending}
-                type="button"
-                variant="primary"
-                onPress={() => {
-                  if (current) {
-                    router.push("/inspections/" + current.id_inspeccion);
-                  } else {
-                    start.mutate();
-                  }
-                }}
-              >
-                {start.isPending
-                  ? "Procesando…"
-                  : current
-                    ? "Continuar inspección"
-                    : "Iniciar inspección"}
-              </Button>
-            ) : null}
             {start.error ? <FormNotice message={start.error.message} /> : null}
           </section>
         </div>
       ) : null}
       {sample.isSuccess ? (
         <section className="space-y-3 rounded-card border border-border bg-surface p-5 sm:p-6">
-          <h2 className="text-xl font-semibold">Frutos de la muestra</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold">Frutos de la muestra</h2>
+            <p className="text-xs text-muted">
+              {value?.tamano_muestra} {value?.tamano_muestra === 1 ? "fruto" : "frutos"} en la
+              muestra
+            </p>
+          </div>
           {fruits.isPending ? (
             <LoadingState label="Cargando frutos" />
           ) : fruits.isError ? (
             <ErrorState error={fruits.error} retry={() => fruits.refetch()} />
           ) : (
-            <div className="paginated-content">
-              <ul className="grid gap-2 sm:grid-cols-2">
+            <div className="space-y-4">
+              <ul className="grid items-start gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {fruits.data.data.map((fruit) => (
-                  <li key={fruit.id} className="rounded-lg bg-surface-secondary px-3 py-2">
-                    Fruto #{fruit.numero} · {fruit.codigo ?? "Sin código"}
+                  <li
+                    key={fruit.id}
+                    className="space-y-1 rounded-xl border border-border bg-surface-secondary p-4"
+                  >
+                    <h3 className="text-sm font-semibold">Fruto #{fruit.numero}</h3>
+                    <p className="break-all text-xs text-muted">{fruit.codigo ?? "Sin código"}</p>
                   </li>
                 ))}
               </ul>
@@ -203,11 +285,23 @@ export function SamplingDetails({ id }: { id: string }) {
                   description="Los frutos registrados para la muestra aparecerán aquí."
                 />
               ) : null}
-              <PagePagination last={fruits.data.meta.last_page} page={page} onChange={setPage} />
+              <p className="text-xs text-muted">
+                {fruits.data.data.length}{" "}
+                {fruits.data.data.length === 1 ? "fruto mostrado" : "frutos mostrados"} en esta
+                página. La captura y revisión de evidencias se consultan desde la inspección.
+              </p>
+              {fruits.data.meta.last_page > 1 ? (
+                <PagePagination
+                  last={fruits.data.meta.last_page}
+                  page={page}
+                  isDisabled={fruits.isFetching}
+                  onChange={setPage}
+                />
+              ) : null}
             </div>
           )}
         </section>
       ) : null}
-    </section>
+    </motion.section>
   );
 }

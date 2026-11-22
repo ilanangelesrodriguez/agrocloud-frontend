@@ -56,6 +56,9 @@ export function OperationNavigation({
       aria-label="Etapas del flujo agrícola"
       className="overflow-x-auto rounded-2xl border border-border bg-surface p-3"
     >
+      <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-muted">
+        Proceso agrícola
+      </p>
       <ol className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap">
         {steps.map((step, index) => (
           <li key={step.key} className="flex-1">
@@ -63,11 +66,16 @@ export function OperationNavigation({
               <Link
                 href={step.href}
                 aria-current={current === step.key ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${current === step.key ? "bg-accent/10 text-accent" : "text-muted hover:bg-default hover:text-foreground"}`}
+                className={`flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${current === step.key ? "border border-accent/30 bg-accent/5 text-accent" : "border border-transparent text-muted hover:bg-default hover:text-foreground"}`}
               >
                 <span
                   aria-hidden="true"
-                  className="flex size-6 shrink-0 items-center justify-center rounded-full border border-current text-xs"
+                  className={
+                    "flex size-7 shrink-0 items-center justify-center rounded-full text-xs " +
+                    (current === step.key
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-default text-muted")
+                  }
                 >
                   {index + 1}
                 </span>

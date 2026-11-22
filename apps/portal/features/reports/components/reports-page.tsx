@@ -1,16 +1,13 @@
 "use client";
-import type { FormEvent } from "react";
-import { DateRangeInput } from "@/components/date-range-input";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { bffRequest } from "@/lib/api/bff-client";
 import { producerList } from "@/features/agricultural/schema";
-import { useState } from "react";
-import { Button, Input, Label, TextField, FieldError, Form } from "@heroui/react";
-import { ErrorState, LoadingState, FormNotice } from "@agrocloud/ui";
+import { Button } from "@heroui/react";
+import { ErrorState, LoadingState } from "@agrocloud/ui";
 import { OperationWorkspace } from "@/features/agricultural/shared/operation-workspace";
-import { CatalogSelect } from "@/features/company/agricultural/components/catalog-select";
+import { ReportFilters, useAnalysisFilter } from "./report-filters";
+import { QualityResults } from "./quality-results";
 import { useReport } from "../hooks";
-import type { ReportFilter } from "../schema";
 export function ReportsPage() {
   return (
     <OperationWorkspace
@@ -23,9 +20,7 @@ export function ReportsPage() {
   );
 }
 function ReportContent() {
-  const [filter, setFilter] = useState<ReportFilter>({});
-  const [error, setError] = useState("");
-  const [producer, setProducer] = useState("");
+  const { filter, apply, revision } = useAnalysisFilter();
   const producers = useInfiniteQuery({
     queryKey: ["agricultural", "report-producers"],
     initialPageParam: 1,
@@ -38,22 +33,6 @@ function ReportContent() {
   });
   const producerOptions = producers.data?.pages.flatMap((page) => page.data) ?? [];
   const query = useReport(filter);
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const fields = new FormData(event.currentTarget);
-    const next = Object.fromEntries(
-      ["from", "to", "producto", "variedad"].map((key) => [
-        key,
-        String(fields.get(key) ?? "").trim() || undefined,
-      ]),
-    );
-    if (next.from && next.to && next.from > next.to) {
-      setError("La fecha final debe ser igual o posterior a la inicial.");
-      return;
-    }
-    setError("");
-    setFilter({ ...next, producer_id: producer || undefined });
-  }
   function exportCsv() {
     if (!query.data) return;
     const data = query.data;
@@ -66,12 +45,19 @@ function ReportContent() {
       [
         "Productor",
         producerOptions.find((item) => String(item.id_productor) === filter.producer_id)
-          ?.nombre_razon_social ?? "Todos",
+          ?.nombre_razon_social ??
+          (filter.producer_id ? "Productor #" + filter.producer_id : "Todos"),
       ],
       ["Lotes con dictamen", data.quality.decided_lots],
-      ["Aprobación (%)", data.quality.approval_rate],
-      ["Rechazo (%)", data.quality.rejection_rate],
-      ["Observados (%)", data.quality.observed_rate],
+      [
+        "Aprobación (%)",
+        data.quality.decided_lots > 0 ? data.quality.approval_rate : "No evaluable",
+      ],
+      ["Rechazo (%)", data.quality.decided_lots > 0 ? data.quality.rejection_rate : "No evaluable"],
+      [
+        "Observados (%)",
+        data.quality.decided_lots > 0 ? data.quality.observed_rate : "No evaluable",
+      ],
       ["Recepción a dictamen (horas)", data.quality.reception_to_decision_hours ?? "Sin datos"],
       ["Inspección (horas)", data.quality.inspection_hours ?? "Sin datos"],
       ["IA confirmadas", data.ai_review.confirmed],
@@ -100,37 +86,31 @@ function ReportContent() {
   }
   return (
     <div className="space-y-5">
-      <Form
-        validationBehavior="native"
-        onSubmit={submit}
-        className="grid gap-3 rounded-card border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-3"
+      <ReportFilters
+        key={revision}
+        filter={filter}
+        onApply={apply}
+        busy={query.isFetching}
+        producers={producerOptions.map((item) => ({
+          id: String(item.id_productor),
+          name: item.nombre_razon_social,
+        }))}
+        exportAction={
+          <Button
+            type="button"
+            variant="secondary"
+            isDisabled={!query.data || query.isFetching}
+            onPress={exportCsv}
+          >
+            Exportar CSV
+          </Button>
+        }
       >
-        <DateRangeInput onChange={() => setError("")} error={error || undefined} />
-        {(
-          [
-            ["producto", "Producto", "text"],
-            ["variedad", "Variedad", "text"],
-          ] as const
-        ).map(([name, label, type]) => (
-          <TextField variant="secondary" key={name} name={name}>
-            <Label>{label}</Label>
-            <Input placeholder={String(label)} variant="secondary" type={type} maxLength={150} />
-            <FieldError />
-          </TextField>
-        ))}
-        <CatalogSelect
-          label="Productor"
-          value={producer}
-          onChange={setProducer}
-          optional
-          emptyLabel="Todos los productores"
-          items={producerOptions.map((item) => ({
-            id: String(item.id_productor),
-            name: item.nombre_razon_social,
-          }))}
-        />
         {producers.hasNextPage ? (
           <Button
+            type="button"
+            size="sm"
+            variant="tertiary"
             isPending={producers.isFetchingNextPage}
             onPress={() => void producers.fetchNextPage()}
           >
@@ -140,86 +120,17 @@ function ReportContent() {
         {producers.isError ? (
           <ErrorState error={producers.error} retry={() => producers.refetch()} />
         ) : null}
-        <div className="flex items-end gap-2">
-          <Button type="submit" isPending={query.isFetching}>
-            Aplicar filtros
-          </Button>
-          <Button isDisabled={!query.data || query.isFetching} onPress={exportCsv}>
-            Exportar CSV
-          </Button>
-        </div>
-        {error ? <FormNotice message={error} /> : null}
-      </Form>
+      </ReportFilters>
+      <p className="text-xs text-muted">
+        Fechas UTC de registro del lote. Los tiempos representan promedios en horas; no se filtra
+        por fecha del dictamen.
+      </p>
       {query.isPending ? (
         <LoadingState label="Cargando reportes" />
       ) : query.isError ? (
         <ErrorState error={query.error} retry={() => query.refetch()} />
       ) : (
-        <>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              ["Aprobación", query.data.quality.approval_rate + "%"],
-              ["Rechazo", query.data.quality.rejection_rate + "%"],
-              ["Observados", query.data.quality.observed_rate + "%"],
-              [
-                "Recepción a dictamen",
-                query.data.quality.reception_to_decision_hours === null
-                  ? "Sin datos"
-                  : query.data.quality.reception_to_decision_hours + " h",
-              ],
-              [
-                "Duración de inspección",
-                query.data.quality.inspection_hours === null
-                  ? "Sin datos"
-                  : query.data.quality.inspection_hours + " h",
-              ],
-              ["Incidencias graves sin cerrar", query.data.open_critical_incidents],
-              ["Detecciones IA confirmadas", query.data.ai_review.confirmed],
-              ["Detecciones IA descartadas", query.data.ai_review.discarded],
-              ["Evidencias con solicitud IA", query.data.ai_review.requested_evidences],
-            ].map(([label, value]) => (
-              <article key={label} className="rounded-card border border-border bg-surface p-5">
-                <h2 className="text-sm text-muted">{label}</h2>
-                <p className="mt-2 text-2xl font-semibold">{value}</p>
-              </article>
-            ))}
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <section className="rounded-card border border-border bg-surface p-5">
-              <h2 className="mb-3 font-semibold">Hallazgos manuales frecuentes</h2>
-              {query.data.frequent_defects.length ? (
-                query.data.frequent_defects.map((item) => (
-                  <p key={item.clase} className="flex justify-between gap-3">
-                    <span>{item.clase}</span>
-                    <strong>{item.total}</strong>
-                  </p>
-                ))
-              ) : (
-                <p className="text-muted">Sin hallazgos en este periodo.</p>
-              )}
-            </section>
-            <section className="rounded-card border border-border bg-surface p-5">
-              <h2 className="mb-3 font-semibold">Incidencias por producto</h2>
-              {query.data.incidents_by_product.map((item) => (
-                <p key={item.producto} className="flex justify-between gap-3">
-                  <span>{item.producto}</span>
-                  <strong>{item.total}</strong>
-                </p>
-              ))}
-            </section>
-            <section className="rounded-card border border-border bg-surface p-5 sm:col-span-2">
-              <h2 className="mb-3 font-semibold">Resultados por productor</h2>
-              {query.data.quality_by_producer.map((item) => (
-                <p key={item.id_productor + item.decision} className="flex justify-between gap-3">
-                  <span>
-                    {item.productor} · {item.decision.toLocaleLowerCase("es")}
-                  </span>
-                  <strong>{item.total}</strong>
-                </p>
-              ))}
-            </section>
-          </div>
-        </>
+        <QualityResults data={query.data} />
       )}
     </div>
   );

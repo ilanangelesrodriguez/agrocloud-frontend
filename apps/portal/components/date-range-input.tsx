@@ -10,12 +10,14 @@ export function DateRangeInput({
   disabled,
   error,
   onChange,
+  onRangeChange,
 }: {
   initialFrom?: string;
   initialTo?: string;
   disabled?: boolean;
   error?: string;
   onChange?: () => void;
+  onRangeChange?: (range: { from?: string; to?: string }) => void;
 }) {
   return (
     <DateRangePicker
@@ -23,7 +25,10 @@ export function DateRangeInput({
       endName="to"
       isDisabled={disabled}
       isInvalid={error ? true : undefined}
-      onChange={() => onChange?.()}
+      onChange={(range) => {
+        onChange?.();
+        onRangeChange?.({ from: range?.start.toString(), to: range?.end.toString() });
+      }}
       defaultValue={
         initialFrom && initialTo
           ? { start: parseDate(initialFrom), end: parseDate(initialTo) }

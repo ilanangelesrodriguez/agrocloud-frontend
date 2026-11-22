@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react";
 import { FiChevronsLeft, FiChevronsRight } from "react-icons/fi";
 
+import type { CompanyBrand } from "@/features/company/profile/use-company-brand";
 import type { NavigationSection } from "@/config/navigation";
 import type { IdentityUser } from "@/lib/auth/schemas";
 
@@ -16,12 +17,14 @@ import { canManageCompany } from "@/features/company/navigation";
 
 export function AppTopbar({
   sections,
+  brand,
   pathname,
   user,
   collapsed,
   onToggleSidebar,
 }: {
   sections: NavigationSection[];
+  brand: CompanyBrand;
   pathname: string;
   user: IdentityUser;
   collapsed: boolean;
@@ -35,7 +38,7 @@ export function AppTopbar({
       >
         Saltar al contenido
       </a>
-      <MobileNavigation pathname={pathname} sections={sections} />
+      <MobileNavigation brand={brand} pathname={pathname} sections={sections} />
       <Button
         aria-label={collapsed ? "Expandir barra lateral" : "Contraer barra lateral"}
         aria-pressed={collapsed}

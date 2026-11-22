@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, TextField, Label, TextArea, FieldError, Form } from "@heroui/react";
-import { ErrorState, LoadingState, FormNotice, PagePagination } from "@agrocloud/ui";
+import { ErrorState, LoadingState, FormNotice, PagePagination, StatusBadge } from "@agrocloud/ui";
 import type { Lot } from "@/features/lots/schema";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
@@ -10,7 +10,13 @@ import { bffRequest } from "@/lib/api/bff-client";
 import { incidentsPage, cancelInput, cancelResponse } from "../operations-schema";
 import { incidentLabels } from "@/features/incidents/schema";
 import { IncidentEditor } from "./incident-editor";
-export function LotManagement({ lot }: { lot: Lot }) {
+export function LotManagement({
+  lot,
+  view = "all",
+}: {
+  lot: Lot;
+  view?: "all" | "actions" | "incidents";
+}) {
   const { data: actor } = useCurrentUser();
   const canRead = canManageCompany(actor, "incidencias.ver");
   const [page, setPage] = useState(1);
@@ -25,7 +31,7 @@ export function LotManagement({ lot }: { lot: Lot }) {
         { signal },
         "agricultural",
       ),
-    enabled: canRead,
+    enabled: canRead && view !== "actions",
   });
   const cancel = useMutation({
     mutationFn: (body: object) =>
@@ -55,7 +61,8 @@ export function LotManagement({ lot }: { lot: Lot }) {
   }
   return (
     <div className="space-y-5">
-      {lot.estado === "PENDIENTE_RECEPCION" &&
+      {view !== "incidents" &&
+      lot.estado === "PENDIENTE_RECEPCION" &&
       !lot.recepcion &&
       !lot.muestreos?.length &&
       canManageCompany(actor, "lotes.eliminar") ? (
@@ -88,40 +95,63 @@ export function LotManagement({ lot }: { lot: Lot }) {
           </Form>
         </details>
       ) : null}
-      {canRead ? (
+      {canRead && view !== "actions" ? (
         <section className="space-y-4 rounded-card border border-border bg-surface p-5">
-          <h2 className="text-xl font-semibold">Incidencias</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">Incidencias del lote</h2>
+              <p className="mt-1 text-xs text-muted">
+                {incidents.data?.data.length ?? 0} registradas en esta página
+              </p>
+            </div>
+            {lot.estado !== "ANULADO" ? <IncidentEditor lotId={lot.id_lote} /> : null}
+          </div>
           {incidents.isPending ? (
             <LoadingState label="Cargando incidencias" />
           ) : incidents.isError ? (
             <ErrorState error={incidents.error} retry={() => incidents.refetch()} />
           ) : (
-            <div className="paginated-content paginated-content--compact">
+            <div className="space-y-4">
               {incidents.data.data.length === 0 ? (
-                <p className="text-muted">Sin incidencias registradas.</p>
+                <div className="rounded-xl bg-surface-secondary p-4">
+                  <p className="text-sm font-medium">Sin incidencias registradas</p>
+                  <p className="mt-1 text-sm text-muted">
+                    No se han registrado incidencias en esta página del expediente.
+                  </p>
+                </div>
               ) : (
                 incidents.data.data.map((item) => (
                   <article key={item.id} className="space-y-2 rounded-xl border border-border p-4">
                     <h3 className="font-semibold">{item.titulo}</h3>
                     <p>{item.descripcion}</p>
-                    <p className="text-sm text-muted">
-                      {incidentLabels[item.gravedad]} · {incidentLabels[item.estado]} · Responsable
-                      #{item.responsable}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge
+                        tone={
+                          item.gravedad === "ALTA" || item.gravedad === "CRITICA"
+                            ? "danger"
+                            : "neutral"
+                        }
+                      >
+                        {incidentLabels[item.gravedad]}
+                      </StatusBadge>
+                      <StatusBadge tone="neutral">{incidentLabels[item.estado]}</StatusBadge>
+                      <span className="text-xs text-muted">Responsable #{item.responsable}</span>
+                    </div>
                     <IncidentEditor incident={item} />
                   </article>
                 ))
               )}
-              <PagePagination
-                label="Paginación de incidencias"
-                page={page}
-                last={incidents.data.meta.last_page}
-                isDisabled={incidents.isFetching}
-                onChange={setPage}
-              />
+              {incidents.data.meta.last_page > 1 ? (
+                <PagePagination
+                  label="Paginación de incidencias"
+                  page={page}
+                  last={incidents.data.meta.last_page}
+                  isDisabled={incidents.isFetching}
+                  onChange={setPage}
+                />
+              ) : null}
             </div>
           )}
-          {lot.estado !== "ANULADO" ? <IncidentEditor lotId={lot.id_lote} /> : null}
         </section>
       ) : null}
     </div>

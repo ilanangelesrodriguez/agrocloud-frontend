@@ -38,8 +38,16 @@ export function OperationalDashboard() {
   return (
     <section className="space-y-6">
       <PageHeader
-        title={`Panel principal · ${user.rol?.nombre ?? user.rol?.codigo ?? "Empresa"}`}
-        description="Tus pendientes y accesos según las responsabilidades de tu cuenta."
+        title={
+          user.rol?.codigo === "INSPECTOR"
+            ? "Mi jornada de inspección"
+            : `Panel principal · ${user.rol?.nombre ?? user.rol?.codigo ?? "Empresa"}`
+        }
+        description={
+          user.rol?.codigo === "INSPECTOR"
+            ? "Revisa los pendientes del equipo, continúa tus inspecciones y atiende los análisis que requieren revisión."
+            : "Tus pendientes y accesos según las responsabilidades de tu cuenta."
+        }
         actions={
           <Button
             isPending={refreshing}
@@ -49,7 +57,7 @@ export function OperationalDashboard() {
           </Button>
         }
       />
-      <WorkDashboard />
+      <WorkDashboard inspector={user.rol?.codigo === "INSPECTOR"} />
       {user.rol?.codigo === "ADMIN" && canManageCompany(user, "empresa.editar") ? (
         <SetupChecklist />
       ) : null}

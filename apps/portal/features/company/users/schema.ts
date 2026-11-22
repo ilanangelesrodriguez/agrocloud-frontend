@@ -10,6 +10,7 @@ const user = z.object({
   apellido: nullableText,
   correo: z.string(),
   cargo: nullableText,
+  foto_perfil_url: nullableText,
   telefono: nullableText,
   estado: z.boolean(),
   pending_activation: z.boolean(),

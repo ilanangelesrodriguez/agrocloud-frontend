@@ -11,6 +11,7 @@ export function ListToolbar({
   statuses = [],
   onRefresh,
   refreshing,
+  serverStatus = false,
 }: {
   search: string;
   onSearchChange: (value: string) => void;
@@ -20,6 +21,7 @@ export function ListToolbar({
   statuses?: { value: string; label: string }[];
   onRefresh: () => void;
   refreshing: boolean;
+  serverStatus?: boolean;
 }) {
   return (
     <div className="grid gap-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto]">
@@ -75,8 +77,9 @@ export function ListToolbar({
         ) : null}
       </div>
       <p className="text-xs text-muted sm:col-span-2">
-        La búsqueda y el filtro actúan únicamente sobre la página que devolvió el servidor. Cambia
-        de página para consultar otros registros.
+        {serverStatus
+          ? "El estado filtra todos los lotes desde el servidor. La búsqueda de texto se limita a la página cargada; cambia de página para consultar otros registros."
+          : "La búsqueda y el filtro actúan únicamente sobre la página que devolvió el servidor. Cambia de página para consultar otros registros."}
       </p>
     </div>
   );

@@ -11,7 +11,11 @@ function displayDate(value: string | null | undefined): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short" });
+    : date.toLocaleString("es-PE", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "America/Lima",
+      });
 }
 
 function eventDetails(value: string | Record<string, unknown> | undefined) {
@@ -34,7 +38,14 @@ function eventDetails(value: string | Record<string, unknown> | undefined) {
       typeof value === "string" ? JSON.parse(value) : (value ?? {});
     return Object.entries(labels).flatMap(([key, label]) =>
       typeof changes[key] === "string" || typeof changes[key] === "number"
-        ? [{ label, value: String(changes[key]).replaceAll("_", " ") }]
+        ? [
+            {
+              label,
+              value:
+                String(changes[key]).replaceAll("_", " ") +
+                (key === "peso_recibido_kg" ? " kg" : ""),
+            },
+          ]
         : [],
     );
   } catch {
@@ -42,6 +53,21 @@ function eventDetails(value: string | Record<string, unknown> | undefined) {
   }
 }
 
+function eventLabel(event: string) {
+  const names: Record<string, string> = {
+    LOTE_CREADO: "Lote creado",
+    RECEPCION_CONFIRMADA: "Recepción confirmada",
+    MUESTREO_CREADO: "Muestreo registrado",
+    MUESTREO_REGISTRADO: "Muestreo registrado",
+    INSPECCION_CREADA: "Inspección iniciada",
+    INSPECCION_VALIDADA: "Inspección validada",
+    LOTE_ANULADO: "Lote anulado",
+    DICTAMEN_EMITIDO: "Dictamen emitido",
+    INCIDENCIA_ABIERTA: "Incidencia registrada",
+  };
+  const text = event.replaceAll("_", " ").toLocaleLowerCase("es");
+  return names[event] ?? text.charAt(0).toUpperCase() + text.slice(1);
+}
 export function Traceability({ id }: { id: number }) {
   const [page, setPage] = useState(1);
   const query = useLotTraceability(id, page);
@@ -63,14 +89,14 @@ export function Traceability({ id }: { id: number }) {
         </Button>
       </div>
       <p className="text-sm text-muted">
-        Eventos recibidos desde el servicio agrícola para este lote.
+        Historial de operaciones del lote. Fechas en hora de Perú.
       </p>
       {query.isPending ? (
         <LoadingState label="Cargando eventos" />
       ) : query.isError ? (
         <ErrorState error={query.error} retry={() => void query.refetch()} />
       ) : (
-        <div className="paginated-content">
+        <div className="space-y-4">
           {query.data.data.length ? (
             <ol className="space-y-3 border-l-2 border-border pl-5">
               {query.data.data.map((item) => (
@@ -79,16 +105,25 @@ export function Traceability({ id }: { id: number }) {
                     aria-hidden="true"
                     className="absolute -left-[1.7rem] top-1.5 size-2.5 rounded-full bg-accent"
                   />
-                  <p className="font-medium">{item.evento.replaceAll("_", " ")}</p>
-                  {eventDetails(item.cambios).map((detail) => (
-                    <p key={detail.label} className="text-sm">
-                      <span className="text-muted">{detail.label}: </span>
-                      {detail.value}
-                    </p>
-                  ))}
+                  <p className="font-medium">{eventLabel(item.evento)}</p>
                   <time className="text-xs text-muted" dateTime={item.created_at ?? undefined}>
                     {displayDate(item.created_at)}
                   </time>
+                  {eventDetails(item.cambios).length ? (
+                    <details className="pt-2">
+                      <summary className="cursor-pointer text-sm font-medium text-accent">
+                        Ver datos del evento
+                      </summary>
+                      <dl className="mt-3 grid gap-3 rounded-xl bg-surface-secondary p-4 sm:grid-cols-2">
+                        {eventDetails(item.cambios).map((detail) => (
+                          <div key={detail.label}>
+                            <dt className="text-xs text-muted">{detail.label}</dt>
+                            <dd className="mt-1 break-words text-sm">{detail.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </details>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -98,7 +133,9 @@ export function Traceability({ id }: { id: number }) {
               description="Los nuevos eventos aparecerán cuando se registren operaciones."
             />
           )}
-          <PagePagination last={query.data.last_page} page={page} onChange={setPage} />
+          {query.data.last_page > 1 ? (
+            <PagePagination last={query.data.last_page} page={page} onChange={setPage} />
+          ) : null}
         </div>
       )}
     </section>

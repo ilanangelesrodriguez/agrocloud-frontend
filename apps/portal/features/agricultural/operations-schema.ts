@@ -20,6 +20,7 @@ export const inspectionsPage = z.object({
   data: z.array(
     z.object({
       id_inspeccion: id,
+      id_inspector: id.nullish(),
       id_muestreo: id,
       estado: z.string(),
       latest_decision: z
