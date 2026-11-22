@@ -132,7 +132,10 @@ export function HomeContent() {
                   }}
                 >
                   <Tabs.ListContainer className="max-w-full overflow-x-auto">
-                    <Tabs.List aria-label="Explorar etapas del proceso agrícola" className="min-w-max">
+                    <Tabs.List
+                      aria-label="Explorar etapas del proceso agrícola"
+                      className="min-w-max"
+                    >
                       {stages.map((stage) => (
                         <Tabs.Tab key={stage.n} id={stage.n}>
                           {stage.title}
@@ -228,7 +231,10 @@ export function HomeContent() {
                 description: "Usa Gratis o confirma una oferta vigente cuando decidas contratar.",
               },
             ].map((step) => (
-              <li key={step.n} className="rounded-2xl border border-border bg-background p-4 sm:p-5">
+              <li
+                key={step.n}
+                className="rounded-2xl border border-border bg-background p-4 sm:p-5"
+              >
                 <span className="text-sm font-semibold tabular-nums text-accent">{step.n}</span>
                 <Typography.Heading className="mt-3 text-base font-semibold" level={3}>
                   {step.title}
@@ -279,7 +285,10 @@ export function HomeContent() {
             text="Desde la recepción y el muestreo hasta la inspección, las evidencias y el dictamen, cada registro conserva su contexto."
             title="Un mismo expediente, de origen a decisión"
           />
-          <Link className="site-button site-button-outline shrink-0 self-start" href="/como-funciona">
+          <Link
+            className="site-button site-button-outline shrink-0 self-start"
+            href="/como-funciona"
+          >
             Conocer el proceso completo
             <FiArrowRight aria-hidden="true" className="size-4" />
           </Link>
