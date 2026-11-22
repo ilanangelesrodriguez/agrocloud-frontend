@@ -1,13 +1,15 @@
 "use client";
 
 import type { Lot } from "../schema";
+
 import Link from "next/link";
+import { InlineNotice, StatusBadge } from "@agrocloud/ui";
+
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 import { ReceptionForm } from "@/features/receptions/components/reception-form";
 import { SamplingForm } from "@/features/samplings/components/sampling-form";
 import { Traceability } from "@/features/traceability/components/traceability";
-import { InlineNotice, StatusBadge } from "@agrocloud/ui";
 
 export function LotOperations({
   lot,
@@ -28,8 +30,8 @@ export function LotOperations({
     <div className="space-y-5">
       {stage === "reception" ? (
         <section
-          id="lot-reception"
           className="scroll-mt-24 space-y-3 rounded-card border border-border bg-surface p-5"
+          id="lot-reception"
         >
           <h2 className="text-xl font-semibold">Recepción</h2>
           <p className="text-sm leading-relaxed text-muted">
@@ -61,20 +63,20 @@ export function LotOperations({
             <ReceptionForm lot={lot} />
           ) : (
             <InlineNotice
-              status="warning"
-              title="Recepción pendiente"
               description={
                 lot.estado === "PENDIENTE_RECEPCION"
                   ? "Una cuenta de recepción autorizada debe confirmar el ingreso del lote para continuar."
                   : "El estado actual del lote no permite registrar una recepción."
               }
+              status="warning"
+              title="Recepción pendiente"
             />
           )}
           {reception ? (
             <div className="border-t border-border pt-5">
               <Link
-                href={`/lots/${lot.id_lote}/sampling`}
                 className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground"
+                href={`/lots/${lot.id_lote}/sampling`}
               >
                 Continuar al muestreo
               </Link>
@@ -84,8 +86,8 @@ export function LotOperations({
       ) : null}
       {stage === "sampling" ? (
         <section
-          id="lot-sampling"
           className="scroll-mt-24 space-y-2 rounded-card border border-border bg-surface p-5"
+          id="lot-sampling"
         >
           <h2 className="text-xl font-semibold">Muestreos</h2>
           <p className="text-sm leading-relaxed text-muted">
@@ -134,8 +136,6 @@ export function LotOperations({
             <SamplingForm lotId={lot.id_lote} product={lot.producto} productId={lot.producto_id} />
           ) : (
             <InlineNotice
-              status="warning"
-              title={reception ? "Sin muestreos registrados" : "Completa la recepción primero"}
               description={
                 !reception
                   ? "El lote debe contar con una recepción confirmada antes de registrar la muestra."
@@ -143,6 +143,8 @@ export function LotOperations({
                     ? "El estado actual del lote no permite registrar un muestreo."
                     : "Un inspector con permisos de muestreo debe registrar la muestra de este lote."
               }
+              status="warning"
+              title={reception ? "Sin muestreos registrados" : "Completa la recepción primero"}
             />
           )}
         </section>

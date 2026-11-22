@@ -1,14 +1,16 @@
 "use client";
+import type { ReactNode } from "react";
+
 import { useEffect, useState, type FormEvent } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button, ComboBox, Input, Label, ListBox, Form } from "@heroui/react";
+
 import { DateRangeInput } from "@/components/date-range-input";
 import { CatalogSelect } from "@/features/company/agricultural/components/catalog-select";
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
 import { bffRequest } from "@/lib/api/bff-client";
 import { lotList } from "@/features/agricultural/schema";
-import type { ReactNode } from "react";
 export type AnalysisFilter = {
   from?: string;
   to?: string;
@@ -18,10 +20,13 @@ export type AnalysisFilter = {
   model_id?: string;
 };
 const keys = ["from", "to", "producto", "variedad", "producer_id", "model_id"] as const;
+
 export function recentPeriod(days = 30): AnalysisFilter {
   const end = new Date();
   const start = new Date(end);
+
   start.setUTCDate(start.getUTCDate() - days + 1);
+
   return { from: start.toISOString().slice(0, 10), to: end.toISOString().slice(0, 10) };
 }
 function validDate(value: string | null) {
@@ -34,10 +39,13 @@ function validDate(value: string | null) {
 }
 function readUrl() {
   const params = new URLSearchParams(window.location.search);
+
   if (!keys.some((key) => params.has(key)) && params.get("period") !== "all") return recentPeriod();
   const filter: AnalysisFilter = {};
+
   for (const key of keys) {
     const value = params.get(key)?.trim();
+
     if (value && value.length <= 150 && ((key !== "from" && key !== "to") || validDate(value)))
       filter[key] = value;
   }
@@ -45,11 +53,13 @@ function readUrl() {
     delete filter.from;
     delete filter.to;
   }
+
   return filter;
 }
 export function useAnalysisFilter() {
   const [filter, setFilter] = useState<AnalysisFilter>(() => recentPeriod());
   const [revision, setRevision] = useState(0);
+
   useEffect(() => {
     function restore() {
       setFilter(readUrl());
@@ -57,10 +67,12 @@ export function useAnalysisFilter() {
     }
     restore();
     window.addEventListener("popstate", restore);
+
     return () => window.removeEventListener("popstate", restore);
   }, []);
   function apply(next: AnalysisFilter) {
     const url = new URL(window.location.href);
+
     for (const key of keys) {
       url.searchParams.delete(key);
       if (next[key]) url.searchParams.set(key, next[key]!);
@@ -71,6 +83,7 @@ export function useAnalysisFilter() {
     setFilter(next);
     setRevision((value) => value + 1);
   }
+
   return { filter, apply, revision };
 }
 function SearchFilter({
@@ -88,19 +101,19 @@ function SearchFilter({
 }) {
   return (
     <ComboBox
-      variant="secondary"
       allowsCustomValue
       inputValue={value}
-      onInputChange={onChange}
       isDisabled={disabled}
       menuTrigger="input"
+      variant="secondary"
+      onInputChange={onChange}
     >
       <Label>{label}</Label>
       <ComboBox.InputGroup>
         <Input
-          variant="secondary"
-          placeholder="Buscar o escribir valor histórico"
           maxLength={150}
+          placeholder="Buscar o escribir valor histórico"
+          variant="secondary"
         />
         <ComboBox.Trigger aria-label={"Mostrar opciones de " + label}>⌄</ComboBox.Trigger>
       </ComboBox.InputGroup>
@@ -112,7 +125,7 @@ function SearchFilter({
           {items
             .filter((item) => item.toLocaleLowerCase("es").includes(value.toLocaleLowerCase("es")))
             .map((item) => (
-              <ListBox.Item id={item} key={item} textValue={item}>
+              <ListBox.Item key={item} id={item} textValue={item}>
                 {item}
               </ListBox.Item>
             ))}
@@ -143,8 +156,10 @@ export function ReportFilters({
   const [period, setPeriod] = useState(() => {
     const matching = [7, 30, 90].find((days) => {
       const range = recentPeriod(days);
+
       return range.from === filter.from && range.to === filter.to;
     });
+
     return matching ? String(matching) : "custom";
   });
   const [product, setProduct] = useState(filter.producto ?? "");
@@ -177,10 +192,12 @@ export function ReportFilters({
         .filter((value): value is string => !!value),
     ),
   ).sort((a, b) => a.localeCompare(b, "es"));
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (dates.from && dates.to && dates.from > dates.to) {
       setError("La fecha final debe ser igual o posterior a la inicial.");
+
       return;
     }
     setError("");
@@ -192,15 +209,22 @@ export function ReportFilters({
       ...(models ? { model_id: model || undefined } : {}),
     });
   }
+
   return (
     <section className="space-y-3 rounded-2xl border border-border bg-surface p-5 sm:p-6">
       <h2 className="font-semibold">Filtros del reporte</h2>
       <Form
+        className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3"
         validationBehavior="native"
         onSubmit={submit}
-        className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-3"
       >
         <CatalogSelect
+          items={[
+            { id: "7", name: "Últimos 7 días" },
+            { id: "30", name: "Últimos 30 días" },
+            { id: "90", name: "Últimos 90 días" },
+            { id: "custom", name: "Personalizado" },
+          ]}
           label="Periodo rápido"
           value={period}
           onChange={(value) => {
@@ -211,60 +235,57 @@ export function ReportFilters({
               setError("");
             }
           }}
-          items={[
-            { id: "7", name: "Últimos 7 días" },
-            { id: "30", name: "Últimos 30 días" },
-            { id: "90", name: "Últimos 90 días" },
-            { id: "custom", name: "Personalizado" },
-          ]}
         />
         <DateRangeInput
           key={dateRevision}
+          error={error || undefined}
           initialFrom={dates.from}
           initialTo={dates.to}
-          error={error || undefined}
           onRangeChange={(next) => {
-            setDates(next);
+            setDates({
+              from: next.from,
+              to: next.to,
+            });
             setPeriod("custom");
             setError("");
           }}
         />
         <SearchFilter
+          items={products}
           label="Producto histórico"
           value={product}
           onChange={(value) => {
             setProduct(value);
             setVariety("");
           }}
-          items={products}
         />
         <SearchFilter
+          disabled={!product.trim()}
+          items={varieties}
           label="Variedad histórica"
           value={variety}
           onChange={setVariety}
-          items={varieties}
-          disabled={!product.trim()}
         />
         <CatalogSelect
-          label="Productor"
-          value={producer}
-          onChange={setProducer}
           optional
           emptyLabel="Todos los productores"
           items={producers}
+          label="Productor"
+          value={producer}
+          onChange={setProducer}
         />
         {models ? (
           <CatalogSelect
-            label="Modelo"
-            value={model}
-            onChange={setModel}
             optional
             emptyLabel="Todos los modelos"
             items={models}
+            label="Modelo"
+            value={model}
+            onChange={setModel}
           />
         ) : null}
         <div className="flex flex-wrap gap-2 border-t border-border pt-4 sm:col-span-2 lg:col-span-3">
-          <Button type="submit" variant="primary" isPending={busy}>
+          <Button isPending={busy} type="submit" variant="primary">
             Aplicar filtros
           </Button>
           <Button type="button" variant="secondary" onPress={() => onApply({})}>
@@ -279,9 +300,9 @@ export function ReportFilters({
       </p>
       {lots.hasNextPage ? (
         <Button
+          isPending={lots.isFetchingNextPage}
           size="sm"
           variant="tertiary"
-          isPending={lots.isFetchingNextPage}
           onPress={() => void lots.fetchNextPage()}
         >
           Cargar más sugerencias históricas
