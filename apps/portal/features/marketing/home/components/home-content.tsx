@@ -114,7 +114,7 @@ export function HomeContent() {
           </Reveal>
 
           <Reveal className="relative z-10" delay={0.12}>
-            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-xl shadow-brand-700/10">
+            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-lg shadow-brand-700/10">
               <Card.Content className="p-4 sm:p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <span className="text-sm font-semibold text-accent">Expediente agrícola</span>
@@ -233,7 +233,7 @@ export function HomeContent() {
             ].map((step) => (
               <li
                 key={step.n}
-                className="rounded-2xl border border-border bg-background p-4 sm:p-5"
+                className="rounded-2xl border border-border bg-background p-4 transition-[border-color,box-shadow,transform] duration-200 ease-out hover:border-brand-600/30 hover:shadow-sm motion-reduce:transition-none sm:p-5"
               >
                 <span className="text-sm font-semibold tabular-nums text-accent">{step.n}</span>
                 <Typography.Heading className="mt-3 text-base font-semibold" level={3}>
@@ -297,7 +297,7 @@ export function HomeContent() {
 
       <section className="site-section landing-section">
         <div className="site-container grid items-center gap-10 lg:grid-cols-2">
-          <div className="relative min-h-[260px] overflow-hidden sm:min-h-[300px] rounded-[2rem] bg-gradient-to-br from-[#103D35] to-[#0F523C] p-7 text-white shadow-xl shadow-brand-700/20 sm:p-10">
+          <div className="relative min-h-[260px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#103D35] to-[#0F523C] p-7 text-white shadow-lg shadow-brand-700/15 sm:min-h-[300px] sm:p-10">
             <span className="text-sm font-semibold text-[#A4E8C3]">Análisis de imágenes</span>
             <div
               aria-hidden="true"
@@ -348,7 +348,9 @@ export function HomeContent() {
             text="Conoce el alcance de la plataforma y cómo solicitar acceso empresarial."
             title="Respuestas antes de comenzar"
           />
-          <Faq />
+          <Reveal viewport>
+            <Faq />
+          </Reveal>
         </div>
       </section>
 

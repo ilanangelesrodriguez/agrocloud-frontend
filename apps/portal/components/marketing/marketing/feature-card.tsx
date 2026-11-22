@@ -18,7 +18,7 @@ type Props = {
 
 export function FeatureCard({ number, icon, title, description, tag, accentTag = false }: Props) {
   return (
-    <Card className="site-card group h-full border border-brand-600/20 shadow-sm shadow-brand-700/5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-lg hover:shadow-brand-700/10">
+    <Card className="site-card group h-full border border-brand-600/20 shadow-sm shadow-brand-700/5 transition-[border-color,box-shadow,transform] duration-200 ease-out motion-reduce:transform-none motion-reduce:transition-none hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-md hover:shadow-brand-700/10">
       <Card.Content className="flex h-full flex-col gap-5 p-6 sm:p-7">
         <div className="flex items-center justify-between gap-3">
           <span

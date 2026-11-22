@@ -22,7 +22,7 @@
     border: 1px solid var(--border);
     border-radius: 1.5rem;
     background: var(--surface);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 2.5%);
+    box-shadow: 0 5px 18px rgb(0 0 0 / 2.5%);
   }
 
   /* Conserva la semántica de enlace Next.js para la navegación. */
@@ -41,7 +41,8 @@
     transition:
       background-color 200ms ease,
       transform 200ms ease,
-      border-color 200ms ease;
+      border-color 200ms ease,
+      box-shadow 200ms ease;
   }
 
   .site-button:hover {
