@@ -62,7 +62,7 @@ export function PlansCarousel({ items }: Props) {
     const updateLayout = () => {
       setVisibleCount(breakpoint.matches ? 2 : 1);
       setFirstVisible(0);
-      trackRef.current?.scrollTo({ left: 0, behavior: "instant" });
+      trackRef.current?.scrollTo({ left: 0, behavior: "auto" });
     };
 
     updateLayout();
@@ -115,21 +115,10 @@ export function PlansCarousel({ items }: Props) {
         ref={trackRef}
         aria-label="Comparación de planes de AgroCloud"
         aria-roledescription="carrusel"
-        className="flex min-w-0 snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overscroll-x-contain rounded-2xl pb-3 scroll-smooth outline-offset-4 focus-visible:outline-2 focus-visible:outline-accent motion-reduce:scroll-auto md:gap-6 [&::-webkit-scrollbar]:hidden"
+        className="flex min-w-0 snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overscroll-x-contain rounded-2xl pb-3 scroll-smooth motion-reduce:scroll-auto md:gap-6 [&::-webkit-scrollbar]:hidden"
         id="planes-disponibles"
         role="region"
         style={{ scrollbarWidth: "none" }}
-        tabIndex={canScroll ? 0 : undefined}
-        onKeyDown={(event) => {
-          if (event.target !== event.currentTarget) return;
-          if (event.key === "ArrowRight") {
-            event.preventDefault();
-            move(1);
-          } else if (event.key === "ArrowLeft") {
-            event.preventDefault();
-            move(-1);
-          }
-        }}
         onScroll={updatePosition}
       >
         {items.map((item, index) => (
