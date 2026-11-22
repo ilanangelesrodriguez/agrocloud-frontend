@@ -22,7 +22,7 @@ export function OrganizationBadge({
     : "ORG";
   const content = (
     <div
-      className=
+      className={
         "flex min-w-0 items-center gap-3 rounded-xl border border-border bg-surface-secondary/60 p-3 " +
         (collapsed ? "justify-center p-2" : "")
       }

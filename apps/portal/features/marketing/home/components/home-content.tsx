@@ -243,7 +243,7 @@ export function HomeContent() {
       </section>
 
       <section className="site-section landing-section">
-        <div className="site-container space-y-8"
+        <div className="site-container space-y-8">
           <SectionIntro
             eyebrow="Una plataforma, más claridad"
             text="La operación agrícola involucra información dispersa. AgroCloud conecta cada registro con la siguiente etapa para facilitar el seguimiento."
