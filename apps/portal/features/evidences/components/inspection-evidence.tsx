@@ -564,13 +564,16 @@ function MultipleEvidenceUpload({
       <div className="flex items-start gap-2 rounded-xl border border-border bg-surface-secondary/50 p-3 text-xs leading-5 text-muted">
         <FiInfo aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
         <p>
-          La asociación inicial se sugiere por código o por orden de la página. <strong className="text-foreground">Confirma cada fruto</strong> antes de guardar. Puedes vincular varias fotografías a un fruto y cargar más desde otras páginas.
+          La asociación inicial se sugiere por código o por orden de la página.{" "}
+          <strong className="text-foreground">Confirma cada fruto</strong> antes de guardar. Puedes
+          vincular varias fotografías a un fruto y cargar más desde otras páginas.
         </p>
       </div>
       {rows.length > 0 ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-semibold text-foreground">
-            Fotografías preparadas <span className="font-normal text-muted">({rows.length}/100)</span>
+            Fotografías preparadas{" "}
+            <span className="font-normal text-muted">({rows.length}/100)</span>
           </p>
           <span className="text-xs tabular-nums text-muted">
             {rows.filter((row) => row.evidenceId).length} guardadas
@@ -719,11 +722,7 @@ function PreparedPreview({ file }: { file: File }) {
   }, [file]);
   // eslint-disable-next-line @next/next/no-img-element
   return url ? (
-    <img
-      src={url}
-      alt={"Vista previa de " + file.name}
-      className="h-full w-full object-cover"
-    />
+    <img src={url} alt={"Vista previa de " + file.name} className="h-full w-full object-cover" />
   ) : null;
 }
 
