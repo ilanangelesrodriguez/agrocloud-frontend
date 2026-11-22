@@ -3,12 +3,20 @@ import { producerDetail, producerList } from "./schema";
 import { z } from "zod";
 
 const lookupResult = z.object({
-  ruc: z.string(), resultado: z.string(), razon_social: z.string().nullable(),
-  estado: z.string().nullable(), condicion: z.string().nullable(),
+  ruc: z.string(),
+  resultado: z.string(),
+  razon_social: z.string().nullable(),
+  estado: z.string().nullable(),
+  condicion: z.string().nullable(),
 });
 
 export function lookupProducerRuc(ruc: string) {
-  return bffRequest("producer-lookup?ruc=" + encodeURIComponent(ruc), lookupResult, undefined, "agricultural");
+  return bffRequest(
+    "producer-lookup?ruc=" + encodeURIComponent(ruc),
+    lookupResult,
+    undefined,
+    "agricultural",
+  );
 }
 
 /** Conservar la ruta y verbos del gateway agrícola existente. */

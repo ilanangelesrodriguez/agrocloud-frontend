@@ -152,7 +152,8 @@ export function AccessRequestForm({
             <>
               <p className="font-semibold text-foreground">Acceso gratuito</p>
               <p className="text-muted">
-                Sin cobro inicial. Los cupos y la vigencia gratuita se confirman al activar la cuenta.
+                Sin cobro inicial. Los cupos y la vigencia gratuita se confirman al activar la
+                cuenta.
               </p>
             </>
           ) : (

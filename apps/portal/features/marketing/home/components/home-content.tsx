@@ -340,14 +340,30 @@ export function HomeContent() {
           />
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { number: "01", title: "Elige y solicita", description: "Consulta los planes y registra tu empresa sin realizar ningún pago." },
-              { number: "02", title: "Revisamos y activas", description: "El equipo revisa tu solicitud. Si se aprueba, activas tu cuenta mediante una invitación." },
-              { number: "03", title: "Empieza a trabajar", description: "Utiliza tu acceso gratuito o confirma la oferta de pago vigente desde el portal." },
+              {
+                number: "01",
+                title: "Elige y solicita",
+                description: "Consulta los planes y registra tu empresa sin realizar ningún pago.",
+              },
+              {
+                number: "02",
+                title: "Revisamos y activas",
+                description:
+                  "El equipo revisa tu solicitud. Si se aprueba, activas tu cuenta mediante una invitación.",
+              },
+              {
+                number: "03",
+                title: "Empieza a trabajar",
+                description:
+                  "Utiliza tu acceso gratuito o confirma la oferta de pago vigente desde el portal.",
+              },
             ].map((step) => (
               <Reveal key={step.number}>
                 <Card className="site-card h-full border border-border">
                   <Card.Content className="space-y-3 p-6">
-                    <span className="text-sm font-semibold tabular-nums text-accent">{step.number}</span>
+                    <span className="text-sm font-semibold tabular-nums text-accent">
+                      {step.number}
+                    </span>
                     <Typography.Heading level={3} className="text-lg font-semibold">
                       {step.title}
                     </Typography.Heading>

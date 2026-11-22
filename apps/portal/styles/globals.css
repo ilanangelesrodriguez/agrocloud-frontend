@@ -54,9 +54,15 @@
   flex-direction: column;
   gap: 1rem;
 }
-.paginated-content > .pagination-footer { margin-top: auto; }
+.paginated-content > .pagination-footer {
+  margin-top: auto;
+}
 @media (max-width: 639px) {
-  .paginated-content { min-height: 26rem; }
+  .paginated-content {
+    min-height: 26rem;
+  }
 }
 
-.paginated-content--compact { min-height: 18rem; }
+.paginated-content--compact {
+  min-height: 18rem;
+}

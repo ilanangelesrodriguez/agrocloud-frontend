@@ -105,8 +105,8 @@ export function PlansContent() {
               <Alert.Description>
                 Tanto el acceso gratuito como un plan pagado comienzan con una única solicitud de
                 incorporación. Elegir un plan no implica un cobro ni reserva su precio. Tras la
-                aprobación y activación, puedes utilizar Gratis y confirmar la oferta vigente
-                cuando decidas contratar. Las empresas registradas gestionan suscripciones desde el portal.
+                aprobación y activación, puedes utilizar Gratis y confirmar la oferta vigente cuando
+                decidas contratar. Las empresas registradas gestionan suscripciones desde el portal.
               </Alert.Description>
             </Alert.Content>
           </Alert>
