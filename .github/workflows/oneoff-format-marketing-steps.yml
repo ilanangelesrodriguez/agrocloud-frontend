@@ -1,0 +1,45 @@
+name: One-off marketing steps formatting
+on:
+  push:
+    branches:
+      - feat/marketing-visual-steps-three-plans
+    paths:
+      - .github/workflows/oneoff-format-marketing-steps.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - name: Format reviewed marketing files
+        run: |
+          npx prettier --write \
+            'apps/portal/app/(marketing)/funcionalidades/page.tsx' \
+            apps/portal/components/marketing/marketing/contact-content.tsx \
+            apps/portal/components/marketing/marketing/page-hero.tsx \
+            apps/portal/components/marketing/marketing/workflow-content.tsx \
+            apps/portal/features/marketing/home/components/home-content.tsx \
+            apps/portal/features/marketing/plans/components/plans-carousel.tsx \
+            apps/portal/features/marketing/plans/components/plans-content.tsx
+      - name: Commit formatting to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'apps/portal/app/(marketing)/funcionalidades/page.tsx' \
+            apps/portal/components/marketing/marketing/contact-content.tsx \
+            apps/portal/components/marketing/marketing/page-hero.tsx \
+            apps/portal/components/marketing/marketing/workflow-content.tsx \
+            apps/portal/features/marketing/home/components/home-content.tsx \
+            apps/portal/features/marketing/plans/components/plans-carousel.tsx \
+            apps/portal/features/marketing/plans/components/plans-content.tsx
+          if ! git diff --cached --quiet; then
+            git commit -m "style(marketing): format interactive marketing pages"
+            git push origin HEAD:feat/marketing-visual-steps-three-plans
+          fi
