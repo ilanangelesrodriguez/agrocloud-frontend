@@ -211,7 +211,9 @@
   height: 460px;
   top: -220px;
   right: -125px;
-  box-shadow: 0 0 0 58px rgb(69 201 135 / 3%), 0 0 0 118px rgb(69 201 135 / 2%);
+  box-shadow:
+    0 0 0 58px rgb(69 201 135 / 3%),
+    0 0 0 118px rgb(69 201 135 / 2%);
 }
 
 .marketing-atmosphere__ring--inner {
@@ -235,23 +237,39 @@
 }
 
 @keyframes marketing-drift {
-  from { transform: translate3d(-2%, -2%, 0) scale(0.94); }
-  to { transform: translate3d(8%, 7%, 0) scale(1.08); }
+  from {
+    transform: translate3d(-2%, -2%, 0) scale(0.94);
+  }
+  to {
+    transform: translate3d(8%, 7%, 0) scale(1.08);
+  }
 }
 
 @keyframes marketing-orbit {
-  from { transform: rotate(0deg) translate3d(0, 0, 0); }
-  to { transform: rotate(360deg) translate3d(0, 0, 0); }
+  from {
+    transform: rotate(0deg) translate3d(0, 0, 0);
+  }
+  to {
+    transform: rotate(360deg) translate3d(0, 0, 0);
+  }
 }
 
 @keyframes marketing-pattern {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-22px, 18px, 0); }
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-22px, 18px, 0);
+  }
 }
 
 @media (prefers-color-scheme: dark) {
-  .marketing-atmosphere__ring { border-color: rgb(183 245 162 / 11%); }
-  .marketing-atmosphere__dots { opacity: 0.13; }
+  .marketing-atmosphere__ring {
+    border-color: rgb(183 245 162 / 11%);
+  }
+  .marketing-atmosphere__dots {
+    opacity: 0.13;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -264,8 +282,14 @@
 }
 
 @media (max-width: 640px) {
-  .marketing-atmosphere__ring--outer { right: -300px; opacity: 0.5; }
-  .marketing-atmosphere__ring--inner { left: -120px; }
-  .marketing-atmosphere__dots { opacity: 0.1; }
+  .marketing-atmosphere__ring--outer {
+    right: -300px;
+    opacity: 0.5;
+  }
+  .marketing-atmosphere__ring--inner {
+    left: -120px;
+  }
+  .marketing-atmosphere__dots {
+    opacity: 0.1;
+  }
 }
-

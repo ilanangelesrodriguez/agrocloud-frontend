@@ -7,7 +7,10 @@
  */
 export function MarketingBackdrop() {
   return (
-    <div aria-hidden="true" className="marketing-atmosphere pointer-events-none absolute inset-0 z-0 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="marketing-atmosphere pointer-events-none absolute inset-0 z-0 overflow-hidden"
+    >
       <span className="marketing-atmosphere__orb marketing-atmosphere__orb--left" />
       <span className="marketing-atmosphere__orb marketing-atmosphere__orb--right" />
       <span className="marketing-atmosphere__ring marketing-atmosphere__ring--outer" />

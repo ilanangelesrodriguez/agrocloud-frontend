@@ -52,7 +52,12 @@ const steps: Step[] = [
 const roles = ["Recepción", "Inspección", "Supervisión", "Producción", "Administración"];
 
 export function WorkflowContent() {
-  const { ref: autoStepRef, active, selectStep, reduceMotion } = useMarketingAutoStep(steps.length, 4800);
+  const {
+    ref: autoStepRef,
+    active,
+    selectStep,
+    reduceMotion,
+  } = useMarketingAutoStep(steps.length, 4800);
   const current = steps[active];
 
   return (
@@ -73,13 +78,15 @@ export function WorkflowContent() {
                 Siete etapas, un mismo historial
               </h2>
               <p className="mt-2 text-sm leading-7 text-muted">
-                Explora cada paso de forma interactiva mientras el recorrido avanza
-                automáticamente.
+                Explora cada paso de forma interactiva mientras el recorrido avanza automáticamente.
               </p>
             </div>
           </div>
 
-          <div ref={autoStepRef} className="grid gap-6 rounded-[2rem] border border-brand-600/15 bg-surface p-4 shadow-lg shadow-brand-700/5 sm:p-6 lg:grid-cols-[.95fr_1.05fr] lg:gap-8 lg:p-8">
+          <div
+            ref={autoStepRef}
+            className="grid gap-6 rounded-[2rem] border border-brand-600/15 bg-surface p-4 shadow-lg shadow-brand-700/5 sm:p-6 lg:grid-cols-[.95fr_1.05fr] lg:gap-8 lg:p-8"
+          >
             <nav aria-label="Etapas del proceso" className="min-w-0">
               <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
                 {steps.map((step, index) => {
