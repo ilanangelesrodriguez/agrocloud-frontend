@@ -10,7 +10,7 @@ export function usePublicOffers() {
     queryFn: async ({ signal }) => {
       const result = await fetchPublicJson("/api/public/offers", { signal });
 
-      return publicOffersSchema.parse(result).data;
+      return publicOffersSchema.parse(result);
     },
     retry: false,
   });

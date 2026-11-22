@@ -86,15 +86,19 @@ export function HomeContent() {
             </Typography.Paragraph>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link className="site-button site-button-primary" href="/solicitar-acceso">
-                Solicitar acceso empresarial
+              <Link className="site-button site-button-primary" href="/planes">
+                Ver planes y comenzar
                 <FiArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
-              <Link className="site-button site-button-outline" href="/funcionalidades">
-                Conocer funcionalidades
+              <Link className="site-button site-button-outline" href="/como-funciona">
+                Cómo funciona
                 <FiArrowRight aria-hidden="true" className="size-4" />
               </Link>
             </div>
+            <p className="max-w-xl text-xs leading-6 text-muted">
+              Elegir un plan no genera cobros. Las empresas nuevas solicitan acceso y pasan por una
+              revisión antes de recibir una invitación de activación.
+            </p>
 
             <div className="flex flex-wrap gap-2 pt-2">
               {benefits.map((benefit) => (
@@ -324,6 +328,40 @@ export function HomeContent() {
               </Alert.Content>
             </Alert>
           </div>
+        </div>
+      </section>
+
+      <section className="site-section border-t border-border">
+        <div className="site-container space-y-9">
+          <SectionIntro
+            eyebrow="Empieza con AgroCloud"
+            text="Una única solicitud empresarial, tanto si prefieres el acceso gratuito como si te interesa una oferta de pago."
+            title="De visitante a empresa activa en tres pasos"
+          />
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { number: "01", title: "Elige y solicita", description: "Consulta los planes y registra tu empresa sin realizar ningún pago." },
+              { number: "02", title: "Revisamos y activas", description: "El equipo revisa tu solicitud. Si se aprueba, activas tu cuenta mediante una invitación." },
+              { number: "03", title: "Empieza a trabajar", description: "Utiliza tu acceso gratuito o confirma la oferta de pago vigente desde el portal." },
+            ].map((step) => (
+              <Reveal key={step.number}>
+                <Card className="site-card h-full border border-border">
+                  <Card.Content className="space-y-3 p-6">
+                    <span className="text-sm font-semibold tabular-nums text-accent">{step.number}</span>
+                    <Typography.Heading level={3} className="text-lg font-semibold">
+                      {step.title}
+                    </Typography.Heading>
+                    <Typography.Paragraph className="text-sm leading-7 text-muted">
+                      {step.description}
+                    </Typography.Paragraph>
+                  </Card.Content>
+                </Card>
+              </Reveal>
+            ))}
+          </div>
+          <Link className="site-text-link inline-flex items-center gap-2" href="/planes">
+            Comparar modalidades de acceso <FiArrowRight aria-hidden="true" />
+          </Link>
         </div>
       </section>
 

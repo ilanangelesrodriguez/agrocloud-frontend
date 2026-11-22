@@ -10,7 +10,7 @@ import { AccessRequestForm } from "@/features/marketing/access-requests/access-r
 const steps = [
   { title: "Envía la solicitud", text: "Datos de tu empresa" },
   { title: "Espera la revisión", text: "El equipo evalúa el registro" },
-  { title: "Activa tu cuenta", text: "Confirma tu plan después de la aprobación" },
+  { title: "Activa y comienza", text: "Empieza con Gratis o confirma tu plan" },
 ];
 
 type Props = { privacyVersion?: string; selectedOfferKey?: string };

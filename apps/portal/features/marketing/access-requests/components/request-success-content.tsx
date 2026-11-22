@@ -1,12 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import type { RequestSelection } from "../api";
 import { Button, Card, toast, Typography } from "@heroui/react";
 import { FiCheckCircle, FiCopy } from "react-icons/fi";
 
 type Props = { reference?: string };
 
 export function RequestSuccessContent({ reference }: Props) {
+  const [selection, setSelection] = useState<RequestSelection | null>(null);
+
+  useEffect(() => {
+    if (!reference) return;
+    try {
+      const raw = sessionStorage.getItem(`agrocloud:solicitud:${reference}`);
+      if (!raw) return;
+      const value: unknown = JSON.parse(raw);
+      if (value && typeof value === "object" && "type" in value && "name" in value) {
+        const data = value as { type: unknown; name: unknown };
+        if ((data.type === "FREE" || data.type === "PAID") && typeof data.name === "string") {
+          setSelection({ type: data.type, name: data.name });
+        }
+      }
+    } catch {
+      // La información opcional del plan puede no estar disponible en otro dispositivo.
+    }
+  }, [reference]);
+
   async function copyReference() {
     if (!reference) return;
 
@@ -33,7 +54,26 @@ export function RequestSuccessContent({ reference }: Props) {
             y está pendiente de revisión. No es necesario enviarla repetidamente.
           </Typography.Paragraph>
           {reference ? (
-            <div className="mt-6 rounded-xl bg-surface-secondary p-4">
+            <div className="mt-6 rounded-xl border border-border bg-surface-secondary p-4 text-left">
+              <p className="text-sm font-semibold">Siguientes pasos</p>
+              <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm leading-6 text-muted">
+                <li>El equipo revisará los datos de tu empresa.</li>
+                <li>Si se aprueba, recibirás una invitación para activar tu cuenta.</li>
+                <li>Podrás ingresar con Gratis o confirmar las condiciones de tu plan elegido.</li>
+              </ol>
+              {selection ? (
+                <p className="mt-3 text-sm">
+                  <span className="font-semibold">Modalidad solicitada:</span> {selection.name}
+                </p>
+              ) : null}
+              <p className="mt-2 text-xs leading-6 text-muted">
+                Aún no se ha realizado ningún cobro. Las ofertas pagadas se confirman al contratar,
+                según su precio y condiciones vigentes.
+              </p>
+            </div>
+          ) : null}
+          {reference ? (
+            <div className="mt-4 rounded-xl bg-surface-secondary p-4">
               <Typography.Paragraph className="text-sm font-semibold">
                 Referencia de recepción
               </Typography.Paragraph>

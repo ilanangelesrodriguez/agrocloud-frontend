@@ -19,4 +19,12 @@ export const publicOffersSchema = z.object({
       }),
     }),
   ),
+  free: z.object({
+    duration_days: z.number().int().positive(),
+    limits: z.object({
+      usuarios: z.number().int().positive(),
+      lotes: z.number().int().nonnegative(),
+      analisis_ia: z.number().int().nonnegative(),
+    }),
+  }).nullable().optional(),
 });

@@ -41,7 +41,7 @@ export function AccessRequestForm({
 }) {
   const offers = usePublicOffers();
   const [selectedKey, setSelectedKey] = useState(initialOfferKey ?? ":free");
-  const selected = offers.data?.find((offer) => offer.available && offer.key === selectedKey);
+  const selected = offers.data?.data.find((offer) => offer.available && offer.key === selectedKey);
   const available = selectedKey === ":free" || !!selected;
   const router = useRouter();
   const [website, setWebsite] = useState("");
@@ -80,6 +80,17 @@ export function AccessRequestForm({
       const result = await mutation.mutateAsync({ ...payload, website });
 
       toast.success("Solicitud enviada", { description: result.message });
+      // Solo se conserva la modalidad pública en esta pestaña del navegador; nunca datos personales.
+      if (result.reference && result.selection) {
+        try {
+          sessionStorage.setItem(
+            `agrocloud:solicitud:${result.reference}`,
+            JSON.stringify(result.selection),
+          );
+        } catch {
+          // El comprobante sigue funcionando si el navegador restringe el almacenamiento.
+        }
+      }
       router.push(
         result.reference
           ? "/solicitud-recibida?" + new URLSearchParams({ reference: result.reference })
@@ -108,7 +119,7 @@ export function AccessRequestForm({
           disabled={mutation.isPending}
           items={[
             { id: ":free", name: "Comenzar gratis · Sujeto a aprobación" },
-            ...(offers.data ?? [])
+            ...(offers.data?.data ?? [])
               .filter((offer) => offer.available)
               .map((offer) => ({
                 id: offer.key,
@@ -127,13 +138,27 @@ export function AccessRequestForm({
               : []),
           ]}
         />
-        {selected ? (
-          <p className="text-xs text-muted">
-            {selected.limits.usuarios} usuarios · {selected.limits.lotes} lotes ·{" "}
-            {selected.limits.analisis_ia} análisis IA. Confirmarás el precio y las condiciones
-            vigentes después de activar tu cuenta.
-          </p>
-        ) : null}
+        <div className="rounded-xl border border-border bg-surface-secondary p-3 text-sm leading-6">
+          {selected ? (
+            <>
+              <p className="font-semibold text-foreground">{selected.name}</p>
+              <p className="text-muted">
+                {selected.limits.usuarios} usuarios · {selected.limits.lotes} lotes ·{" "}
+                {selected.limits.analisis_ia} análisis IA. Confirmarás el precio y las condiciones
+                vigentes después de activar tu cuenta.
+              </p>
+            </>
+          ) : selectedKey === ":free" ? (
+            <>
+              <p className="font-semibold text-foreground">Acceso gratuito</p>
+              <p className="text-muted">
+                Sin cobro inicial. Los cupos y la vigencia gratuita se confirman al activar la cuenta.
+              </p>
+            </>
+          ) : (
+            <p className="text-muted">Verifica la disponibilidad de tu plan antes de continuar.</p>
+          )}
+        </div>
         {!available ? (
           <p className="text-sm text-warning" role="status">
             {offers.isPending

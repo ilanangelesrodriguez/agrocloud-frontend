@@ -51,22 +51,18 @@ export function LoginForm() {
       queryClient.setQueryData(["auth", "me"], account.data);
       toast.success("Sesión iniciada", { description: "Bienvenido a tu espacio de trabajo." });
       const onboarding = account.data.onboarding;
-      const intendedPath = onboarding?.next.split("?")[0];
-      const resumePlan =
-        account.data.rol?.codigo !== "SUPERADMIN" &&
-        account.data.permissions.includes("suscripciones.ver") &&
-        onboarding?.requires_price_confirmation === true &&
-        onboarding.next.startsWith("/settings/subscription?");
-      const target = safeNext(
-        params.get("next"),
-        resumePlan && intendedPath ? intendedPath : result.redirectTo,
-      );
+      // Se sugiere la oferta tras la activación, pero los ingresos posteriores no
+      // deben forzar repetidamente a la pantalla de contratación.
+      const target = safeNext(params.get("next"), result.redirectTo);
       const restricted =
         (target.startsWith("/admin") && result.user.rol?.codigo !== "SUPERADMIN") ||
         (target.startsWith("/dashboard") && result.user.rol?.codigo === "SUPERADMIN");
 
       const requestedOffer = offerKey.safeParse(
-        params.get("offer") ?? (resumePlan ? onboarding?.selected_offer_key : undefined),
+        params.get("offer") ??
+          (target === "/settings/subscription" && onboarding?.requires_price_confirmation
+            ? onboarding.selected_offer_key
+            : undefined),
       );
       const subscription = target === "/settings/subscription";
       const destination =

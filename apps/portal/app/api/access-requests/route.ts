@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import {
   accessRequestReferenceSchema,
   accessRequestSchema,
+  accessRequestSelectionSchema,
 } from "@/features/marketing/access-requests/schema";
 import { publicReply, requestIdentity } from "@/lib/marketing/api/public-gateway";
 import { isPublicOnboardingEnabled } from "@/lib/marketing/onboarding";
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       const json: unknown = await response.json().catch(() => null);
       const payload = json && typeof json === "object" ? (json as Record<string, unknown>) : {};
       const reference = accessRequestReferenceSchema.safeParse(payload.reference);
+      const selection = accessRequestSelectionSchema.safeParse(payload.selection);
 
       if (!reference.success) {
         // No provocar un segundo registro con un retry: Identity puede haber guardado la solicitud.
@@ -117,7 +119,11 @@ export async function POST(request: NextRequest) {
 
       return publicReply(
         reference.success
-          ? { message: "Solicitud registrada para revisión.", reference: reference.data }
+          ? {
+              message: "Solicitud registrada para revisión.",
+              reference: reference.data,
+              ...(selection.success ? { selection: selection.data } : {}),
+            }
           : { message: "Solicitud recibida para revisión; no se obtuvo un comprobante." },
         201,
       );

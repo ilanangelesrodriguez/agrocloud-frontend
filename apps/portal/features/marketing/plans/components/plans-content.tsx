@@ -11,13 +11,6 @@ import { PlansState } from "./plans-state";
 
 import { CallToAction, PageHero } from "@/components/marketing/marketing";
 
-const freeFeatures = [
-  "Solicitud empresarial",
-  "Evaluación y respuesta de acceso",
-  "Activación mediante invitación",
-  "Alcance sujeto al plan asignado",
-];
-
 const currency = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" });
 const numbers = new Intl.NumberFormat("es-PE");
 
@@ -28,7 +21,16 @@ function planRequestUrl(offerKey: string) {
 export function PlansContent() {
   const offers = usePublicOffers();
   const { data: actor } = useCurrentUser();
-  const publishedOffers = offers.data?.filter((offer) => offer.available) ?? [];
+  const publishedOffers = offers.data?.data.filter((offer) => offer.available) ?? [];
+  const free = offers.data?.free;
+  const freeFeatures = free
+    ? [
+        `Vigencia: ${numbers.format(free.duration_days)} días`,
+        `Usuarios: ${numbers.format(free.limits.usuarios)}`,
+        `Lotes: ${numbers.format(free.limits.lotes)}`,
+        `Análisis IA: ${numbers.format(free.limits.analisis_ia)}`,
+      ]
+    : ["La vigencia y los cupos gratuitos se confirman al activar tu cuenta."];
 
   return (
     <>
@@ -42,7 +44,7 @@ export function PlansContent() {
           <PlanCard
             highlighted
             actionLabel={actor ? "Continuar en el portal" : "Comenzar gratis"}
-            description="Solicitud empresarial gratuita, sujeta a revisión y aprobación. La vigencia empieza al activar al administrador."
+            description="Plan inicial sin cobros, sujeto a aprobación. La vigencia comienza cuando se activa la cuenta del administrador."
             features={freeFeatures}
             href={
               actor
@@ -101,9 +103,10 @@ export function PlansContent() {
             <Alert.Content>
               <Alert.Title>Condiciones de contratación</Alert.Title>
               <Alert.Description>
-                Una empresa nueva envía una sola solicitud con su plan de interés. Después de la
-                aprobación y activación podrá confirmar la oferta vigente. Las empresas con cuenta
-                gestionan su contratación desde el portal.
+                Tanto el acceso gratuito como un plan pagado comienzan con una única solicitud de
+                incorporación. Elegir un plan no implica un cobro ni reserva su precio. Tras la
+                aprobación y activación, puedes utilizar Gratis y confirmar la oferta vigente
+                cuando decidas contratar. Las empresas registradas gestionan suscripciones desde el portal.
               </Alert.Description>
             </Alert.Content>
           </Alert>

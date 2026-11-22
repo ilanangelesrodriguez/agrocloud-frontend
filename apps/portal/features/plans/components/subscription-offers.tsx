@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { AlertDialog, Button } from "@heroui/react";
 import { EmptyState, FormNotice, InlineNotice, LoadingState } from "@agrocloud/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -73,7 +74,15 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
 
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-semibold">Ofertas y órdenes</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold">Ofertas y órdenes</h2>
+        <Link
+          href="/dashboard"
+          className="inline-flex min-h-10 items-center rounded-xl border border-border px-4 text-sm font-medium text-accent hover:bg-default"
+        >
+          Ahora no, continuar con mi acceso actual
+        </Link>
+      </div>
       <p className="text-sm text-muted">
         Confirma la oferta vigente antes de crear una orden. El checkout actual funciona en el
         entorno de prueba de Culqi.

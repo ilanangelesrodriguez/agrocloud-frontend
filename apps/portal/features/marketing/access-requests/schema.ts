@@ -21,6 +21,10 @@ const accessRequestFields = z.object({
 });
 
 export const accessRequestReferenceSchema = z.uuid();
+export const accessRequestSelectionSchema = z.object({
+  type: z.enum(["FREE", "PAID"]),
+  name: z.string().min(1).max(120),
+});
 
 export const accessRequestSchema = accessRequestFields.extend({
   privacy_accepted: z.literal(true),

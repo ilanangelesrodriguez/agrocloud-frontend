@@ -64,8 +64,9 @@ export function ContactContent() {
         </div>
 
         <Typography.Paragraph className="site-container mt-7 max-w-5xl text-sm leading-7 text-muted">
-          Esta página no ofrece un chat ni un correo de atención configurados. Los canales oficiales
-          deben publicarse cuando estén disponibles, sin exponer direcciones personales.
+          Para incorporaciones nuevas, utiliza el formulario empresarial. Si tu organización ya
+          dispone de una cuenta, solicita asistencia a su administrador. Los canales oficiales de
+          soporte se comunicarán en esta página cuando estén disponibles.
         </Typography.Paragraph>
       </section>
     </>
