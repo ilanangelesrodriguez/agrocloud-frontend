@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 
+import { FiArchive, FiCamera, FiCheckCircle, FiClipboard, FiLayers, FiShield, FiTruck, FiUsers, FiFileText } from "react-icons/fi";
+
+import { Reveal } from "@/components/marketing/reveal";
+
 import {
   CallToAction,
   FeatureCard,
@@ -13,6 +17,8 @@ export const metadata: Metadata = {
     "Conoce los módulos de AgroCloud para gestión de lotes, inspección y calidad agrícola.",
   alternates: { canonical: "/funcionalidades" },
 };
+const featureIcons = [FiUsers, FiArchive, FiTruck, FiLayers, FiClipboard, FiCamera, FiFileText, FiCheckCircle, FiShield];
+
 const items = [
   [
     "01",
@@ -79,22 +85,45 @@ export default function FunctionalitiesPage() {
         title="Toda tu operación agrícola, conectada"
       />
       <section className="site-section site-section-first">
-        <div className="site-container space-y-10">
+        <div className="site-container space-y-9">
+          <Reveal viewport>
+            <div className="grid gap-4 rounded-2xl border border-brand-600/15 bg-gradient-to-r from-brand-50/70 via-surface to-surface p-5 shadow-sm shadow-brand-700/5 sm:grid-cols-3 sm:p-6 dark:from-brand-700/15">
+              {[
+                { title: "Información conectada", text: "Cada registro conserva su relación con el lote.", Icon: FiLayers },
+                { title: "Evidencia revisable", text: "Fotografías y hallazgos al alcance del inspector.", Icon: FiCamera },
+                { title: "Control por permisos", text: "Acceso delimitado según responsabilidades.", Icon: FiShield },
+              ].map(({ title, text, Icon }) => (
+                <div key={title} className="flex items-start gap-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-600/10 text-accent">
+                    <Icon aria-hidden="true" className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{title}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted">{text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
           <SectionIntro
             eyebrow="Qué puedes gestionar"
             text="Las funciones visibles dependen del perfil y los permisos de cada usuario."
             title="Módulos orientados al proceso agrícola"
           />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {items.map(([number, title, description, tag]) => (
-              <FeatureCard
-                key={number}
-                description={description}
-                number={number}
-                tag={tag}
-                title={title}
-              />
-            ))}
+            {items.map(([number, title, description, tag], index) => {
+              const Icon = featureIcons[index] ?? FiLayers;
+              return (
+                <Reveal key={number} className="h-full" delay={Math.min(index % 3, 2) * 0.06} viewport>
+                  <FeatureCard
+                    description={description}
+                    icon={<Icon aria-hidden="true" />}
+                    tag={tag}
+                    title={title}
+                  />
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>

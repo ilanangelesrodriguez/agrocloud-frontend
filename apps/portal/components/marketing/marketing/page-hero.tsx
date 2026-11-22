@@ -23,6 +23,10 @@ export function PageHero({ eyebrow, title, description, children, compact = fals
         aria-hidden="true"
         className="pointer-events-none absolute -left-32 top-0 size-96 rounded-full bg-brand-600/10 blur-3xl"
       />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-5rem] top-0 hidden size-72 rounded-full border-[55px] border-brand-600/5 lg:block"
+      />
       <div className={`site-container relative ${spacing}`}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <Typography.Heading
