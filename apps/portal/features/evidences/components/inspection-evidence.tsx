@@ -5,11 +5,11 @@ import type { FormEvent } from "react";
 import type { z } from "zod";
 
 import { useEffect, useRef, useState } from "react";
+import { FiCheckCircle, FiImage, FiInfo, FiTrash2 } from "react-icons/fi";
 import {
   Tabs,
   Button,
   Checkbox,
-  Input,
   Label,
   ListBox,
   Select,
@@ -37,6 +37,7 @@ import {
 } from "../api";
 import { useEvidenceFruits } from "../hooks";
 import { EvidenceReview } from "./evidence-review";
+import { EvidenceDropZone } from "./evidence-drop-zone";
 import type { aiDetection, manualFinding } from "@/features/agricultural/inspection";
 
 export function InspectionEvidence({
@@ -162,9 +163,19 @@ export function InspectionEvidence({
           continuar con revisión manual justificada.
         </p>
       ) : null}
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-        <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 sm:p-6">
-          <h3 className="font-semibold">Captura de evidencias</h3>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+        <div className="space-y-5 rounded-2xl border border-border bg-surface p-4 shadow-sm shadow-black/5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-base font-semibold">Añadir fotografías</h3>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                Organiza las imágenes por fruto antes de guardarlas.
+              </p>
+            </div>
+            <span className="rounded-full border border-accent/20 bg-accent/5 px-3 py-1 text-xs font-medium text-accent">
+              Evidencias
+            </span>
+          </div>
           {canUpload && canReadFruits ? (
             <MultipleEvidenceUpload
               key={id}
@@ -533,31 +544,12 @@ function MultipleEvidenceUpload({
   }
   return (
     <Form validationBehavior="native" className="grid gap-4" onSubmit={submit}>
-      <div
-        className="rounded-xl border border-dashed border-border p-4"
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => {
-          event.preventDefault();
-          prepare(Array.from(event.dataTransfer.files));
-        }}
-      >
-        <label htmlFor="evidence-photos">Arrastra fotografías o selecciona varias</label>
-        <Input
-          variant="secondary"
-          id="evidence-photos"
-          type="file"
-          multiple
-          accept={evidenceTypes.join(",")}
-          disabled={disabled}
-          onChange={(event) => {
-            prepare(Array.from(event.target.files ?? []));
-            event.target.value = "";
-          }}
-        />
-        <p className="mt-2 text-sm text-muted">
-          JPG, PNG o WebP · Hasta 3 MB por fotografía · Hasta 100 fotografías
-        </p>
-      </div>
+      <EvidenceDropZone
+        disabled={disabled}
+        maxFiles={100}
+        selectedCount={rows.length}
+        onFiles={prepare}
+      />
       {fruits.isPending ? <LoadingState label="Cargando frutos" /> : null}
       {fruits.isError ? (
         <ErrorState
@@ -569,16 +561,54 @@ function MultipleEvidenceUpload({
       {fruits.data ? (
         <PagePagination page={page} last={fruits.data.meta.last_page} onChange={setPage} />
       ) : null}
-      <p className="text-sm text-muted">
-        Las asociaciones son sugerencias por código o por orden de la página de frutos. Revísalas
-        antes de guardar. Puedes asociar varias fotografías al mismo fruto y cambiar de página para
-        cargar más frutos.
-      </p>
-      <ul className="max-h-[36rem] space-y-3 overflow-y-auto">
+      <div className="flex items-start gap-2 rounded-xl border border-border bg-surface-secondary/50 p-3 text-xs leading-5 text-muted">
+        <FiInfo aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
+        <p>
+          La asociación inicial se sugiere por código o por orden de la página.{" "}
+          <strong className="text-foreground">Confirma cada fruto</strong> antes de guardar. Puedes
+          vincular varias fotografías a un fruto y cargar más desde otras páginas.
+        </p>
+      </div>
+      {rows.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-foreground">
+            Fotografías preparadas{" "}
+            <span className="font-normal text-muted">({rows.length}/100)</span>
+          </p>
+          <span className="text-xs tabular-nums text-muted">
+            {rows.filter((row) => row.evidenceId).length} guardadas
+          </span>
+        </div>
+      ) : null}
+      <ul className="max-h-[36rem] space-y-3 overflow-y-auto pr-1">
         {rows.map((row) => (
-          <li key={row.key} className="space-y-2 rounded-xl border border-border p-3">
-            <PreparedPreview file={row.file} />
-            <p className="break-all text-sm">{row.file.name}</p>
+          <li
+            key={row.key}
+            className="space-y-3 rounded-2xl border border-border bg-surface p-3 transition-colors duration-200 hover:border-accent/25"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="size-20 shrink-0 overflow-hidden rounded-xl border border-border bg-surface-secondary">
+                <PreparedPreview file={row.file} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground" title={row.file.name}>
+                  {row.file.name}
+                </p>
+                <p className="mt-1 flex items-center gap-1 text-xs text-muted">
+                  <FiImage aria-hidden="true" />
+                  {(row.file.size / (1024 * 1024)).toFixed(2)} MB
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  {row.status === "uploaded"
+                    ? "Guardada como evidencia #" + row.evidenceId
+                    : row.status === "uploading"
+                      ? "Subiendo fotografía…"
+                      : row.status === "error"
+                        ? row.error
+                        : "Lista para asociar"}
+                </p>
+              </div>
+            </div>
             <Select
               variant="secondary"
               value={row.fruit || null}
@@ -613,15 +643,20 @@ function MultipleEvidenceUpload({
               </Select.Popover>
               <FieldError />
             </Select>
-            <p className="text-sm" role="status">
-              {row.status === "uploaded"
-                ? "Registrada como evidencia #" + row.evidenceId
-                : row.status === "uploading"
-                  ? "Subiendo…"
-                  : row.status === "error"
-                    ? row.error
-                    : "Preparada"}
-            </p>
+            <div aria-live="polite" className="flex items-center gap-2 text-xs text-muted">
+              {row.status === "uploaded" ? (
+                <FiCheckCircle aria-hidden="true" className="size-4 text-accent" />
+              ) : null}
+              <span>
+                {row.status === "uploaded"
+                  ? "Fotografía registrada correctamente"
+                  : row.status === "uploading"
+                    ? "Guardando en el sistema…"
+                    : row.status === "error"
+                      ? "No se pudo guardar; puedes reintentar."
+                      : "Pendiente de confirmación"}
+              </span>
+            </div>
             <Button
               type="button"
               variant="secondary"
@@ -631,6 +666,7 @@ function MultipleEvidenceUpload({
                 setConfirmed(false);
               }}
             >
+              <FiTrash2 aria-hidden="true" className="size-4" />
               {row.evidenceId ? "Quitar de esta lista" : "Quitar fotografía"}
             </Button>
           </li>
@@ -686,11 +722,7 @@ function PreparedPreview({ file }: { file: File }) {
   }, [file]);
   // eslint-disable-next-line @next/next/no-img-element
   return url ? (
-    <img
-      src={url}
-      alt={"Vista previa de " + file.name}
-      className="h-24 w-full rounded-lg object-contain"
-    />
+    <img src={url} alt={"Vista previa de " + file.name} className="h-full w-full object-cover" />
   ) : null;
 }
 
