@@ -4,9 +4,12 @@ import { Typography } from "@heroui/react";
 import Link from "next/link";
 
 import { SiteBrand } from "@/components/marketing/site-brand";
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 import { portalEntryUrl } from "@/config/marketing/site";
 
 export function SiteFooter() {
+  const onboardingAvailable = useOnboardingAvailability();
+
   return (
     <footer className="border-t border-border bg-surface">
       <div className="site-container grid gap-10 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
@@ -44,8 +47,8 @@ export function SiteFooter() {
             <Link className="hover:text-accent" href="/contacto">
               Contacto
             </Link>
-            <Link className="hover:text-accent" href="/solicitar-acceso">
-              Solicitar acceso
+            <Link className="hover:text-accent" href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}>
+              {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
             </Link>
             {portalEntryUrl && (
               <a className="hover:text-accent" href={portalEntryUrl}>

@@ -3,6 +3,9 @@ import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
+import { OnboardingAvailabilityProvider } from "@/components/marketing/onboarding-availability";
+import { isPublicOnboardingEnabled } from "@/lib/marketing/onboarding";
+import { getPrivacyVersion } from "@/lib/marketing/privacy-version";
 import { siteConfig } from "@/config/marketing/site";
 
 export const metadata: Metadata = {
@@ -29,8 +32,10 @@ export const metadata: Metadata = {
 };
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
+  const onboardingAvailable = isPublicOnboardingEnabled() && Boolean(getPrivacyVersion());
+
   return (
-    <>
+    <OnboardingAvailabilityProvider enabled={onboardingAvailable}>
       <a className="site-skip" href="#contenido">
         Saltar al contenido
       </a>
@@ -39,6 +44,6 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <SiteFooter />
-    </>
+    </OnboardingAvailabilityProvider>
   );
 }

@@ -5,13 +5,18 @@ import { Card, Chip, Typography } from "@heroui/react";
 import { FiArrowUpRight, FiLogIn } from "react-icons/fi";
 
 import { PageHero } from "@/components/marketing/marketing";
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 import { portalLoginUrl } from "@/config/marketing/site";
 
 export function ContactContent() {
+  const onboardingAvailable = useOnboardingAvailability();
+
   return (
     <>
       <PageHero
-        description="Si necesitas implementar AgroCloud en tu operación, inicia una solicitud empresarial. Nuestro proceso permite compartir tu información y las necesidades de tu equipo."
+        description={onboardingAvailable
+          ? "Si necesitas implementar AgroCloud, inicia una solicitud empresarial para revisión."
+          : "Conoce nuestras modalidades de acceso. El formulario para nuevas empresas está temporalmente deshabilitado."}
         eyebrow="Contacto"
         title="Cuéntanos cómo trabaja tu empresa"
       />
@@ -24,14 +29,15 @@ export function ContactContent() {
                 Nuevas empresas
               </Chip>
               <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
-                Solicitar acceso
+                {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
               </Typography.Heading>
               <Typography.Paragraph className="mt-3 min-h-20 text-sm leading-7 text-muted">
-                Envía los datos de tu organización y una descripción de su operación. La solicitud
-                se registrará para revisión.
+                {onboardingAvailable
+                  ? "Envía los datos de tu organización y describe su operación. La solicitud se registrará para revisión."
+                  : "Consulta las modalidades disponibles. Las nuevas solicitudes se habilitarán después de validar la incorporación y el aviso de privacidad."}
               </Typography.Paragraph>
-              <Link className="site-button site-button-primary mt-6" href="/solicitar-acceso">
-                Completar solicitud
+              <Link className="site-button site-button-primary mt-6" href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}>
+                {onboardingAvailable ? "Completar solicitud" : "Ver planes"}
                 <FiArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
             </Card.Content>
@@ -64,9 +70,11 @@ export function ContactContent() {
         </div>
 
         <Typography.Paragraph className="site-container mt-7 max-w-5xl text-sm leading-7 text-muted">
-          Para incorporaciones nuevas, utiliza el formulario empresarial. Si tu organización ya
-          dispone de una cuenta, solicita asistencia a su administrador. Los canales oficiales de
-          soporte se comunicarán en esta página cuando estén disponibles.
+          {onboardingAvailable
+            ? "Para incorporaciones nuevas, utiliza el formulario empresarial."
+            : "La recepción de solicitudes empresariales todavía no está habilitada."}{" "}
+          Si tu organización ya tiene una cuenta, solicita asistencia a su administrador. Los
+          canales oficiales de soporte se comunicarán cuando estén disponibles.
         </Typography.Paragraph>
       </section>
     </>

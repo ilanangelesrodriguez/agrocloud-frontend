@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Accordion } from "@heroui/react/accordion";
 import { FiArrowRight, FiHelpCircle } from "react-icons/fi";
 
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
+
 const faqs = [
   {
     title: "¿La inteligencia artificial emite el dictamen de calidad?",
@@ -11,19 +13,25 @@ const faqs = [
   },
   {
     title: "¿Qué sucede después de solicitar acceso?",
-    body: "La solicitud se registra para revisión. Si es aprobada, el proceso de incorporación y activación continúa a través de la plataforma y sus comunicaciones oficiales.",
+    body: "La solicitud se registra para revisión. Si se aprueba, el representante recibe una invitación para activar la cuenta de su empresa.",
   },
   {
     title: "¿Puedo registrar lotes y evidencias por separado?",
     body: "AgroCloud relaciona productores, lotes, recepciones, muestras, inspecciones y evidencias para facilitar su consulta y trazabilidad.",
   },
   {
+    title: "¿Elegir un plan significa pagar durante el registro?",
+    body: "No. Primero se registra y revisa la empresa. Los precios y condiciones vigentes se confirman al decidir contratar desde el portal.",
+  },
+  {
     title: "¿Los planes y límites son iguales para todas las empresas?",
-    body: "Las condiciones, capacidades y precios deben confirmarse con una oferta vigente. La página de planes describe modalidades de acceso, sin publicar cifras no verificadas.",
+    body: "No. El acceso gratuito y los planes publicados tienen cupos y vigencias distintos. La página de planes consulta las condiciones disponibles.",
   },
 ];
 
 export function Faq() {
+  const onboardingAvailable = useOnboardingAvailability();
+
   return (
     <div className="space-y-5">
       <Accordion className="flex flex-col gap-3" variant="default">
@@ -61,9 +69,9 @@ export function Faq() {
         ¿Tienes otra consulta?{" "}
         <Link
           className="inline-flex items-center gap-1 font-semibold text-brand-700 underline-offset-4 hover:underline dark:text-brand-400"
-          href="/solicitar-acceso"
+          href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
         >
-          Solicita acceso y te orientamos
+          {onboardingAvailable ? "Inicia una solicitud empresarial" : "Consulta las modalidades de acceso"}
           <FiArrowRight aria-hidden="true" className="size-3.5" />
         </Link>
       </p>

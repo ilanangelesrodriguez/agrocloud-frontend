@@ -22,9 +22,7 @@ export function OrganizationBadge({
     : "ORG";
   const content = (
     <div
-      tabIndex={collapsed ? 0 : undefined}
-      aria-label={brand.name}
-      className={
+      className=
         "flex min-w-0 items-center gap-3 rounded-xl border border-border bg-surface-secondary/60 p-3 " +
         (collapsed ? "justify-center p-2" : "")
       }
@@ -55,7 +53,15 @@ export function OrganizationBadge({
   );
   return collapsed ? (
     <Tooltip>
-      <Tooltip.Trigger>{content}</Tooltip.Trigger>
+      <Tooltip.Trigger>
+        <button
+          aria-label={brand.name}
+          className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          type="button"
+        >
+          {content}
+        </button>
+      </Tooltip.Trigger>
       <Tooltip.Content>{brand.name}</Tooltip.Content>
     </Tooltip>
   ) : (

@@ -8,11 +8,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { FiArrowUpRight, FiLogIn, FiMenu, FiX } from "react-icons/fi";
 
 import { SiteBrand } from "@/components/marketing/site-brand";
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 import { ThemeSwitch } from "@/components/marketing/theme-switch";
 import { portalEntryUrl, siteConfig } from "@/config/marketing/site";
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const onboardingAvailable = useOnboardingAvailability();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -60,12 +62,12 @@ export function SiteHeader() {
         className="h-0.5 w-full bg-gradient-to-r from-brand-700 via-[#B7F5A2] to-brand-600"
       />
 
-      <div className="site-container flex h-18 items-center justify-between gap-3 lg:h-20">
+      <div className="site-container flex h-18 items-center justify-between gap-3 xl:h-20">
         <SiteBrand />
 
         <nav
           aria-label="Navegación principal"
-          className="hidden items-center gap-1 rounded-full border border-border/70 bg-surface/70 p-1 lg:flex"
+          className="hidden items-center gap-1 rounded-full border border-border/70 bg-surface/70 p-1 xl:flex"
         >
           {siteConfig.nav.map(({ href, label }) => {
             const isActive = pathname === href;
@@ -95,7 +97,7 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-2 lg:flex">
+        <div className="hidden shrink-0 items-center gap-2 xl:flex">
           <ThemeSwitch className="!size-10 border border-border" />
           {portalEntryUrl ? (
             <a
@@ -108,14 +110,14 @@ export function SiteHeader() {
           ) : null}
           <Link
             className="site-button site-button-primary !px-4 !py-2.5 text-sm shadow-md shadow-brand-700/20"
-            href="/solicitar-acceso"
+            href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
           >
-            Solicitar acceso
+            {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
             <FiArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 xl:hidden">
           <ThemeSwitch className="!size-10 border border-border" />
           <Button
             isIconOnly
@@ -141,7 +143,7 @@ export function SiteHeader() {
           <motion.nav
             animate={{ opacity: 1, y: 0 }}
             aria-label="Navegación móvil"
-            className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-border bg-background px-5 py-4 shadow-xl shadow-brand-700/10 lg:hidden"
+            className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-border bg-background px-5 py-4 shadow-xl shadow-brand-700/10 xl:hidden"
             exit={{ opacity: 0, y: -8 }}
             id="mobile-navigation"
             initial={{ opacity: 0, y: -8 }}
@@ -181,10 +183,10 @@ export function SiteHeader() {
               ) : null}
               <Link
                 className="site-button site-button-primary mt-3 text-center"
-                href="/solicitar-acceso"
+                href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
                 onClick={() => setIsMenuOpen(false)}
               >
-                Solicitar acceso
+                {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
                 <FiArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
             </div>

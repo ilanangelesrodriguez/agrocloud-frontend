@@ -2,6 +2,7 @@
 
 import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
 import { canManageCompany } from "@/features/company/navigation";
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 import { Alert } from "@heroui/react";
 
 import { usePublicOffers } from "../hooks/use-public-offers";
@@ -20,6 +21,7 @@ function planRequestUrl(offerKey: string) {
 
 export function PlansContent() {
   const offers = usePublicOffers();
+  const onboardingAvailable = useOnboardingAvailability();
   const { data: actor } = useCurrentUser();
   const publishedOffers = offers.data?.data.filter((offer) => offer.available) ?? [];
   const free = offers.data?.free;
@@ -40,9 +42,24 @@ export function PlansContent() {
         title="Una plataforma que acompaña tu operación"
       />
       <section className="site-section">
+        {!onboardingAvailable && !actor ? (
+          <div className="site-container mb-7 max-w-5xl">
+            <Alert status="warning">
+              <Alert.Indicator />
+              <Alert.Content>
+                <Alert.Title>Registro empresarial temporalmente cerrado</Alert.Title>
+                <Alert.Description>
+                  Puedes comparar las modalidades y sus límites. La plataforma aún no recibe
+                  solicitudes de nuevas empresas; no se efectuará ningún cobro.
+                </Alert.Description>
+              </Alert.Content>
+            </Alert>
+          </div>
+        ) : null}
         <div className="site-container grid max-w-5xl gap-6 md:grid-cols-2">
           <PlanCard
             highlighted
+            disabledAction={!actor && !onboardingAvailable}
             actionLabel={actor ? "Continuar en el portal" : "Comenzar gratis"}
             description="Plan inicial sin cobros, sujeto a aprobación. La vigencia comienza cuando se activa la cuenta del administrador."
             features={freeFeatures}
@@ -69,6 +86,7 @@ export function PlansContent() {
             return (
               <PlanCard
                 key={offer.key}
+                disabledAction={!actor && !onboardingAvailable}
                 actionLabel={actor ? "Consultar plan en el portal" : "Elegir plan"}
                 description={offer.description || "Plan empresarial publicado por AgroCloud AI."}
                 features={[

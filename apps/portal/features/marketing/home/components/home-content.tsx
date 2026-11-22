@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Alert, Card, Chip, Typography } from "@heroui/react";
+import { Alert, Card, Chip, Tabs, Typography } from "@heroui/react";
 import {
   FiArrowRight,
   FiArrowUpRight,
@@ -18,6 +18,7 @@ import {
 import { Faq } from "@/components/marketing/faq";
 import { CallToAction, Eyebrow, FeatureCard, SectionIntro } from "@/components/marketing/marketing";
 import { Reveal } from "@/components/marketing/reveal";
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 
 const stages = [
   {
@@ -60,8 +61,7 @@ const highlights = [
 
 export function HomeContent() {
   const [active, setActive] = useState(0);
-  const current = stages[active];
-  const CurrentIcon = current.icon;
+  const onboardingAvailable = useOnboardingAvailability();
 
   return (
     <>
@@ -70,14 +70,14 @@ export function HomeContent() {
           aria-hidden="true"
           className="pointer-events-none absolute -left-32 top-10 size-96 rounded-full bg-brand-600/10 blur-3xl"
         />
-        <div className="site-container relative grid items-center gap-12 py-16 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:gap-14 lg:py-28">
+        <div className="site-container relative grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_.95fr] lg:gap-12 lg:py-20">
           <Reveal className="relative z-10 space-y-6">
             <Eyebrow>Calidad agrícola · Trazabilidad · IA asistida</Eyebrow>
             <Typography.Heading
               className="max-w-2xl text-4xl font-semibold leading-[1.12] tracking-tight text-foreground sm:text-5xl lg:text-[3.65rem]"
               level={1}
             >
-              Del ingreso de la palta al <span className="text-accent">dictamen de calidad.</span>{" "}
+              Del ingreso de la cosecha al <span className="text-accent">dictamen de calidad.</span>{" "}
               Todo conectado.
             </Typography.Heading>
             <Typography.Paragraph className="max-w-xl text-base leading-8 text-muted sm:text-lg">
@@ -96,8 +96,11 @@ export function HomeContent() {
               </Link>
             </div>
             <p className="max-w-xl text-xs leading-6 text-muted">
-              Elegir un plan no genera cobros. Las empresas nuevas solicitan acceso y pasan por una
-              revisión antes de recibir una invitación de activación.
+              Elegir un plan no genera cobros. El registro empresarial requiere revisión y
+              aprobación antes de activar una cuenta.
+              {!onboardingAvailable
+                ? " Las nuevas solicitudes están temporalmente deshabilitadas; puedes explorar las modalidades."
+                : ""}
             </p>
 
             <div className="flex flex-wrap gap-2 pt-2">
@@ -111,7 +114,7 @@ export function HomeContent() {
           </Reveal>
 
           <Reveal className="relative z-10" delay={0.12}>
-            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-2xl shadow-brand-700/15">
+            <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-xl shadow-brand-700/10">
               <Card.Content className="p-4 sm:p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <span className="text-sm font-semibold text-accent">Expediente agrícola</span>
@@ -119,84 +122,52 @@ export function HomeContent() {
                     Flujo ilustrativo
                   </Chip>
                 </div>
-
-                {/* Panel que cambia según la etapa elegida */}
-                <div className="my-5 rounded-2xl bg-gradient-to-br from-[#0F523C] to-[#103D35] p-5 text-white sm:p-6">
-                  <div className="flex items-start justify-between">
-                    <span className="text-xs font-medium text-white/70">
-                      Etapa {current.n} de 04
-                    </span>
-                    <span className="grid size-10 place-items-center rounded-xl bg-white/10">
-                      <CurrentIcon aria-hidden="true" className="size-5 text-[#B7F5A2]" />
-                    </span>
-                  </div>
-                  <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight text-white">
-                    {current.title}
-                  </Typography.Paragraph>
-                  <Typography.Paragraph
-                    aria-live="polite"
-                    className="mt-2 min-h-[3.5rem] text-sm leading-6 text-white/80"
-                  >
-                    {current.detail}
-                  </Typography.Paragraph>
-                  <div aria-hidden="true" className="mt-5 flex items-center gap-1.5">
-                    {stages.map((stage, index) => (
-                      <div
-                        key={stage.n}
-                        className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                          index <= active ? "bg-[#B7F5A2]" : "bg-white/25"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid gap-2.5">
-                  {stages.map((stage, index) => {
-                    const selected = index === active;
+                <Tabs
+                  className="mt-4 space-y-4"
+                  selectedKey={stages[active].n}
+                  variant="secondary"
+                  onSelectionChange={(key) => {
+                    const index = stages.findIndex((stage) => stage.n === String(key));
+                    if (index !== -1) setActive(index);
+                  }}
+                >
+                  <Tabs.ListContainer className="max-w-full overflow-x-auto">
+                    <Tabs.List aria-label="Explorar etapas del proceso agrícola" className="min-w-max">
+                      {stages.map((stage) => (
+                        <Tabs.Tab key={stage.n} id={stage.n}>
+                          {stage.title}
+                          <Tabs.Indicator />
+                        </Tabs.Tab>
+                      ))}
+                    </Tabs.List>
+                  </Tabs.ListContainer>
+                  {stages.map((stage) => {
+                    const StageIcon = stage.icon;
 
                     return (
-                      <button
-                        key={stage.n}
-                        aria-pressed={selected}
-                        className={`flex w-full items-center gap-4 rounded-xl border p-3.5 text-left transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-                          selected
-                            ? "border-brand-600/50 bg-brand-50 shadow-sm dark:bg-brand-700/15"
-                            : "border-border bg-background hover:border-brand-600/30 hover:bg-brand-50/50 dark:hover:bg-brand-700/10"
-                        }`}
-                        type="button"
-                        onClick={() => setActive(index)}
-                        onFocus={() => setActive(index)}
-                        onMouseEnter={() => setActive(index)}
-                      >
-                        <span
-                          className={`grid size-10 shrink-0 place-items-center rounded-xl font-mono text-xs font-semibold transition-colors ${
-                            selected
-                              ? "bg-brand-700 text-white"
-                              : "bg-brand-50 text-brand-700 dark:bg-brand-700/20 dark:text-brand-400"
-                          }`}
-                        >
-                          {stage.n}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-semibold text-foreground">
+                      <Tabs.Panel key={stage.n} id={stage.n}>
+                        <div className="min-h-52 rounded-2xl bg-gradient-to-br from-[#0F523C] to-[#103D35] p-5 text-white sm:p-6">
+                          <div className="flex items-start justify-between">
+                            <span className="text-xs font-medium text-white/70">
+                              Etapa {stage.n} de 04
+                            </span>
+                            <span className="grid size-10 place-items-center rounded-xl bg-white/10">
+                              <StageIcon aria-hidden="true" className="size-5 text-[#B7F5A2]" />
+                            </span>
+                          </div>
+                          <Typography.Paragraph className="mt-3 text-2xl font-semibold leading-tight text-white">
                             {stage.title}
-                          </span>
-                          <span className="block text-xs text-muted">{stage.text}</span>
-                        </span>
-                        <FiCheck
-                          aria-hidden="true"
-                          className={`size-4 text-accent transition-opacity ${
-                            selected ? "opacity-100" : "opacity-30"
-                          }`}
-                        />
-                      </button>
+                          </Typography.Paragraph>
+                          <Typography.Paragraph className="mt-2 max-w-md text-sm leading-7 text-white/80">
+                            {stage.detail}
+                          </Typography.Paragraph>
+                        </div>
+                      </Tabs.Panel>
                     );
                   })}
-                </div>
-
+                </Tabs>
                 <Typography.Paragraph className="mt-4 text-center text-[11px] text-muted">
-                  Ejemplo visual del proceso; no representa datos operativos reales.
+                  Ejemplo ilustrativo: no representa datos reales ni reemplaza la revisión humana.
                 </Typography.Paragraph>
               </Card.Content>
             </Card>
@@ -220,8 +191,59 @@ export function HomeContent() {
         </div>
       </section>
 
-      <section className="site-section">
-        <div className="site-container space-y-10">
+      <section className="landing-section border-b border-border bg-surface">
+        <div className="site-container grid items-center gap-8 lg:grid-cols-[.8fr_1.2fr]">
+          <div className="space-y-5">
+            <SectionIntro
+              eyebrow="Empieza con AgroCloud"
+              text="Un único proceso de incorporación, tanto para comenzar gratis como para elegir una oferta de pago."
+              title="De visitante a empresa activa en tres pasos"
+            />
+            <Link className="site-text-link" href="/planes">
+              Comparar modalidades de acceso
+              <FiArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+            {!onboardingAvailable ? (
+              <p className="text-sm leading-6 text-muted" role="status">
+                La recepción de solicitudes todavía no está habilitada. Puedes consultar los planes
+                y conocer el proceso mientras tanto.
+              </p>
+            ) : null}
+          </div>
+          <ol className="grid gap-3 sm:grid-cols-3">
+            {[
+              {
+                n: "01",
+                title: "Elige y solicita",
+                description: "Compara planes y envía los datos de tu empresa, sin pagar.",
+              },
+              {
+                n: "02",
+                title: "Revisión y activación",
+                description: "Revisamos tu solicitud y, si se aprueba, activas tu cuenta.",
+              },
+              {
+                n: "03",
+                title: "Empieza a trabajar",
+                description: "Usa Gratis o confirma una oferta vigente cuando decidas contratar.",
+              },
+            ].map((step) => (
+              <li key={step.n} className="rounded-2xl border border-border bg-background p-4 sm:p-5">
+                <span className="text-sm font-semibold tabular-nums text-accent">{step.n}</span>
+                <Typography.Heading className="mt-3 text-base font-semibold" level={3}>
+                  {step.title}
+                </Typography.Heading>
+                <Typography.Paragraph className="mt-2 text-sm leading-6 text-muted">
+                  {step.description}
+                </Typography.Paragraph>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="site-section landing-section">
+        <div className="site-container space-y-8"
           <SectionIntro
             eyebrow="Una plataforma, más claridad"
             text="La operación agrícola involucra información dispersa. AgroCloud conecta cada registro con la siguiente etapa para facilitar el seguimiento."
@@ -250,44 +272,23 @@ export function HomeContent() {
         </div>
       </section>
 
-      <section className="site-section border-y border-border bg-surface">
-        <div className="site-container grid items-center gap-10 lg:grid-cols-2">
-          <div className="space-y-6">
-            <SectionIntro
-              eyebrow="Cómo funciona"
-              text="Sigue el recorrido de un lote desde la recepción hasta el dictamen. Cada etapa conserva su relación con las anteriores."
-              title="Cuatro etapas. Un mismo expediente."
-            />
-            <Link className="site-text-link" href="/como-funciona">
-              Explorar el proceso
-              <FiArrowRight aria-hidden="true" className="size-4" />
-            </Link>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            {stages.map((stage) => (
-              <Card
-                key={stage.n}
-                className="border border-border bg-background transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-lg hover:shadow-brand-700/10"
-              >
-                <Card.Content className="p-5">
-                  <span className="font-mono text-sm font-semibold text-accent">{stage.n}</span>
-                  <Typography.Heading className="mt-4 font-semibold" level={3}>
-                    {stage.title}
-                  </Typography.Heading>
-                  <Typography.Paragraph className="mt-2 text-sm leading-6 text-muted">
-                    {stage.text}
-                  </Typography.Paragraph>
-                </Card.Content>
-              </Card>
-            ))}
-          </div>
+      <section className="site-section landing-section border-y border-border bg-surface">
+        <div className="site-container flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+          <SectionIntro
+            eyebrow="Proceso agrícola"
+            text="Desde la recepción y el muestreo hasta la inspección, las evidencias y el dictamen, cada registro conserva su contexto."
+            title="Un mismo expediente, de origen a decisión"
+          />
+          <Link className="site-button site-button-outline shrink-0 self-start" href="/como-funciona">
+            Conocer el proceso completo
+            <FiArrowRight aria-hidden="true" className="size-4" />
+          </Link>
         </div>
       </section>
 
-      <section className="site-section">
-        <div className="site-container grid items-center gap-10 lg:grid-cols-[.9fr_1.1fr]">
-          <div className="relative min-h-[300px] overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#103D35] to-[#0F523C] p-7 text-white shadow-xl shadow-brand-700/20 sm:p-10">
+      <section className="site-section landing-section">
+        <div className="site-container grid items-center gap-10 lg:grid-cols-2">
+          <div className="relative min-h-[260px] overflow-hidden sm:min-h-[300px] rounded-[2rem] bg-gradient-to-br from-[#103D35] to-[#0F523C] p-7 text-white shadow-xl shadow-brand-700/20 sm:p-10">
             <span className="text-sm font-semibold text-[#A4E8C3]">Análisis de imágenes</span>
             <div
               aria-hidden="true"
@@ -297,7 +298,7 @@ export function HomeContent() {
               aria-hidden="true"
               className="absolute -bottom-24 -left-16 size-64 rounded-full bg-[#B7F5A2]/10 blur-2xl"
             />
-            <div className="relative mt-12 max-w-xs space-y-5">
+            <div className="relative mt-8 max-w-xs space-y-5">
               <span className="flex size-16 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-[#B7F5A2]/30">
                 <FiSearch aria-hidden="true" className="size-8 text-[#B7F5A2]" />
               </span>
@@ -328,56 +329,6 @@ export function HomeContent() {
               </Alert.Content>
             </Alert>
           </div>
-        </div>
-      </section>
-
-      <section className="site-section border-t border-border">
-        <div className="site-container space-y-9">
-          <SectionIntro
-            eyebrow="Empieza con AgroCloud"
-            text="Una única solicitud empresarial, tanto si prefieres el acceso gratuito como si te interesa una oferta de pago."
-            title="De visitante a empresa activa en tres pasos"
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            {[
-              {
-                number: "01",
-                title: "Elige y solicita",
-                description: "Consulta los planes y registra tu empresa sin realizar ningún pago.",
-              },
-              {
-                number: "02",
-                title: "Revisamos y activas",
-                description:
-                  "El equipo revisa tu solicitud. Si se aprueba, activas tu cuenta mediante una invitación.",
-              },
-              {
-                number: "03",
-                title: "Empieza a trabajar",
-                description:
-                  "Utiliza tu acceso gratuito o confirma la oferta de pago vigente desde el portal.",
-              },
-            ].map((step) => (
-              <Reveal key={step.number}>
-                <Card className="site-card h-full border border-border">
-                  <Card.Content className="space-y-3 p-6">
-                    <span className="text-sm font-semibold tabular-nums text-accent">
-                      {step.number}
-                    </span>
-                    <Typography.Heading level={3} className="text-lg font-semibold">
-                      {step.title}
-                    </Typography.Heading>
-                    <Typography.Paragraph className="text-sm leading-7 text-muted">
-                      {step.description}
-                    </Typography.Paragraph>
-                  </Card.Content>
-                </Card>
-              </Reveal>
-            ))}
-          </div>
-          <Link className="site-text-link inline-flex items-center gap-2" href="/planes">
-            Comparar modalidades de acceso <FiArrowRight aria-hidden="true" />
-          </Link>
         </div>
       </section>
 

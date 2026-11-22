@@ -9,6 +9,7 @@ type Props = {
   description: string;
   features: string[];
   highlighted?: boolean;
+  disabledAction?: boolean;
   href: string;
   price?: string;
   tag: string;
@@ -20,6 +21,7 @@ export function PlanCard({
   description,
   features,
   highlighted = false,
+  disabledAction = false,
   href,
   price,
   tag,
@@ -74,15 +76,25 @@ export function PlanCard({
           ))}
         </ul>
 
-        <Link
-          className={`site-button mt-8 w-full justify-center ${
-            highlighted ? "site-button-primary" : "site-button-outline"
-          }`}
-          href={href}
-        >
-          {actionLabel}
-          <FiArrowRight aria-hidden="true" className="size-4" />
-        </Link>
+        {disabledAction ? (
+          <span
+            aria-disabled="true"
+            className="site-button mt-8 w-full cursor-not-allowed justify-center border border-border bg-surface-secondary text-muted"
+            role="status"
+          >
+            Solicitudes temporalmente cerradas
+          </span>
+        ) : (
+          <Link
+            className={`site-button mt-8 w-full justify-center ${
+              highlighted ? "site-button-primary" : "site-button-outline"
+            }`}
+            href={href}
+          >
+            {actionLabel}
+            <FiArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        )}
       </Card.Content>
     </Card>
   );

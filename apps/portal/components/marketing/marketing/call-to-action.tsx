@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Typography } from "@heroui/react";
 import { FiArrowUpRight } from "react-icons/fi";
 
+import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
+
 type Props = { title?: string; text?: string; button?: string };
 
 export function CallToAction({
@@ -11,6 +13,8 @@ export function CallToAction({
   text = "Cuéntanos sobre tu empresa y cómo deseas utilizar AgroCloud. Revisaremos tu solicitud de acceso.",
   button = "Solicitar acceso empresarial",
 }: Props) {
+  const onboardingAvailable = useOnboardingAvailability();
+
   return (
     <section className="site-container py-14 sm:py-20">
       <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#104C37] to-[#0F523C] px-7 py-10 text-white shadow-xl shadow-brand-700/20 sm:px-12 sm:py-14 lg:px-16">
@@ -36,12 +40,18 @@ export function CallToAction({
             <Typography.Paragraph className="mt-4 leading-7 text-white/80">
               {text}
             </Typography.Paragraph>
+            {!onboardingAvailable ? (
+              <Typography.Paragraph className="mt-3 text-sm leading-6 text-white/80">
+                La recepción de solicitudes está temporalmente deshabilitada. Puedes consultar las
+                modalidades de acceso mientras tanto.
+              </Typography.Paragraph>
+            ) : null}
           </div>
           <Link
             className="site-button shrink-0 bg-white text-[#104C37] shadow-lg shadow-black/10 hover:bg-[#E7F9EB]"
-            href="/solicitar-acceso"
+            href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
           >
-            {button}
+            {onboardingAvailable ? button : "Explorar planes"}
             <FiArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
