@@ -6,6 +6,7 @@ import { FiArrowUpRight } from "react-icons/fi";
 
 import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 import { Reveal } from "@/components/marketing/reveal";
+import { MarketingBackdrop } from "@/components/marketing/marketing/marketing-backdrop";
 
 type Props = { title?: string; text?: string; button?: string };
 
@@ -22,14 +23,7 @@ export function CallToAction({
         className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#104C37] to-[#0F523C] px-7 py-10 text-white shadow-lg shadow-brand-700/15 sm:px-12 sm:py-14 lg:px-16"
         viewport
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-32 -top-40 size-[360px] rounded-full border-[65px] border-white/5"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-24 -left-16 size-64 rounded-full bg-[#B7F5A2]/10 blur-2xl"
-        />
+        <MarketingBackdrop />
         <div className="relative flex flex-col items-start justify-between gap-7 lg:flex-row lg:items-center">
           <div className="max-w-2xl">
             <Typography.Paragraph

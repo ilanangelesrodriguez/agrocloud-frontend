@@ -8,7 +8,7 @@ import { useInView, useReducedMotion } from "motion/react";
  * La selección manual da tiempo para leer y luego continúa el recorrido.
  */
 export function useMarketingAutoStep(total: number, intervalMs = 4700) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { amount: 0.15 });
   const reduceMotion = useReducedMotion();
   const manualUntil = useRef(0);

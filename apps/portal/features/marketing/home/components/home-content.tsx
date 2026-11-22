@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Alert, Button, Card, Chip, Tabs, Typography } from "@heroui/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { Alert, Card, Chip, Tabs, Typography } from "@heroui/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   FiArrowRight,
   FiArrowUpRight,
@@ -12,8 +11,6 @@ import {
   FiClipboard,
   FiFileText,
   FiPackage,
-  FiPause,
-  FiPlay,
   FiSearch,
   FiShield,
 } from "react-icons/fi";
@@ -21,6 +18,8 @@ import {
 import { Faq } from "@/components/marketing/faq";
 import { CallToAction, Eyebrow, FeatureCard, SectionIntro } from "@/components/marketing/marketing";
 import { Reveal } from "@/components/marketing/reveal";
+import { MarketingBackdrop } from "@/components/marketing/marketing/marketing-backdrop";
+import { useMarketingAutoStep } from "@/components/marketing/use-marketing-auto-step";
 import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
 
 const stages = [
@@ -63,35 +62,13 @@ const highlights = [
 ];
 
 export function HomeContent() {
-  const [active, setActive] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const reduceMotion = useReducedMotion();
+  const { ref: autoStepRef, active, selectStep, reduceMotion } = useMarketingAutoStep(stages.length);
   const onboardingAvailable = useOnboardingAvailability();
-
-  useEffect(() => {
-    if (reduceMotion || isPaused || isHovering || isFocused) return;
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
-        setActive((current) => (current + 1) % stages.length);
-      }
-    }, 4700);
-    return () => window.clearInterval(timer);
-  }, [reduceMotion, isPaused, isHovering, isFocused]);
-
-  const chooseStage = (index: number) => {
-    setActive(index);
-    setIsPaused(true);
-  };
 
   return (
     <>
       <section className="site-hero-grid relative overflow-hidden border-b border-border bg-gradient-to-b from-brand-50/70 via-background to-background dark:from-brand-700/10">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-32 top-10 size-96 rounded-full bg-brand-600/10 blur-3xl"
-        />
+        <MarketingBackdrop />
         <div className="site-container relative grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_.95fr] lg:gap-12 lg:py-20">
           <Reveal className="relative z-10 space-y-6">
             <Eyebrow>Calidad agrícola · Trazabilidad · IA asistida</Eyebrow>
@@ -136,34 +113,14 @@ export function HomeContent() {
           </Reveal>
 
           <Reveal className="relative z-10" delay={0.12}>
-            <Card
-              className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-lg shadow-brand-700/10"
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              onFocusCapture={() => setIsFocused(true)}
-              onBlurCapture={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) setIsFocused(false);
-              }}
-            >
+            <div ref={autoStepRef}>
+              <Card className="rounded-[2rem] border border-brand-600/20 bg-surface shadow-lg shadow-brand-700/10">
               <Card.Content className="p-4 sm:p-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <span className="text-sm font-semibold text-accent">Expediente agrícola</span>
-                  <div className="flex items-center gap-2">
-                    <Chip color="accent" size="sm" variant="soft">
-                      Flujo ilustrativo
-                    </Chip>
-                    <Button
-                      isIconOnly
-                      aria-label={isPaused ? "Reanudar demostración" : "Pausar demostración"}
-                      className="size-9 rounded-lg"
-                      isDisabled={Boolean(reduceMotion)}
-                      size="sm"
-                      variant="secondary"
-                      onPress={() => setIsPaused((paused) => !paused)}
-                    >
-                      {isPaused ? <FiPlay aria-hidden="true" /> : <FiPause aria-hidden="true" />}
-                    </Button>
-                  </div>
+                  <Chip color="accent" size="sm" variant="soft">
+                    Flujo automático
+                  </Chip>
                 </div>
                 <Tabs
                   className="mt-4 space-y-4"
@@ -171,7 +128,7 @@ export function HomeContent() {
                   variant="secondary"
                   onSelectionChange={(key) => {
                     const index = stages.findIndex((stage) => stage.n === String(key));
-                    if (index !== -1) chooseStage(index);
+                    if (index !== -1) selectStep(index);
                   }}
                 >
                   <Tabs.ListContainer className="max-w-full overflow-x-auto">
@@ -246,7 +203,8 @@ export function HomeContent() {
                   Ejemplo ilustrativo: no representa datos reales ni reemplaza la revisión humana.
                 </Typography.Paragraph>
               </Card.Content>
-            </Card>
+              </Card>
+            </div>
           </Reveal>
         </div>
       </section>
