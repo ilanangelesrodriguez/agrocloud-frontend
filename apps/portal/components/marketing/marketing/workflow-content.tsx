@@ -53,7 +53,7 @@ const roles = ["Recepción", "Inspección", "Supervisión", "Producción", "Admi
 
 export function WorkflowContent() {
   const [active, setActive] = useState(0);
-  const [autoplay, setAutoplay] = useState(false);
+  const [autoplay, setAutoplay] = useState(true);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
