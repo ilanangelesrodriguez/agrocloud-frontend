@@ -12,6 +12,7 @@ import { canManageCompany } from "@/features/company/navigation";
 import { usePublicOffers } from "../hooks/use-public-offers";
 
 import { PlanCard } from "./plan-card";
+import { PlansCarousel } from "./plans-carousel";
 import { PlansState } from "./plans-state";
 
 const currency = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" });
@@ -78,76 +79,74 @@ export function PlansContent() {
             </div>
           </Reveal>
 
-          <div className="grid items-stretch gap-5 md:grid-cols-2 lg:gap-6">
-            <Reveal className="h-full" viewport>
-              <PlanCard
-                highlighted
-                actionLabel={actor ? "Continuar en el portal" : "Comenzar gratis"}
-                description="Una forma de conocer AgroCloud y empezar a gestionar la calidad agrícola sin realizar un pago."
-                disabledAction={!actor && !onboardingAvailable}
-                durationDays={free?.duration_days}
-                href={
-                  actor
-                    ? actor.rol?.codigo === "SUPERADMIN"
-                      ? "/admin"
-                      : "/dashboard"
-                    : "/solicitar-acceso"
-                }
-                kind="free"
-                limits={free?.limits}
-                price={currency.format(0)}
-                tag="Acceso gratuito"
-                title="Comienza sin costo"
-              />
-            </Reveal>
+          <Reveal viewport>
+            <PlansCarousel
+              items={[
+                <PlanCard
+                  key="free"
+                  highlighted
+                  actionLabel={actor ? "Continuar en el portal" : "Comenzar gratis"}
+                  description="Una forma de conocer AgroCloud y empezar a gestionar la calidad agrícola sin realizar un pago."
+                  disabledAction={!actor && !onboardingAvailable}
+                  durationDays={free?.duration_days}
+                  href={
+                    actor
+                      ? actor.rol?.codigo === "SUPERADMIN"
+                        ? "/admin"
+                        : "/dashboard"
+                      : "/solicitar-acceso"
+                  }
+                  kind="free"
+                  limits={free?.limits}
+                  price={currency.format(0)}
+                  tag="Acceso gratuito"
+                  title="Comienza sin costo"
+                />,
+                ...publishedOffers.map((offer) => {
+                  const purchaseUrl = !actor
+                    ? planRequestUrl(offer.key)
+                    : actor.rol?.codigo === "SUPERADMIN"
+                      ? "/admin/plans"
+                      : canManageCompany(actor, "suscripciones.ver")
+                        ? "/settings/subscription?" + new URLSearchParams({ offer: offer.key })
+                        : "/dashboard";
 
-            {publishedOffers.map((offer, index) => {
-              const purchaseUrl = !actor
-                ? planRequestUrl(offer.key)
-                : actor.rol?.codigo === "SUPERADMIN"
-                  ? "/admin/plans"
-                  : canManageCompany(actor, "suscripciones.ver")
-                    ? "/settings/subscription?" + new URLSearchParams({ offer: offer.key })
-                    : "/dashboard";
-
-              return (
-                <Reveal
-                  key={offer.key}
-                  className="h-full"
-                  delay={Math.min(index + 1, 3) * 0.07}
-                  viewport
-                >
-                  <PlanCard
-                    actionLabel={actor ? "Consultar en el portal" : "Elegir este plan"}
-                    description={
-                      offer.description || "Oferta empresarial con vigencia y cuotas definidas."
-                    }
-                    disabledAction={!actor && !onboardingAvailable}
-                    durationDays={offer.duration_days}
-                    href={purchaseUrl}
-                    kind="paid"
-                    limits={offer.limits}
-                    price={currency.format(offer.amount_cents / 100)}
-                    tag="Oferta publicada"
-                    title={offer.name}
-                  />
-                </Reveal>
-              );
-            })}
-
-            {offers.isPending ? (
-              <PlansState state="loading" />
-            ) : offers.isError && !offers.data ? (
-              <PlansState
-                error={offers.error.message}
-                isFetching={offers.isFetching}
-                state="error"
-                onRetry={() => void offers.refetch()}
-              />
-            ) : publishedOffers.length === 0 ? (
-              <PlansState state="empty" />
-            ) : null}
-          </div>
+                  return (
+                    <PlanCard
+                      key={offer.key}
+                      actionLabel={actor ? "Consultar en el portal" : "Elegir este plan"}
+                      description={
+                        offer.description || "Oferta empresarial con vigencia y cuotas definidas."
+                      }
+                      disabledAction={!actor && !onboardingAvailable}
+                      durationDays={offer.duration_days}
+                      href={purchaseUrl}
+                      kind="paid"
+                      limits={offer.limits}
+                      price={currency.format(offer.amount_cents / 100)}
+                      tag="Oferta publicada"
+                      title={offer.name}
+                    />
+                  );
+                }),
+                ...(offers.isPending
+                  ? [<PlansState key="loading" state="loading" />]
+                  : offers.isError && !offers.data
+                    ? [
+                        <PlansState
+                          key="error"
+                          error={offers.error.message}
+                          isFetching={offers.isFetching}
+                          state="error"
+                          onRetry={() => void offers.refetch()}
+                        />,
+                      ]
+                    : publishedOffers.length === 0
+                      ? [<PlansState key="empty" state="empty" />]
+                      : []),
+              ]}
+            />
+          </Reveal>
 
           <Reveal viewport>
             <div className="mt-7 grid gap-4 rounded-2xl border border-border bg-surface p-5 sm:grid-cols-[auto_1fr] sm:gap-4 sm:p-6">
