@@ -50,12 +50,24 @@ export function LoginForm() {
       queryClient.clear();
       queryClient.setQueryData(["auth", "me"], account.data);
       toast.success("Sesión iniciada", { description: "Bienvenido a tu espacio de trabajo." });
-      const target = safeNext(params.get("next"), result.redirectTo);
+      const onboarding = account.data.onboarding;
+      const intendedPath = onboarding?.next.split("?")[0];
+      const resumePlan =
+        account.data.rol?.codigo !== "SUPERADMIN" &&
+        account.data.permissions.includes("suscripciones.ver") &&
+        onboarding?.requires_price_confirmation === true &&
+        onboarding.next.startsWith("/settings/subscription?");
+      const target = safeNext(
+        params.get("next"),
+        resumePlan && intendedPath ? intendedPath : result.redirectTo,
+      );
       const restricted =
         (target.startsWith("/admin") && result.user.rol?.codigo !== "SUPERADMIN") ||
         (target.startsWith("/dashboard") && result.user.rol?.codigo === "SUPERADMIN");
 
-      const requestedOffer = offerKey.safeParse(params.get("offer"));
+      const requestedOffer = offerKey.safeParse(
+        params.get("offer") ?? (resumePlan ? onboarding?.selected_offer_key : undefined),
+      );
       const subscription = target === "/settings/subscription";
       const destination =
         subscription && requestedOffer.success
@@ -86,7 +98,11 @@ export function LoginForm() {
           ¿Tu organización aún no tiene acceso?{" "}
           <Link
             className="inline-flex font-semibold text-accent hover:underline"
-            href="/solicitar-acceso"
+            href={
+              offerKey.safeParse(params.get("offer")).success
+                ? "/solicitar-acceso?" + new URLSearchParams({ offer: params.get("offer")! })
+                : "/solicitar-acceso"
+            }
           >
             Solicitar acceso
           </Link>

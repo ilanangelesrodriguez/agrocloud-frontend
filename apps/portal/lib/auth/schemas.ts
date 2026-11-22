@@ -37,6 +37,14 @@ export const changeEmailSchema = z.object({
   current_password: z.string().min(1, "Confirma tu contraseña actual.").max(255),
 });
 
+export const onboardingSchema = z.object({
+  selected_offer_key: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{1,60}$/)
+    .nullish(),
+  requires_price_confirmation: z.boolean(),
+  next: z.string().regex(/^\/(?:dashboard|settings\/subscription\?offer=[A-Za-z0-9_-]{1,60})$/),
+});
 export const identityUserSchema = z
   .object({
     id_usuario: z.number().int(),
@@ -50,6 +58,7 @@ export const identityUserSchema = z
     estado: z.boolean(),
     rol: z.object({ codigo: z.string(), nombre: z.string().optional() }).nullable(),
     permissions: z.array(z.string()),
+    onboarding: onboardingSchema.optional().catch(undefined),
   })
   .passthrough();
 export const identityTokenSchema = z.object({

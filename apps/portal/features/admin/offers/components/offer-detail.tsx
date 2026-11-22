@@ -10,7 +10,13 @@ export function OfferDetails({ offerId }: { offerId: string }) {
   const query = useOffer(offerId);
   if (query.isPending) return <LoadingState label="Cargando oferta" />;
   if (query.isError) return <ErrorState error={query.error} retry={() => void query.refetch()} />;
-  return <OfferSummary offer={query.data.data} reload={() => void query.refetch()} />;
+  return (
+    <OfferSummary
+      offer={query.data.data}
+      published={query.data.published}
+      reload={() => void query.refetch()}
+    />
+  );
 }
 
 export function OfferEdit({ offerId }: { offerId: string }) {

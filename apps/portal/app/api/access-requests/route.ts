@@ -28,6 +28,8 @@ function validationMessage(errors: unknown): string {
   if (fields.privacy_version || fields.privacy_accepted) {
     return "El aviso de privacidad cambió. Recarga la página y vuelve a revisarlo.";
   }
+  if (fields.selected_offer_key)
+    return "El plan elegido ya no está disponible. Selecciona una oferta vigente o comienza con el plan gratuito.";
   if (fields.ruc || fields.correo) {
     return "Revisa el RUC y el correo. Puede existir una solicitud o una cuenta registrada.";
   }

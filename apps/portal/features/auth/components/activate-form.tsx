@@ -15,7 +15,7 @@ import { AuthField } from "./auth-field";
 import { FormFeedback } from "./form-feedback";
 import { SubmitButton } from "./submit-button";
 
-import { passwordPair } from "@/lib/auth/schemas";
+import { passwordPair, onboardingSchema } from "@/lib/auth/schemas";
 
 export function ActivateForm() {
   const params = useSearchParams();
@@ -37,9 +37,28 @@ export function ActivateForm() {
     setBusy(true);
     setError(null);
     try {
-      await postAuth("/api/auth/activate", { ...fields, user_id: Number(userId), token });
+      const result = await postAuth("/api/auth/activate", {
+        ...fields,
+        user_id: Number(userId),
+        token,
+      });
+      const continuation = onboardingSchema.safeParse(
+        result && typeof result === "object" && "onboarding" in result
+          ? result.onboarding
+          : undefined,
+      );
       toast.success("Cuenta activada. Ya puedes iniciar sesión.");
-      router.replace("/login?activated=1");
+      const login = new URLSearchParams({ activated: "1" });
+      if (
+        continuation.success &&
+        continuation.data.requires_price_confirmation &&
+        continuation.data.selected_offer_key &&
+        continuation.data.next.startsWith("/settings/subscription?")
+      ) {
+        login.set("next", "/settings/subscription");
+        login.set("offer", continuation.data.selected_offer_key);
+      }
+      router.replace("/login?" + login);
     } catch (e) {
       const message = e instanceof Error ? e.message : "No se pudo activar la cuenta.";
       setError(message);

@@ -3,9 +3,9 @@
 import { Alert, Button, Typography } from "@heroui/react";
 import { FiSend } from "react-icons/fi";
 
-type Props = { isPending: boolean; error: string | null };
+type Props = { isPending: boolean; error: string | null; isDisabled?: boolean };
 
-export function SubmitActions({ isPending, error }: Props) {
+export function SubmitActions({ isPending, error, isDisabled = false }: Props) {
   return (
     <>
       {error && (
@@ -22,7 +22,7 @@ export function SubmitActions({ isPending, error }: Props) {
         </Typography.Paragraph>
         <Button
           className="w-full justify-center sm:w-auto"
-          isDisabled={isPending}
+          isDisabled={isPending || isDisabled}
           isPending={isPending}
           size="lg"
           type="submit"

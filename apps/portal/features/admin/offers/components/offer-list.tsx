@@ -48,7 +48,7 @@ export function OfferList({ initialCreate = false }: { initialCreate?: boolean }
             description="Define el precio, las condiciones y la vigencia. La oferta se guardará como borrador."
             trigger={
               <Button variant="primary" onPress={() => setOpen(true)}>
-                <FiPlus aria-hidden="true" /> Crear borrador
+                <FiPlus aria-hidden="true" /> Nueva oferta
               </Button>
             }
           >
@@ -80,6 +80,10 @@ export function OfferList({ initialCreate = false }: { initialCreate?: boolean }
           items={Object.entries(kindLabels).map(([id, name]) => ({ id, name }))}
         />
       </AdminFilterBar>
+      <p className="text-xs text-muted">
+        El acceso gratuito se configura en el servicio de identidad; sus cupos y duración no se
+        administran como una oferta comercial.
+      </p>
       {query.isPending ? (
         <LoadingState label="Cargando ofertas" />
       ) : query.isError ? (
@@ -113,10 +117,28 @@ export function OfferList({ initialCreate = false }: { initialCreate?: boolean }
               </div>
               <p className="text-3xl font-semibold tabular-nums">
                 {money.format(offer.terms.amount_cents / 100)}
+                {offer.terms.duration_days ? (
+                  <span className="ml-2 text-sm font-normal text-muted">
+                    por {offer.terms.duration_days} días
+                  </span>
+                ) : null}
               </p>
               <p className="text-xs text-muted">
                 Versión {offer.version}
-                {offer.terms.duration_days ? " · " + offer.terms.duration_days + " días" : ""}
+                {offer.terms.duration_days
+                  ? " · Vigencia del plan: " + offer.terms.duration_days + " días"
+                  : ""}
+              </p>
+              <p className="text-xs text-muted">
+                {offer.status === "PUBLISHED"
+                  ? offer.terms.public
+                    ? "Visible en la web cuando esté vigente"
+                    : "Disponible solo en el portal cuando sea aplicable"
+                  : offer.status === "DRAFT" && offer.published_version
+                    ? "Borrador de trabajo · Versión publicada vigente: " + offer.published_version
+                    : offer.status === "DRAFT"
+                      ? "Borrador sin publicar"
+                      : "Retirada de nuevas compras"}
               </p>
               {offer.terms.limits ? (
                 <dl className="space-y-2 border-t border-border pt-3 text-sm">

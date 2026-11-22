@@ -12,9 +12,15 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ offer?: string | string[] }>;
+}) {
+  const { offer } = await searchParams;
   return (
     <AccessRequestContent
+      selectedOfferKey={typeof offer === "string" ? offer : undefined}
       privacyVersion={isPublicOnboardingEnabled() ? getPrivacyVersion() : undefined}
     />
   );

@@ -1,5 +1,5 @@
 import { bffRequest } from "@/lib/api/bff-client";
-import { offerDetail, offerList } from "./schema";
+import { offerDetail, offerList, offerHistory } from "./schema";
 
 export function listOffers(signal?: AbortSignal) {
   return bffRequest("billing-offers", offerList, { signal });
@@ -17,4 +17,10 @@ export function saveOffer(input: object, key?: string) {
       body: JSON.stringify(input),
     },
   );
+}
+
+export function getOfferHistory(key: string, signal?: AbortSignal) {
+  return bffRequest("billing-offers/" + encodeURIComponent(key) + "/versions", offerHistory, {
+    signal,
+  });
 }

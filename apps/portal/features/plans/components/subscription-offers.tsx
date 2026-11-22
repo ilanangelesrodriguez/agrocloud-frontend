@@ -1,6 +1,7 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { useState } from "react";
+import { AlertDialog, Button } from "@heroui/react";
 import { EmptyState, FormNotice, InlineNotice, LoadingState } from "@agrocloud/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -24,6 +25,12 @@ const labels = {
 
 export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: string }) {
   const { data: actor } = useCurrentUser();
+  const [confirmKey, setConfirmKey] = useState<string | null>(null);
+  const preferredOfferKey =
+    selectedOfferKey ??
+    (actor?.onboarding?.requires_price_confirmation
+      ? (actor.onboarding.selected_offer_key ?? undefined)
+      : undefined);
   const cache = useQueryClient();
   const canView = canManageCompany(actor, "suscripciones.ver");
   const canOrder = canManageCompany(actor, "suscripciones.gestionar");
@@ -57,8 +64,9 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
   const checkoutReady = canOrder && paymentConfigured;
   const availableOffers = offers.data?.data ?? [];
   const selectedOffer = availableOffers.find(
-    (offer) => offer.kind === "PLAN" && offer.key === selectedOfferKey,
+    (offer) => offer.kind === "PLAN" && offer.key === preferredOfferKey,
   );
+  const confirmedOffer = availableOffers.find((offer) => offer.key === confirmKey);
   const visibleOffers = selectedOffer
     ? [selectedOffer, ...availableOffers.filter((offer) => offer !== selectedOffer)]
     : availableOffers;
@@ -66,7 +74,10 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
   return (
     <section className="space-y-4">
       <h2 className="text-xl font-semibold">Ofertas y órdenes</h2>
-      <p className="text-sm text-muted">Selecciona una oferta y continúa con el pago seguro.</p>
+      <p className="text-sm text-muted">
+        Confirma la oferta vigente antes de crear una orden. El checkout actual funciona en el
+        entorno de prueba de Culqi.
+      </p>
       {!canView ? (
         <InlineNotice
           title="Acceso a suscripciones"
@@ -74,7 +85,7 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
           status="warning"
         />
       ) : null}
-      {selectedOfferKey && offers.isSuccess && !selectedOffer && !pending ? (
+      {preferredOfferKey && offers.isSuccess && !selectedOffer && !pending ? (
         <InlineNotice
           title="El plan seleccionado no está disponible"
           description="Consulta las ofertas que tu empresa puede contratar actualmente."
@@ -152,7 +163,7 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
                 <Button
                   isDisabled={order.isPending}
                   variant="primary"
-                  onPress={() => order.mutate(offer.key)}
+                  onPress={() => setConfirmKey(offer.key)}
                 >
                   Continuar con el pago
                 </Button>
@@ -166,6 +177,69 @@ export function SubscriptionOffers({ selectedOfferKey }: { selectedOfferKey?: st
           description="No hay ofertas disponibles para tu suscripción en este momento."
         />
       )}
+      <AlertDialog
+        isOpen={!!confirmedOffer}
+        onOpenChange={(open) => {
+          if (!open) setConfirmKey(null);
+        }}
+      >
+        <AlertDialog.Backdrop>
+          <AlertDialog.Container placement="center" size="sm">
+            <AlertDialog.Dialog>
+              <AlertDialog.Header>
+                <AlertDialog.Icon status="accent" />
+                <AlertDialog.Heading>Confirma las condiciones vigentes</AlertDialog.Heading>
+              </AlertDialog.Header>
+              <AlertDialog.Body>
+                {confirmedOffer ? (
+                  <div className="space-y-3">
+                    <p className="font-semibold">
+                      {confirmedOffer.name ?? confirmedOffer.plan ?? labels[confirmedOffer.kind]}
+                    </p>
+                    <p className="text-2xl font-semibold">
+                      {money.format(confirmedOffer.amount_cents / 100)}
+                    </p>
+                    {confirmedOffer.duration_days ? (
+                      <p className="text-sm">
+                        Vigencia del plan: {confirmedOffer.duration_days} días
+                      </p>
+                    ) : null}
+                    {confirmedOffer.limits ? (
+                      <p className="text-sm">
+                        {confirmedOffer.limits.usuarios} usuarios · {confirmedOffer.limits.lotes}{" "}
+                        lotes · {confirmedOffer.limits.analisis_ia} análisis IA
+                      </p>
+                    ) : null}
+                    <p className="text-xs text-muted">
+                      La selección durante el registro no reserva el precio. Al crear la orden se
+                      fijarán las condiciones disponibles en el servidor; revisarás su importe antes
+                      de confirmar el pago.
+                    </p>
+                  </div>
+                ) : null}
+              </AlertDialog.Body>
+              <AlertDialog.Footer>
+                <Button slot="close" variant="secondary">
+                  Volver
+                </Button>
+                <Button
+                  variant="primary"
+                  isDisabled={!confirmedOffer || order.isPending || !checkoutReady}
+                  onPress={() => {
+                    if (confirmedOffer && !order.isPending) {
+                      const key = confirmedOffer.key;
+                      setConfirmKey(null);
+                      order.mutate(key);
+                    }
+                  }}
+                >
+                  Confirmar y crear orden
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
     </section>
   );
 }

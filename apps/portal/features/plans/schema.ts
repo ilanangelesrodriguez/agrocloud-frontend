@@ -59,12 +59,15 @@ const offer = z.object({
   version: z.number().int().positive(),
   status: z.enum(statuses),
   terms,
+  published_version: z.number().int().positive().nullish(),
+  has_unpublished_changes: z.boolean().optional(),
   actor_id: z.number().int().nullish(),
   created_at: z.string(),
 });
 
 export const offerList = z.object({ data: z.array(offer) });
-export const offerDetail = z.object({ data: offer });
+export const offerDetail = z.object({ data: offer, published: offer.nullish() });
+export const offerHistory = z.object({ data: z.array(offer), published: offer.nullish() });
 export type Offer = z.infer<typeof offer>;
 const purchase = z.object({
   reference: z.string(),

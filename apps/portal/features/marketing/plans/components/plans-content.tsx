@@ -1,5 +1,7 @@
 "use client";
 
+import { useCurrentUser } from "@/features/auth/hooks/use-current-user";
+import { canManageCompany } from "@/features/company/navigation";
 import { Alert } from "@heroui/react";
 
 import { usePublicOffers } from "../hooks/use-public-offers";
@@ -19,12 +21,13 @@ const freeFeatures = [
 const currency = new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" });
 const numbers = new Intl.NumberFormat("es-PE");
 
-function planPurchaseUrl(offerKey: string): string | null {
-  return "/login?" + new URLSearchParams({ next: "/settings/subscription", offer: offerKey });
+function planRequestUrl(offerKey: string) {
+  return "/solicitar-acceso?" + new URLSearchParams({ offer: offerKey });
 }
 
 export function PlansContent() {
   const offers = usePublicOffers();
+  const { data: actor } = useCurrentUser();
   const publishedOffers = offers.data?.filter((offer) => offer.available) ?? [];
 
   return (
@@ -38,20 +41,33 @@ export function PlansContent() {
         <div className="site-container grid max-w-5xl gap-6 md:grid-cols-2">
           <PlanCard
             highlighted
-            actionLabel="Solicitar acceso"
-            description="Solicitud empresarial gratuita, sujeta a revisión y aprobación. Los cupos se asignan al aprobarla."
+            actionLabel={actor ? "Continuar en el portal" : "Comenzar gratis"}
+            description="Solicitud empresarial gratuita, sujeta a revisión y aprobación. La vigencia empieza al activar al administrador."
             features={freeFeatures}
-            href="/solicitar-acceso"
+            href={
+              actor
+                ? actor.rol?.codigo === "SUPERADMIN"
+                  ? "/admin"
+                  : "/dashboard"
+                : "/solicitar-acceso"
+            }
             tag="Acceso sujeto a aprobación"
+            price={currency.format(0)}
             title="Acceso gratuito"
           />
           {publishedOffers.map((offer) => {
-            const purchaseUrl = planPurchaseUrl(offer.key);
+            const purchaseUrl = !actor
+              ? planRequestUrl(offer.key)
+              : actor.rol?.codigo === "SUPERADMIN"
+                ? "/admin/plans"
+                : canManageCompany(actor, "suscripciones.ver")
+                  ? "/settings/subscription?" + new URLSearchParams({ offer: offer.key })
+                  : "/dashboard";
 
             return (
               <PlanCard
                 key={offer.key}
-                actionLabel={purchaseUrl ? "Contratar plan" : "Consultar disponibilidad"}
+                actionLabel={actor ? "Consultar plan en el portal" : "Elegir plan"}
                 description={offer.description || "Plan empresarial publicado por AgroCloud AI."}
                 features={[
                   `Vigencia: ${numbers.format(offer.duration_days)} días`,
@@ -85,8 +101,9 @@ export function PlansContent() {
             <Alert.Content>
               <Alert.Title>Condiciones de contratación</Alert.Title>
               <Alert.Description>
-                Inicia sesión en el portal para confirmar tu oferta y continuar al pago. Si tu
-                empresa todavía no tiene una cuenta, solicita acceso primero.
+                Una empresa nueva envía una sola solicitud con su plan de interés. Después de la
+                aprobación y activación podrá confirmar la oferta vigente. Las empresas con cuenta
+                gestionan su contratación desde el portal.
               </Alert.Description>
             </Alert.Content>
           </Alert>

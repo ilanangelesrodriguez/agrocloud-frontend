@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, Button, Checkbox, Label, ListBox, Select, Form, FieldError } from "@heroui/react";
-import { FormNotice, PageHeader } from "@agrocloud/ui";
+import { FormNotice, PageHeader, InlineNotice } from "@agrocloud/ui";
 import { saveOffer } from "../api";
 import { kinds, offerInput } from "../schema";
 import { kindLabels, linkClass, listKey } from "../labels";
@@ -59,7 +59,7 @@ export function OfferForm({
     const text = (name: string) => String(fields.get(name) ?? "").trim();
     const number = (name: string) => (text(name) ? Number(text(name)) : undefined);
     const input = offerInput.safeParse({
-      status: offer?.status ?? "DRAFT",
+      status: "DRAFT",
       kind,
       name: text("name"),
       description: text("description") || undefined,
@@ -97,8 +97,15 @@ export function OfferForm({
           <Link className={linkClass} href={offer ? "/admin/plans/" + offer.key : "/admin/plans"}>
             Cancelar y volver
           </Link>
-          <PageHeader title={offer ? "Revisar oferta" : "Crear borrador"} />
+          <PageHeader title={offer ? "Versión de trabajo" : "Nueva oferta"} />
         </>
+      ) : null}
+      {offer?.status === "PUBLISHED" ? (
+        <InlineNotice
+          status="accent"
+          title="La oferta publicada seguirá vigente"
+          description="Guardar creará un borrador independiente. Revisa sus condiciones y publícalo expresamente para sustituir la versión comercial actual."
+        />
       ) : null}
       <Form validationBehavior="native" className="space-y-4" onSubmit={submit}>
         <fieldset className="grid gap-4 sm:grid-cols-2" disabled={save.isPending}>
@@ -218,7 +225,7 @@ export function OfferForm({
         {error || save.error ? <FormNotice message={error || save.error?.message} /> : null}
         <Button isDisabled={save.isPending} type="submit" variant="primary">
           <FiSave aria-hidden="true" />
-          {save.isPending ? "Guardando…" : offer ? "Guardar nueva versión" : "Crear borrador"}
+          {save.isPending ? "Guardando…" : "Guardar borrador"}
         </Button>
       </Form>
     </section>

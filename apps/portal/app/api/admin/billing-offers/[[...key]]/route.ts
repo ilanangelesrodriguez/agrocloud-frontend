@@ -2,7 +2,13 @@ import type { NextRequest } from "next/server";
 
 import { z } from "zod";
 
-import { offerDetail, offerInput, offerKey, offerList } from "@/features/plans/schema";
+import {
+  offerDetail,
+  offerInput,
+  offerKey,
+  offerList,
+  offerHistory,
+} from "@/features/plans/schema";
 import { adminIdentity } from "@/lib/auth/admin-route";
 import { parseJson, reply } from "@/lib/auth/route-utils";
 
@@ -14,6 +20,12 @@ async function getKey(context: Context) {
 }
 
 export async function GET(request: NextRequest, context: Context) {
+  const segments = (await context.params).key ?? [];
+  if (segments.length === 2 && segments[1] === "versions") {
+    const offer = offerKey.safeParse(segments[0]);
+    if (!offer.success) return reply({ message: "Oferta inválida." }, 404);
+    return adminIdentity(request, "/billing-offers/" + offer.data + "/versions", offerHistory);
+  }
   const key = await getKey(context);
 
   if (key === undefined) return reply({ message: "Oferta inválida." }, 404);

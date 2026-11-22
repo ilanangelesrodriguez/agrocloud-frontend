@@ -10,12 +10,12 @@ import { AccessRequestForm } from "@/features/marketing/access-requests/access-r
 const steps = [
   { title: "Envía la solicitud", text: "Datos de tu empresa" },
   { title: "Espera la revisión", text: "El equipo evalúa el registro" },
-  { title: "Recibe instrucciones", text: "Por canales oficiales" },
+  { title: "Activa tu cuenta", text: "Confirma tu plan después de la aprobación" },
 ];
 
-type Props = { privacyVersion?: string };
+type Props = { privacyVersion?: string; selectedOfferKey?: string };
 
-export function AccessRequestContent({ privacyVersion }: Props) {
+export function AccessRequestContent({ privacyVersion, selectedOfferKey }: Props) {
   return (
     <>
       <PageHero
@@ -70,7 +70,7 @@ export function AccessRequestContent({ privacyVersion }: Props) {
           </Card>
 
           {privacyVersion ? (
-            <AccessRequestForm privacyVersion={privacyVersion} />
+            <AccessRequestForm privacyVersion={privacyVersion} initialOfferKey={selectedOfferKey} />
           ) : (
             <Alert status="warning">
               <Alert.Indicator />

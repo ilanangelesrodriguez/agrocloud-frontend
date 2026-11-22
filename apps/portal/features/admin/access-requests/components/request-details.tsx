@@ -18,6 +18,16 @@ export function RequestDetails({ request }: { request: AccessRequest }) {
   const [busy, setBusy] = useState(false);
   const verification = request.sunat_verificacion;
   const fields = [
+    [
+      "Plan de interés",
+      request.selected_offer_snapshot?.name || request.selected_offer_key || "Acceso gratuito",
+    ],
+    [
+      "Condiciones de la selección",
+      request.selected_offer_key
+        ? "Preferencia informativa. El precio y la disponibilidad se confirman al contratar después de la activación."
+        : "La vigencia gratuita empieza al activar al administrador.",
+    ],
     ["Nombre comercial", request.nombre_comercial],
     ["Tipo de empresa", request.tipo_empresa],
     ["Representante", [request.nombre, request.apellido].filter(Boolean).join(" ")],

@@ -19,6 +19,15 @@ export const decisionSchema = z
 
 export const requestSchema = z.object({
   id: z.number().int().positive(),
+  selected_offer_key: z.string().nullish(),
+  selected_offer_snapshot: z
+    .object({
+      name: z.string().optional(),
+      amount_cents: z.number().optional(),
+      duration_days: z.number().optional(),
+      version: z.number().nullish(),
+    })
+    .nullish(),
   ruc: z.string(),
   razon_social: z.string(),
   nombre_comercial: nullableText,

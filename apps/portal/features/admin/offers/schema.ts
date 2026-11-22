@@ -3,6 +3,7 @@ export {
   kinds,
   money,
   offerDetail,
+  offerHistory,
   offerInput,
   offerKey,
   offerList,
