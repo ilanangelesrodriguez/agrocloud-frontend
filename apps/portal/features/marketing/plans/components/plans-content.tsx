@@ -39,9 +39,9 @@ export function PlansContent() {
       <PageHero
         description="Explora las modalidades de incorporación a AgroCloud. Los precios y cupos empresariales se muestran desde las ofertas vigentes."
         eyebrow="Planes y acceso"
-        title="Una plataforma que acompaña tu operación"
+        title="Planes para comenzar y hacer crecer tu operación"
       />
-      <section className="site-section">
+      <section className="site-section site-section-first">
         {!onboardingAvailable && !actor ? (
           <div className="site-container mb-7 max-w-5xl">
             <Alert status="warning">

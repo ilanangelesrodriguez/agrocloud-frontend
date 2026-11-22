@@ -18,10 +18,10 @@ export function ContactContent() {
           ? "Si necesitas implementar AgroCloud, inicia una solicitud empresarial para revisión."
           : "Conoce nuestras modalidades de acceso. El formulario para nuevas empresas está temporalmente deshabilitado."}
         eyebrow="Contacto"
-        title="Cuéntanos cómo trabaja tu empresa"
+        title="¿Cómo podemos ayudarte a comenzar?"
       />
 
-      <section className="site-section">
+      <section className="site-section site-section-first">
         <div className="site-container grid max-w-5xl gap-6 md:grid-cols-2">
           <Card className="site-card h-full">
             <Card.Content className="flex h-full flex-col p-7 sm:p-9">
@@ -56,10 +56,10 @@ export function ContactContent() {
                 cuentas se gestionan por los canales de tu organización.
               </Typography.Paragraph>
               {portalLoginUrl ? (
-                <a className="site-button site-button-outline mt-6" href={portalLoginUrl}>
+                <Link className="site-button site-button-outline mt-6" href={portalLoginUrl}>
                   Ir al portal
                   <FiLogIn aria-hidden="true" className="size-4" />
-                </a>
+                </Link>
               ) : (
                 <Typography.Paragraph className="mt-6 text-xs leading-6 text-muted">
                   El enlace al portal se habilitará cuando se configure su dirección pública.

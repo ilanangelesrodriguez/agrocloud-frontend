@@ -12,64 +12,64 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-border bg-surface">
-      <div className="site-container grid gap-10 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
-        <div className="max-w-sm space-y-4">
+      <div className="site-container grid gap-x-10 gap-y-8 py-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] lg:py-12">
+        <div className="max-w-xs space-y-3 sm:col-span-2 lg:col-span-1">
           <SiteBrand />
-          <Typography.Paragraph className="text-sm leading-7 text-muted">
-            Calidad agrícola y trazabilidad, conectadas desde el origen hasta el dictamen. La IA
-            acompaña; el equipo responsable decide.
+          <Typography.Paragraph className="leading-6 text-muted" size="sm">
+            Calidad agrícola y trazabilidad, desde el origen hasta el dictamen. Las decisiones las
+            valida el equipo responsable.
           </Typography.Paragraph>
         </div>
         <div className="space-y-3">
-          <Typography.Heading className="text-sm font-semibold text-foreground" level={2}>
+          <Typography.Heading className="text-sm font-semibold leading-6 text-foreground" level={2}>
             Explorar
           </Typography.Heading>
-          <nav aria-label="Enlaces del sitio" className="flex flex-col gap-2 text-sm text-muted">
-            <Link className="hover:text-accent" href="/funcionalidades">
+          <nav aria-label="Enlaces del sitio" className="flex flex-col gap-2 text-sm leading-6 text-muted">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/funcionalidades">
               Funcionalidades
             </Link>
-            <Link className="hover:text-accent" href="/como-funciona">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/como-funciona">
               Cómo funciona
             </Link>
-            <Link className="hover:text-accent" href="/planes">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/planes">
               Planes y acceso
             </Link>
-            <Link className="hover:text-accent" href="/nosotros">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/nosotros">
               Nosotros
             </Link>
           </nav>
         </div>
         <div className="space-y-3">
-          <Typography.Heading className="text-sm font-semibold text-foreground" level={2}>
+          <Typography.Heading className="text-sm font-semibold leading-6 text-foreground" level={2}>
             Información
           </Typography.Heading>
-          <nav aria-label="Información y acceso" className="flex flex-col gap-2 text-sm text-muted">
-            <Link className="hover:text-accent" href="/contacto">
+          <nav aria-label="Información y acceso" className="flex flex-col gap-2 text-sm leading-6 text-muted">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/contacto">
               Contacto
             </Link>
-            <Link className="hover:text-accent" href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}>
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}>
               {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
             </Link>
             {portalEntryUrl && (
-              <a className="hover:text-accent" href={portalEntryUrl}>
+              <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href={portalEntryUrl}>
                 Acceso al portal
-              </a>
+              </Link>
             )}
-            <Link className="hover:text-accent" href="/privacidad">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/privacidad">
               Privacidad
             </Link>
-            <Link className="hover:text-accent" href="/terminos">
+            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/terminos">
               Términos del servicio
             </Link>
           </nav>
         </div>
       </div>
-      <div className="site-container flex flex-col justify-between gap-2 border-t border-border py-5 text-xs text-muted sm:flex-row">
-        <Typography.Paragraph>
-          © {new Date().getFullYear()} AgroCloud AI. Plataforma de gestión agrícola.
+      <div className="site-container flex flex-col items-start justify-between gap-2 border-t border-border py-4 text-muted sm:flex-row sm:items-center">
+        <Typography.Paragraph className="leading-5 text-muted" size="xs">
+          © {new Date().getFullYear()} AgroCloud AI. Todos los derechos reservados.
         </Typography.Paragraph>
-        <Typography.Paragraph>
-          Diseñada para procesos trazables y decisiones documentadas.
+        <Typography.Paragraph className="leading-5 text-muted" size="xs">
+          Gestión de calidad y trazabilidad agrícola.
         </Typography.Paragraph>
       </div>
     </footer>

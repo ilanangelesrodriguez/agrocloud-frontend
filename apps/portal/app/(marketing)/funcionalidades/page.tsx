@@ -76,9 +76,9 @@ export default function FunctionalitiesPage() {
       <PageHero
         description="AgroCloud reúne los registros necesarios para seguir un lote desde su origen hasta la decisión final de calidad."
         eyebrow="Funcionalidades"
-        title="Toda la operación, con información conectada"
+        title="Toda tu operación agrícola, conectada"
       />
-      <section className="site-section">
+      <section className="site-section site-section-first">
         <div className="site-container space-y-10">
           <SectionIntro
             eyebrow="Qué puedes gestionar"

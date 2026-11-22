@@ -19,13 +19,14 @@ export function AccessRequestContent({ privacyVersion, selectedOfferKey }: Props
   return (
     <>
       <PageHero
-        description="Compártenos los datos de tu empresa. El equipo responsable revisará la solicitud y continuará la incorporación cuando corresponda."
+        compact
+        description="Completa los datos de tu empresa para iniciar el proceso de revisión y activación."
         eyebrow="Acceso empresarial"
-        title="Conecta la próxima etapa de tu operación"
+        title="Solicita acceso empresarial"
       />
-      <section className="site-section">
+      <section className="site-section site-section-first">
         <div className="site-container max-w-4xl">
-          <Card className="mb-8 border border-brand-600/20 bg-surface shadow-sm shadow-brand-700/5">
+          <Card className="mb-5 border border-brand-600/20 bg-surface shadow-sm shadow-brand-700/5">
             <Card.Content className="p-5 sm:p-6">
               {/* Proceso en 3 pasos: círculo + texto, unidos por una línea en escritorio */}
               <ol aria-label="Proceso de solicitud" className="flex flex-col gap-5 sm:flex-row">

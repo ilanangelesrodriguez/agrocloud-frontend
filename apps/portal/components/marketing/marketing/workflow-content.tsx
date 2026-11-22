@@ -55,9 +55,9 @@ export function WorkflowContent() {
       <PageHero
         description="Cada etapa se relaciona con el expediente del lote. No necesitas perder el contexto entre registros, evidencias y revisiones."
         eyebrow="El proceso AgroCloud"
-        title="Un recorrido claro desde el origen hasta la decisión"
+        title="Del origen al dictamen, paso a paso"
       />
-      <section className="site-section">
+      <section className="site-section site-section-first">
         <div className="site-container max-w-4xl">
           <ol aria-label="Etapas del recorrido del lote">
             {steps.map((step, index) => {

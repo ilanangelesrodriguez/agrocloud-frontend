@@ -100,13 +100,13 @@ export function SiteHeader() {
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
           <ThemeSwitch className="!size-10 border border-border" />
           {portalEntryUrl ? (
-            <a
+            <Link
               className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-muted transition-colors hover:bg-brand-50/70 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:hover:bg-brand-700/10"
               href={portalEntryUrl}
             >
               <FiLogIn aria-hidden="true" className="size-4" />
               Ir al portal
-            </a>
+            </Link>
           ) : null}
           <Link
             className="site-button site-button-primary !px-4 !py-2.5 text-sm shadow-md shadow-brand-700/20"
@@ -173,13 +173,14 @@ export function SiteHeader() {
                 );
               })}
               {portalEntryUrl ? (
-                <a
+                <Link
                   className="flex items-center gap-2 rounded-xl px-4 py-3 text-base font-medium text-foreground transition-colors hover:bg-brand-50/70 dark:hover:bg-brand-700/10"
                   href={portalEntryUrl}
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   <FiLogIn aria-hidden="true" className="size-4" />
                   Ir al portal
-                </a>
+                </Link>
               ) : null}
               <Link
                 className="site-button site-button-primary mt-3 text-center"
