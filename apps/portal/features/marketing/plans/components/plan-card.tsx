@@ -77,13 +77,13 @@ export function PlanCard({
         </ul>
 
         {disabledAction ? (
-          <span
-            aria-disabled="true"
+          <button
             className="site-button mt-8 w-full cursor-not-allowed justify-center border border-border bg-surface-secondary text-muted"
-            role="status"
+            disabled
+            type="button"
           >
             Solicitudes temporalmente cerradas
-          </span>
+          </button>
         ) : (
           <Link
             className={`site-button mt-8 w-full justify-center ${
