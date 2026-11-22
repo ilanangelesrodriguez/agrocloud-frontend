@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Card, Chip, Typography } from "@heroui/react";
-import { FiArrowUpRight, FiLogIn } from "react-icons/fi";
+import { FiArrowUpRight, FiLogIn, FiBriefcase, FiShield, FiCheckCircle } from "react-icons/fi";
+import { Reveal } from "@/components/marketing/reveal";
 
 import { PageHero } from "@/components/marketing/marketing";
 import { useOnboardingAvailability } from "@/components/marketing/onboarding-availability";
@@ -24,12 +25,18 @@ export function ContactContent() {
       />
 
       <section className="site-section site-section-first">
-        <div className="site-container grid max-w-5xl gap-6 md:grid-cols-2">
-          <Card className="site-card h-full">
+        <div className="site-container grid max-w-6xl gap-5 lg:grid-cols-2 lg:gap-7">
+          <Reveal viewport className="h-full">
+            <Card className="site-card h-full border border-brand-600/20 shadow-sm shadow-brand-700/5 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none">
             <Card.Content className="flex h-full flex-col p-7 sm:p-9">
-              <Chip color="accent" size="sm" variant="soft">
-                Nuevas empresas
-              </Chip>
+              <div className="flex items-center justify-between gap-3">
+                <Chip color="accent" size="sm" variant="soft">
+                  Nuevas empresas
+                </Chip>
+                <span className="grid size-11 place-items-center rounded-xl bg-brand-600/10 text-accent">
+                  <FiBriefcase aria-hidden="true" className="size-5" />
+                </span>
+              </div>
               <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
                 {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
               </Typography.Heading>
@@ -46,13 +53,20 @@ export function ContactContent() {
                 <FiArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
             </Card.Content>
-          </Card>
+            </Card>
+          </Reveal>
 
-          <Card className="site-card h-full">
+          <Reveal viewport className="h-full" delay={0.09}>
+            <Card className="site-card h-full border border-brand-600/20 shadow-sm shadow-brand-700/5 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:border-brand-600/40 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none">
             <Card.Content className="flex h-full flex-col p-7 sm:p-9">
-              <Chip color="accent" size="sm" variant="soft">
-                Cuentas existentes
-              </Chip>
+              <div className="flex items-center justify-between gap-3">
+                <Chip color="accent" size="sm" variant="soft">
+                  Cuentas existentes
+                </Chip>
+                <span className="grid size-11 place-items-center rounded-xl bg-brand-600/10 text-accent">
+                  <FiShield aria-hidden="true" className="size-5" />
+                </span>
+              </div>
               <Typography.Heading className="mt-4 text-2xl font-semibold" level={2}>
                 Acceder al portal
               </Typography.Heading>
@@ -71,10 +85,12 @@ export function ContactContent() {
                 </Typography.Paragraph>
               )}
             </Card.Content>
-          </Card>
+            </Card>
+          </Reveal>
         </div>
 
-        <Typography.Paragraph className="site-container mt-7 max-w-5xl text-sm leading-7 text-muted">
+        <Typography.Paragraph className="site-container mt-7 flex max-w-6xl items-start gap-2 text-sm leading-7 text-muted">
+          <FiCheckCircle aria-hidden="true" className="mt-1.5 size-4 shrink-0 text-accent" />
           {onboardingAvailable
             ? "Para incorporaciones nuevas, utiliza el formulario empresarial."
             : "La recepción de solicitudes empresariales todavía no está habilitada."}{" "}
