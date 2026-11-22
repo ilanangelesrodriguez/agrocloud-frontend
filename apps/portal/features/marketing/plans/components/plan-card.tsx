@@ -45,10 +45,22 @@ export function PlanCard({
 }: Props) {
   const Icon = kind === "free" ? FiGift : FiLayers;
   const metrics = [
-    { icon: FiCalendar, label: "Vigencia", value: durationDays ? numberFormat.format(durationDays) + " días" : "Por confirmar" },
-    { icon: FiUsers, label: "Usuarios", value: limits ? numberFormat.format(limits.usuarios) : "—" },
+    {
+      icon: FiCalendar,
+      label: "Vigencia",
+      value: durationDays ? numberFormat.format(durationDays) + " días" : "Por confirmar",
+    },
+    {
+      icon: FiUsers,
+      label: "Usuarios",
+      value: limits ? numberFormat.format(limits.usuarios) : "—",
+    },
     { icon: FiPackage, label: "Lotes", value: limits ? numberFormat.format(limits.lotes) : "—" },
-    { icon: FiCpu, label: "Análisis IA", value: limits ? numberFormat.format(limits.analisis_ia) : "—" },
+    {
+      icon: FiCpu,
+      label: "Análisis IA",
+      value: limits ? numberFormat.format(limits.analisis_ia) : "—",
+    },
   ];
 
   return (
@@ -61,7 +73,10 @@ export function PlanCard({
       }
     >
       {highlighted ? (
-        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-700 via-[#B7F5A2] to-brand-600" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-700 via-[#B7F5A2] to-brand-600"
+        />
       ) : null}
       <Card.Content className="flex h-full flex-col p-5 sm:p-7">
         <div className="flex items-center justify-between gap-3">
@@ -73,7 +88,10 @@ export function PlanCard({
           </div>
         </div>
         <div className="mt-5">
-          <Typography.Heading className="break-words text-xl font-semibold tracking-tight sm:text-2xl" level={2}>
+          <Typography.Heading
+            className="break-words text-xl font-semibold tracking-tight sm:text-2xl"
+            level={2}
+          >
             {title}
           </Typography.Heading>
           <Typography.Paragraph className="mt-2 min-h-14 text-sm leading-6 text-muted">
@@ -88,16 +106,19 @@ export function PlanCard({
             {price}
           </p>
           <p className="mt-1 text-xs leading-5 text-muted">
-            {kind === "free" ? "Sin pago por activar el acceso gratuito" : "Condiciones vigentes al confirmar la contratación"}
+            {kind === "free"
+              ? "Sin pago por activar el acceso gratuito"
+              : "Condiciones vigentes al confirmar la contratación"}
           </p>
         </div>
         <div className="mt-6">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
-            Incluye
-          </p>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Incluye</p>
           <dl className="grid grid-cols-2 gap-2.5">
             {metrics.map(({ icon: MetricIcon, label, value }) => (
-              <div key={label} className="min-w-0 rounded-xl border border-border/80 bg-surface-secondary/60 px-3 py-3">
+              <div
+                key={label}
+                className="min-w-0 rounded-xl border border-border/80 bg-surface-secondary/60 px-3 py-3"
+              >
                 <dt className="flex items-center gap-1.5 text-xs text-muted">
                   <MetricIcon aria-hidden="true" className="size-3.5 shrink-0 text-accent" />
                   {label}

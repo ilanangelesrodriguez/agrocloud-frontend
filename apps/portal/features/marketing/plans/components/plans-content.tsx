@@ -68,7 +68,10 @@ export function PlansContent() {
                   Los importes de las ofertas empresariales provienen del catálogo publicado.
                 </p>
               </div>
-              <Link className="site-text-link shrink-0 self-start sm:self-auto" href="/como-funciona">
+              <Link
+                className="site-text-link shrink-0 self-start sm:self-auto"
+                href="/como-funciona"
+              >
                 Conoce el proceso
                 <FiArrowRight aria-hidden="true" className="size-4" />
               </Link>
@@ -116,7 +119,9 @@ export function PlansContent() {
                 >
                   <PlanCard
                     actionLabel={actor ? "Consultar en el portal" : "Elegir este plan"}
-                    description={offer.description || "Oferta empresarial con vigencia y cuotas definidas."}
+                    description={
+                      offer.description || "Oferta empresarial con vigencia y cuotas definidas."
+                    }
                     disabledAction={!actor && !onboardingAvailable}
                     durationDays={offer.duration_days}
                     href={purchaseUrl}
@@ -155,15 +160,24 @@ export function PlansContent() {
                 </h2>
                 <div className="grid gap-2 text-sm leading-6 text-muted sm:grid-cols-3 sm:gap-4">
                   <p className="flex items-start gap-2">
-                    <FiCheckCircle aria-hidden="true" className="mt-1 size-4 shrink-0 text-accent" />
+                    <FiCheckCircle
+                      aria-hidden="true"
+                      className="mt-1 size-4 shrink-0 text-accent"
+                    />
                     Envías una solicitud empresarial.
                   </p>
                   <p className="flex items-start gap-2">
-                    <FiCheckCircle aria-hidden="true" className="mt-1 size-4 shrink-0 text-accent" />
+                    <FiCheckCircle
+                      aria-hidden="true"
+                      className="mt-1 size-4 shrink-0 text-accent"
+                    />
                     Se revisa y, si es aprobada, activas tu acceso.
                   </p>
                   <p className="flex items-start gap-2">
-                    <FiCheckCircle aria-hidden="true" className="mt-1 size-4 shrink-0 text-accent" />
+                    <FiCheckCircle
+                      aria-hidden="true"
+                      className="mt-1 size-4 shrink-0 text-accent"
+                    />
                     Contratas una oferta solo cuando confirmas sus condiciones vigentes.
                   </p>
                 </div>

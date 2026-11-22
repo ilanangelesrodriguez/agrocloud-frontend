@@ -18,7 +18,10 @@ export function CallToAction({
 
   return (
     <section className="site-container py-14 sm:py-20">
-      <Reveal className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#104C37] to-[#0F523C] px-7 py-10 text-white shadow-lg shadow-brand-700/15 sm:px-12 sm:py-14 lg:px-16" viewport>
+      <Reveal
+        className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#104C37] to-[#0F523C] px-7 py-10 text-white shadow-lg shadow-brand-700/15 sm:px-12 sm:py-14 lg:px-16"
+        viewport
+      >
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-32 -top-40 size-[360px] rounded-full border-[65px] border-white/5"
