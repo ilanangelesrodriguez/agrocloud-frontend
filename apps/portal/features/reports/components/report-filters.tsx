@@ -151,7 +151,10 @@ export function ReportFilters({
   exportAction?: ReactNode;
   children?: ReactNode;
 }) {
-  const [dates, setDates] = useState({ from: filter.from, to: filter.to });
+  const [dates, setDates] = useState<Pick<AnalysisFilter, "from" | "to">>({
+    from: filter.from,
+    to: filter.to,
+  });
   const [dateRevision, setDateRevision] = useState(0);
   const [period, setPeriod] = useState(() => {
     const matching = [7, 30, 90].find((days) => {
