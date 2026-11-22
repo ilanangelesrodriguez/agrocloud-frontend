@@ -24,17 +24,32 @@ export function SiteFooter() {
           <Typography.Heading className="text-sm font-semibold leading-6 text-foreground" level={2}>
             Explorar
           </Typography.Heading>
-          <nav aria-label="Enlaces del sitio" className="flex flex-col gap-2 text-sm leading-6 text-muted">
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/funcionalidades">
+          <nav
+            aria-label="Enlaces del sitio"
+            className="flex flex-col gap-2 text-sm leading-6 text-muted"
+          >
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/funcionalidades"
+            >
               Funcionalidades
             </Link>
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/como-funciona">
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/como-funciona"
+            >
               Cómo funciona
             </Link>
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/planes">
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/planes"
+            >
               Planes y acceso
             </Link>
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/nosotros">
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/nosotros"
+            >
               Nosotros
             </Link>
           </nav>
@@ -43,22 +58,40 @@ export function SiteFooter() {
           <Typography.Heading className="text-sm font-semibold leading-6 text-foreground" level={2}>
             Información
           </Typography.Heading>
-          <nav aria-label="Información y acceso" className="flex flex-col gap-2 text-sm leading-6 text-muted">
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/contacto">
+          <nav
+            aria-label="Información y acceso"
+            className="flex flex-col gap-2 text-sm leading-6 text-muted"
+          >
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/contacto"
+            >
               Contacto
             </Link>
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}>
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
+            >
               {onboardingAvailable ? "Solicitar acceso" : "Explorar planes"}
             </Link>
             {portalEntryUrl && (
-              <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href={portalEntryUrl}>
+              <Link
+                className="text-sm transition-colors hover:text-accent focus-visible:underline"
+                href={portalEntryUrl}
+              >
                 Acceso al portal
               </Link>
             )}
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/privacidad">
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/privacidad"
+            >
               Privacidad
             </Link>
-            <Link className="text-sm transition-colors hover:text-accent focus-visible:underline" href="/terminos">
+            <Link
+              className="text-sm transition-colors hover:text-accent focus-visible:underline"
+              href="/terminos"
+            >
               Términos del servicio
             </Link>
           </nav>

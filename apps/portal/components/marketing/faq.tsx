@@ -71,7 +71,9 @@ export function Faq() {
           className="inline-flex items-center gap-1 font-semibold text-brand-700 underline-offset-4 hover:underline dark:text-brand-400"
           href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
         >
-          {onboardingAvailable ? "Inicia una solicitud empresarial" : "Consulta las modalidades de acceso"}
+          {onboardingAvailable
+            ? "Inicia una solicitud empresarial"
+            : "Consulta las modalidades de acceso"}
           <FiArrowRight aria-hidden="true" className="size-3.5" />
         </Link>
       </p>

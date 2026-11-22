@@ -14,9 +14,11 @@ export function ContactContent() {
   return (
     <>
       <PageHero
-        description={onboardingAvailable
-          ? "Si necesitas implementar AgroCloud, inicia una solicitud empresarial para revisión."
-          : "Conoce nuestras modalidades de acceso. El formulario para nuevas empresas está temporalmente deshabilitado."}
+        description={
+          onboardingAvailable
+            ? "Si necesitas implementar AgroCloud, inicia una solicitud empresarial para revisión."
+            : "Conoce nuestras modalidades de acceso. El formulario para nuevas empresas está temporalmente deshabilitado."
+        }
         eyebrow="Contacto"
         title="¿Cómo podemos ayudarte a comenzar?"
       />
@@ -36,7 +38,10 @@ export function ContactContent() {
                   ? "Envía los datos de tu organización y describe su operación. La solicitud se registrará para revisión."
                   : "Consulta las modalidades disponibles. Las nuevas solicitudes se habilitarán después de validar la incorporación y el aviso de privacidad."}
               </Typography.Paragraph>
-              <Link className="site-button site-button-primary mt-6" href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}>
+              <Link
+                className="site-button site-button-primary mt-6"
+                href={onboardingAvailable ? "/solicitar-acceso" : "/planes"}
+              >
                 {onboardingAvailable ? "Completar solicitud" : "Ver planes"}
                 <FiArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
