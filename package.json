@@ -24,7 +24,7 @@
     "format:portal:check": "prettier --check \"apps/portal/**/*.{ts,tsx,js,mjs,json,css,md}\""
   },
   "devDependencies": {
-    "turbo": "2.11.11",
+    "turbo": "2.11.13",
     "prettier": "3.10.1"
   }
 }
